@@ -1,7 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @reference <a href="http://portal.acm.org/citation.cfm?id=1251177">Trickle</a>
 -module(trickle).
--export([start/1, trickle/0, update_version/2]).
+-export([start/1, start/2, trickle/0, update_version/2]).
 -define(TAU_MAX, 60000).
 -define(TAU_MIN, 1000).
 -define(K, 2).
@@ -16,6 +16,14 @@ start(Filename) ->
     Net = wsn:read_net(Filename),
     wsn:spawn_net(Net, ?MODULE, trickle).
 
+%% @doc Start the simulation with the given topology, starting each
+%% process on a new node on the specified host.
+%% @spec start(string(), atom()) -> ok
+-spec(start(string(), atom()) -> ok).
+start(Filename, Host) ->
+    Net = wsn:read_net(Filename),
+    wsn:spawn_net(Net, Host, ?MODULE, trickle).
+
 %% @doc Implementation of the algorithm for each node.
 %% @spec trickle() -> none()
 -spec(trickle() -> none()).
@@ -29,8 +37,8 @@ trickle() ->
 %% @doc Update the version of the given node.
 %% @spec update_version(atom(), integer()) -> ok
 -spec(update_version(atom(), integer()) -> ok).
-update_version(Pid, Version) ->
-    Pid ! {update, Version, string(Version)},
+update_version(DestId, Version) ->
+    wsn:send_ignore_gain(DestId, {update, Version, string(Version)}),
 	ok.
 
 % Private API

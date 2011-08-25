@@ -9,11 +9,11 @@
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @doc Main Wireless Sensors Network simulator. 
 -module(wsn).
--export([read_net/1, spawn_net/3, send/2, send/3, execute/4, forwarder/1, echo/0]).
+-export([read_net/1, spawn_net/3, spawn_net/4, send/2, send/3, send_ignore_gain/2, execute/4, executeDistributed/5, forwarder/1, forwarderDistributed/1, echo/0]).
 -define(NOISE_AVG, -75.0).
 -define(NOISE_DELTA, 5.0).
 -define(SENSITIVITY, 4.0).
--type(net()::{[atom()], dict()}).
+-type(net()::{[atom()], dict()} | {[{atom(), atom()}], dict()}).
 
 % Public API
 
@@ -40,36 +40,125 @@ spawn_net(Net, Module, Function) ->
     {NodeIds,_} = Net,
     lists:foreach(fun(N) -> register(N, spawn(?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)])) end, NodeIds).
 
+%% @doc Spawns a net creating a process for each node, on different Erlang nodes in the
+%% specified host. Such process executes the
+%% given function and is registered under the corresponding nodeid name. The
+%% dictionary is filled with two keys: myid and myaddr with the id (an atom)
+%% and address (an integer) of the node.
+%% @spec spawn_net(net(), atom(), atom(), atom()) -> ok
+-spec(spawn_net(net(), atom(), atom(), atom()) -> ok).
+spawn_net(Net, Host, Module, Function) ->
+    {ok, ForwarderNode} = slave:start_link(Host, forwarder, "-setcookie " ++ atom_to_list(erlang:get_cookie()) ++ " -pa ebin"),
+    spawn(ForwarderNode, ?MODULE, forwarderDistributed, [Net]),
+    put(forwarder, ForwarderNode),
+    {NodeIds,_} = Net,
+    AllNodes = lists:foldl(fun(N, Nodes) ->
+                          {ok, CurNode} = slave:start_link(Host, N, "-setcookie " ++ atom_to_list(erlang:get_cookie()) ++ " -pa ebin"),
+                          spawn(CurNode, ?MODULE, executeDistributed, [Module, Function, N, utils:nodeaddr(N), ForwarderNode]),
+                          dict:store(N, CurNode, Nodes)
+                  end, dict:new(), NodeIds),
+    {forwarder, ForwarderNode} ! {net, add_hosts_to_net(Net, AllNodes)},
+    ok.
+
 %% @spec execute(atom(), atom(), atom(), integer()) -> any()
 -spec(execute(atom(), atom(), atom(), integer()) -> any()).
-execute(Module, Function, NodeId, NodeAddr) -> 
+execute(Module, Function, NodeId, NodeAddr) ->
     put(myid, NodeId),
     put(myaddr, NodeAddr),
     Module:Function(). 
+
+%% @spec executeDistributed(atom(), atom(), atom(), integer(), atom()) -> any()
+-spec(executeDistributed(atom(), atom(), atom(), integer(), atom()) -> any()).
+executeDistributed(Module, Function, NodeId, NodeAddr, ForwarderNode) ->
+    register(NodeId, self()),
+    put(forwarder, ForwarderNode),
+    execute(Module, Function, NodeId, NodeAddr).
 
 %% @doc Sends a message to the neighboring nodes.
 %% @spec send(atom(), any()) -> ok
 -spec(send(atom(), any()) -> ok).
 send(SourceId, Msg) ->
-    forwarder ! {SourceId, Msg},
+    case get(forwarder) of
+        undefined ->
+            forwarder ! {gain, SourceId, Msg};
+        ForwarderNode ->
+            {forwarder, ForwarderNode} ! {gain, SourceId, Msg}
+    end,
 	ok.
 
 %% @doc Unicast, necessary for CTP.
 %% @spec send(atom(), atom(), any()) -> ok
 -spec(send(atom(), atom(), any()) -> ok).
 send(SourceId, DestId, Msg) ->
-    forwarder ! {SourceId, DestId, Msg},
+    case get(forwarder) of
+        undefined ->
+            forwarder ! {gain, SourceId, DestId, Msg};
+        ForwarderNode ->
+            {forwarder, ForwarderNode} ! {gain, SourceId, DestId, Msg}
+    end,
 	ok.
+
+%% @doc Sends a message to a specific node, ignoring the gain informations.
+%% @spec send_ignore_gain(atom(), any()) -> ok
+-spec(send_ignore_gain(atom(), any()) -> ok).
+send_ignore_gain(DestId, Msg) ->
+    case get(forwarder) of
+        undefined ->
+            forwarder ! {nogain, DestId, Msg};
+        ForwarderNode ->
+            {forwarder, ForwarderNode} ! {nogain, DestId, Msg}
+    end,
+    ok.
+
+%% @spec forwarderDistributed(net()) -> ok
+-spec(forwarderDistributed(net()) -> ok).
+forwarderDistributed(Net) ->
+    register(forwarder, self()),
+    forwarder_wait(Net).
 
 %% @spec forwarder(net()) -> ok
 -spec(forwarder(net()) -> ok).
 forwarder(Net) ->
     receive
-	    {SourceId, Msg} ->
-	        send_to_all(SourceId, Msg, element(1,Net), element(2,Net)),
+	    {gain, SourceId, Msg} ->
+            send_to_all(SourceId, Msg, element(1,Net), element(2,Net)),
 	        forwarder(Net);
-        {SourceId, DestId, Msg} ->
-            send_to_one(SourceId, Msg, DestId, element(2, Net)),
+        {gain, SourceId, DestId, Msg} ->
+            % NewDestId must have length 1
+            NewDestId = lists:filter(fun(Element) ->
+                                                case Element of
+                                                    {Id, _Host} when Id == DestId ->
+                                                        true;
+                                                    {_Id, _Host} ->
+                                                        false;
+                                                    Id when Id == DestId ->
+                                                        true;
+                                                    _Id ->
+                                                        false
+                                                end
+                                                end, element(1, Net)),
+            send_to_one(SourceId, Msg, NewDestId, element(2, Net)),
+            forwarder(Net);
+        {nogain, DestId, Msg} ->
+            % NewDestId must have length 1
+            NewDestId = lists:filter(fun(Element) ->
+                                                case Element of
+                                                    {Id, _Host} when Id == DestId ->
+                                                        true;
+                                                    {_Id, _Host} ->
+                                                        false;
+                                                    Id when Id == DestId ->
+                                                        true;
+                                                    _Id ->
+                                                        false
+                                                end
+                                                end, element(1, Net)),
+            case NewDestId of
+                [DD] ->
+                    DD ! Msg;
+                DD ->
+                    DD ! Msg
+            end,
             forwarder(Net);
         X ->
 	       io:format("forwarder received ~p~n", [X])
@@ -90,6 +179,23 @@ echo() ->
 % Private API
 
 %% @private
+-spec(add_hosts_to_net(net(), dict()) -> net()). 
+add_hosts_to_net(Net, Nodes) ->
+    Ids = element(1, Net),
+    Gains = element(2, Net),
+    Ids2 = lists:map(fun(Id) -> {Id, dict:fetch(Id, Nodes)} end, Ids),
+    {Ids2, Gains}.
+
+%% @private
+forwarder_wait(Net) ->
+    receive
+        {net, NewNet} ->
+            forwarder(NewNet);
+        _ ->
+            forwarder_wait(Net)
+    end.
+
+%% @private
 -spec(read_net(pid(), set(), dict()) -> net()).
 read_net(Device, Nodes, Gains) ->
     case io:get_line(Device, "") of
@@ -107,6 +213,23 @@ read_net(Device, Nodes, Gains) ->
 
 %% @private
 -spec(send_to_one(atom(), any(), atom(), dict()) -> ok).
+send_to_one(SourceId, Msg, [DestId], Gains) ->
+    send_to_one(SourceId, Msg, DestId, Gains);
+send_to_one(SourceId, Msg, {DestId, Host}, Gains) ->
+    NoiseDb = ?NOISE_AVG + random:uniform() * ?NOISE_DELTA * 2 - ?NOISE_DELTA,
+    SignalDb = dict:fetch({SourceId, DestId}, Gains),
+    % sig = 10^(sig_dB/10)
+    % noise = 10^(noise_dB/10)
+    % sig/noise = 10^(sig_dB-noise_dB)/10 --in dB--> (sig_dB-noise_dB) -->
+    % sig/noise > sensib (=4dB) --in dB--> (sig_dB-noise_dB) > 4
+    if
+        (SignalDb - NoiseDb) > ?SENSITIVITY ->
+            % RSSI = Signal+Noise
+            RSSI = round(10.0 * math:log10(math:pow(10.0, SignalDb / 10.0) + math:pow(10.0, NoiseDb / 10.0))),
+            {DestId, Host} ! {SourceId, RSSI, Msg};
+        true ->
+            ok
+    end;
 send_to_one(SourceId, Msg, DestId, Gains) ->
     NoiseDb = ?NOISE_AVG + random:uniform() * ?NOISE_DELTA * 2 - ?NOISE_DELTA,
     SignalDb = dict:fetch({SourceId, DestId}, Gains),
@@ -127,10 +250,28 @@ send_to_one(SourceId, Msg, DestId, Gains) ->
 -spec(send_to_all(atom(), any(), [atom()], dict()) -> ok).
 send_to_all(_, _, [], _) ->
     ok;
+send_to_all(SourceId, Msg, [{SourceId, _}|Nodes], Gains) ->
+    send_to_all(SourceId, Msg, Nodes, Gains);
+send_to_all(SourceId, Msg, [{DestId, Host}|Nodes], Gains) ->
+    NoiseDb = ?NOISE_AVG + random:uniform() * ?NOISE_DELTA * 2 - ?NOISE_DELTA,
+    SignalDb = dict:fetch({SourceId, DestId}, Gains),
+    % sig = 10^(sig_dB/10)
+    % noise = 10^(noise_dB/10)
+    % sig/noise = 10^(sig_dB-noise_dB)/10 --in dB--> (sig_dB-noise_dB) -->
+    % sig/noise > sensib (=4dB) --in dB--> (sig_dB-noise_dB) > 4
+    if
+    (SignalDb - NoiseDb) > ?SENSITIVITY ->
+        % RSSI = Signal+Noise
+        RSSI = round(10.0 * math:log10(math:pow(10.0, SignalDb/10.0) + math:pow(10.0, NoiseDb/10.0))),
+        {DestId, Host} ! {SourceId, RSSI, Msg};
+    true ->
+        ok
+    end,
+    send_to_all(SourceId, Msg, Nodes, Gains);
 send_to_all(SourceId, Msg, [SourceId|Nodes], Gains) ->
     send_to_all(SourceId, Msg, Nodes, Gains);
 send_to_all(SourceId, Msg, [DestId|Nodes], Gains) ->
-    NoiseDb = ?NOISE_AVG+random:uniform()*?NOISE_DELTA*2-?NOISE_DELTA,
+    NoiseDb = ?NOISE_AVG + random:uniform() * ?NOISE_DELTA * 2 - ?NOISE_DELTA,
     SignalDb = dict:fetch({SourceId, DestId}, Gains),
     % sig = 10^(sig_dB/10)
     % noise = 10^(noise_dB/10)
