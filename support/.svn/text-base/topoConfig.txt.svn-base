@@ -1,0 +1,47 @@
+%%%%%%%%%%%%%%%%%%%%%% 
+% Channel Parameters. See http://www.tinyos.net/tinyos-2.x/doc/html/tutorial/usc-topologies.html
+%%%%%%%%%%%%%%%%%%%%%% 
+
+PATH_LOSS_EXPONENT = 4.7; 
+SHADOWING_STANDARD_DEVIATION = 3.2; 
+D0 = 1.0; 
+PL_D0 = 55.4; 
+
+%%%%%%%%%%%%%%%%%%%%%% 
+% Radio Parameters 
+%%%%%%%%%%%%%%%%%%%%%% 
+
+NOISE_FLOOR = -105.0; 
+
+% High asymmetry
+% S11 = 3.7; 
+% S12 = -3.3; 
+% S21 = -3.3; 
+% S22 = 6.0; 
+
+% Low asymmetry
+S11 = 0.9; 
+S12 = -0.7; 
+S21 = -0.7; 
+S22 = 1.2; 
+
+WHITE_GAUSSIAN_NOISE = 4; 
+
+%%%%%%%%%%%%%%%%%%%%%% 
+% Topology Parameters 
+%%%%%%%%%%%%%%%%%%%%%% 
+% available topologies : 
+% - GRID (1) 
+% - UNIFORM (2) 
+% - RANDOM (3) 
+% - FILE (4) 
+
+TOPOLOGY = 1; 
+NUMBER_OF_NODES = 225; 
+
+GRID_UNIT = 1.0; 
+
+TOPOLOGY_FILE = topology; 
+
+% TERRAIN_DIMENSIONS_X = 20.0; 
+% TERRAIN_DIMENSIONS_Y = 20.0;
