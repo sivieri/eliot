@@ -1,3 +1,0 @@
-{application,wsn}.
-{packages,[]}.
-{modules,[ctp,ctp_fwd,ctp_link,ctp_routing,oppflooder,trickle,utils,wsn]}.
