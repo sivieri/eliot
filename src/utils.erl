@@ -1,9 +1,20 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Utility functions.
 -module(utils).
--export([update_tau/3, random/1, format/2, rpc/2, nodeaddr/1, nodeid/1]).
+-export([update_tau/3, random/1, format/2, rpc/2, nodeaddr/1, nodeid/1, gethostip/0]).
 
 % Public API
+
+%% @doc Get the IP of the active interface (avoiding loopback).
+%% @spec gethostip() -> atom()
+-spec(gethostip() -> atom()).
+gethostip() ->
+    {ok, Ifs} = inet:getiflist(),
+    Ifs2 = lists:filter(fun(Elem) when Elem == "lo" -> false;
+                           (_Elem) -> true end, Ifs),
+    [Real|_] = Ifs2,
+    {ok, [{addr, Addr}]} = inet:ifget(Real, [addr]),
+    erlang:list_to_atom(inet_parse:ntoa(Addr)).
 
 %% @doc Update tau with the double of its current value. If
 %% the new value is higher than the max, set it to max; if

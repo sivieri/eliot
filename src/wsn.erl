@@ -13,6 +13,7 @@
 -define(NOISE_AVG, -75.0).
 -define(NOISE_DELTA, 5.0).
 -define(SENSITIVITY, 4.0).
+-define(OPTS, " -rsh ssh -pa ebin").
 -type(net()::{[atom()], dict()} | {[{atom(), atom()}], dict()}).
 
 % Public API
@@ -41,21 +42,33 @@ spawn_net(Net, Module, Function) ->
     lists:foreach(fun(N) -> register(N, spawn(?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)])) end, NodeIds).
 
 %% @doc Spawns a net creating a process for each node, on different Erlang nodes in the
-%% specified host. Such process executes the
+%% specified hosts: the first n-1 hosts will receive a single process, while
+%% the last one will receive the remaining nodes. Such processes executes the
 %% given function and is registered under the corresponding nodeid name. The
 %% dictionary is filled with two keys: myid and myaddr with the id (an atom)
 %% and address (an integer) of the node.
-%% @spec spawn_net(net(), atom(), atom(), atom()) -> ok
--spec(spawn_net(net(), atom(), atom(), atom()) -> ok).
-spawn_net(Net, Host, Module, Function) ->
-    {ok, ForwarderNode} = slave:start_link(Host, forwarder, "-setcookie " ++ atom_to_list(erlang:get_cookie()) ++ " -pa ebin"),
+%% The forwarder node is spawned on the same host of the master node.
+%% @spec spawn_net(net(), [atom()], atom(), atom()) -> ok
+-spec(spawn_net(net(), [atom()], atom(), atom()) -> ok).
+spawn_net(Net, Hosts, Module, Function) when length(element(1, Net)) >= length(Hosts) ->
+    {ok, ForwarderNode} = slave:start_link(utils:gethostip(), forwarder, "-setcookie " ++ atom_to_list(erlang:get_cookie()) ++ ?OPTS),
     global:register_name(forwarder, spawn(ForwarderNode, ?MODULE, forwarder, [Net])),
     {NodeIds,_} = Net,
+    {ExtNodes, LastNodes} = lists:split(length(Hosts) - 1, NodeIds),
+    {ExtHosts, [Host]} = lists:split(length(Hosts) - 1, Hosts),
+    ExtNodesList = lists:zip(ExtHosts, ExtNodes),
+    lists:foreach(fun({ExtHost, ExtNode}) ->
+                          {ok, CurNode} = slave:start_link(ExtHost, ExtNode, "-setcookie " ++ atom_to_list(erlang:get_cookie()) ++ ?OPTS),
+                          global:register_name(ExtNode, spawn(CurNode, ?MODULE, execute, [Module, Function, ExtNode, utils:nodeaddr(ExtNode)]))
+                          end, ExtNodesList),
     lists:foreach(fun(N) ->
-                          {ok, CurNode} = slave:start_link(Host, N, "-setcookie " ++ atom_to_list(erlang:get_cookie()) ++ " -pa ebin"),
+                          {ok, CurNode} = slave:start_link(Host, N, "-setcookie " ++ atom_to_list(erlang:get_cookie()) ++ ?OPTS),
                           global:register_name(N, spawn(CurNode, ?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)]))
-                  end, NodeIds),
-    ok.
+                  end, LastNodes),
+    ok;
+spawn_net(Net, _Host, Module, Function) ->
+    io:format("More hosts than nodes: reverting to local."),
+    spawn_net(Net, Module, Function).
 
 %% @spec execute(atom(), atom(), atom(), integer()) -> any()
 -spec(execute(atom(), atom(), atom(), integer()) -> any()).
