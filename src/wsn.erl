@@ -13,7 +13,7 @@
 -define(NOISE_AVG, -75.0).
 -define(NOISE_DELTA, 5.0).
 -define(SENSITIVITY, 4.0).
--define(OPTS, " -rsh ssh -pa ebin").
+-define(OPTS, " -rsh ssh -setcookie ").
 -type(net()::{[atom()], dict()} | {[{atom(), atom()}], dict()}).
 
 % Public API
@@ -51,18 +51,18 @@ spawn_net(Net, Module, Function) ->
 %% @spec spawn_net(net(), [atom()], atom(), atom()) -> ok
 -spec(spawn_net(net(), [atom()], atom(), atom()) -> ok).
 spawn_net(Net, Hosts, Module, Function) when length(element(1, Net)) >= length(Hosts) ->
-    {ok, ForwarderNode} = slave:start_link(utils:gethostip(), forwarder, "-setcookie " ++ atom_to_list(erlang:get_cookie()) ++ ?OPTS),
+    {ok, ForwarderNode} = slave:start_link(utils:gethostip(), forwarder,  ?OPTS ++ atom_to_list(erlang:get_cookie())),
     global:register_name(forwarder, spawn(ForwarderNode, ?MODULE, forwarder, [Net])),
     {NodeIds,_} = Net,
     {ExtNodes, LastNodes} = lists:split(length(Hosts) - 1, NodeIds),
     {ExtHosts, [Host]} = lists:split(length(Hosts) - 1, Hosts),
     ExtNodesList = lists:zip(ExtHosts, ExtNodes),
     lists:foreach(fun({ExtHost, ExtNode}) ->
-                          {ok, CurNode} = slave:start_link(ExtHost, ExtNode, "-setcookie " ++ atom_to_list(erlang:get_cookie()) ++ ?OPTS),
+                          {ok, CurNode} = slave:start_link(ExtHost, ExtNode, ?OPTS ++ atom_to_list(erlang:get_cookie())),
                           global:register_name(ExtNode, spawn(CurNode, ?MODULE, execute, [Module, Function, ExtNode, utils:nodeaddr(ExtNode)]))
                           end, ExtNodesList),
     lists:foreach(fun(N) ->
-                          {ok, CurNode} = slave:start_link(Host, N, "-setcookie " ++ atom_to_list(erlang:get_cookie()) ++ ?OPTS),
+                          {ok, CurNode} = slave:start_link(Host, N, ?OPTS ++ atom_to_list(erlang:get_cookie())),
                           global:register_name(N, spawn(CurNode, ?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)]))
                   end, LastNodes),
     ok;
