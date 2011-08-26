@@ -30,16 +30,21 @@ fwd_engine(DataCounter, FwdList, SentList) ->
             % Re-send a packet if the ack has not been received
             RoutingPid ! {self(), update_ack, SourceId},
             NewSentList = lists:filter(fun(Element) when Element == Block ->
-                                               self() ! {collect, Block#cache.msg#data.payload, Block#cache.timeout},
+                                               Msg = Block#cache.msg,
+                                               self() ! {collect, Msg#data.payload, Block#cache.timeout},
                                                false;
                                           (_Element) ->
                                                true end, SentList),
             fwd_engine(DataCounter, FwdList, NewSentList);
         {_SourceId, _RSSI, Msg} when is_record(Msg, ack)  ->
-            NewSentList = lists:filter(fun(Block) when Block#cache.msg#data.seqno == Msg#ack.id ->
-                                               false;
-                                          (_Block) ->
-                                               true end, SentList),
+            NewSentList = lists:filter(fun(Block) ->
+                                               Msg2 = Block#cache.msg,
+                                               case Msg2 of 
+                                                   Msg2 when Msg2#data.seqno == Msg#ack.id ->
+                                                       false;
+                                                   _Msg2 ->
+                                                       true
+                                               end end, SentList),
             fwd_engine(DataCounter, FwdList, NewSentList);
         {SourceId, _RSSI, Msg} when is_record(Msg, data) ->
             RoutingPid = get(routing),
