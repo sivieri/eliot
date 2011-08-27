@@ -67,7 +67,7 @@ spawn_net(Net, Hosts, Module, Function) when length(element(1, Net)) >= length(H
                   end, LastNodes),
     ok;
 spawn_net(Net, _Host, Module, Function) ->
-    io:format("More hosts than nodes: reverting to local."),
+    io:format("More hosts than nodes: reverting to local.~n"),
     spawn_net(Net, Module, Function).
 
 %% @spec execute(atom(), atom(), atom(), integer()) -> any()
@@ -111,8 +111,9 @@ forwarder(Net) ->
         {nogain, DestId, Msg} ->
             send_no_gain(DestId, Msg),
             forwarder(Net);
-        X ->
-	       io:format("forwarder received ~p~n", [X])
+        Any ->
+	       io:format("forwarder received ~p~n", [Any]),
+           forwarder(Net)
     end.
 
 %% @spec echo() -> none()
@@ -138,7 +139,7 @@ send_msg(Dest, Msg) ->
                 Dest ! Msg
             catch
                 _:_Reason ->
-                    io:format("Node ~p down~n", [Dest])
+                    io:format("Node ~p found ~p down~n", [node(), Dest])
             end;
         _Pid ->
             global:send(Dest, Msg)

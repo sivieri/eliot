@@ -2,7 +2,7 @@
 %% @reference <a href="http://portal.acm.org/citation.cfm?id=1644040">Collection Tree Protocol</a>
 -module(ctp).
 -include("ctp.hrl").
--export([start/1, ctp/0, collect/2]).
+-export([start/1, start/2, ctp/0, collect/2]).
 -define(TAU_MAX, 600000).
 -define(TAU_MIN, 64).
 
@@ -14,6 +14,13 @@
 start(Filename) ->
     Net = wsn:read_net(Filename),
     wsn:spawn_net(Net, ?MODULE, ctp).
+
+%% @doc Start the simulation with the given topology on the given hosts.
+%% @spec start(string(), [atom()]) -> ok
+-spec(start(string(), [atom()]) -> ok).
+start(Filename, Hosts) ->
+    Net = wsn:read_net(Filename),
+    wsn:spawn_net(Net, Hosts, ?MODULE, ctp).
 
 %% @doc Implementation of the algorithm for each node.
 %% @spec ctp() -> none()
@@ -32,7 +39,7 @@ ctp() ->
 %% @spec collect(atom(), any()) -> ok
 -spec(collect(atom(), any()) -> ok).
 collect(Node, Data) ->
-    Node ! {collect, Data},
+    wsn:send_ignore_gain(Node, {collect, Data}),
 	ok.
 
 % Private API

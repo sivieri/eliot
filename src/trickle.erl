@@ -17,12 +17,12 @@ start(Filename) ->
     wsn:spawn_net(Net, ?MODULE, trickle).
 
 %% @doc Start the simulation with the given topology, starting each
-%% process on a new node on the specified host.
-%% @spec start(string(), atom()) -> ok
--spec(start(string(), atom()) -> ok).
-start(Filename, Host) ->
+%% process on a new node on the specified hosts.
+%% @spec start(string(), [atom()]) -> ok
+-spec(start(string(), [atom()]) -> ok).
+start(Filename, Hosts) ->
     Net = wsn:read_net(Filename),
-    wsn:spawn_net(Net, Host, ?MODULE, trickle).
+    wsn:spawn_net(Net, Hosts, ?MODULE, trickle).
 
 %% @doc Implementation of the algorithm for each node.
 %% @spec trickle() -> none()

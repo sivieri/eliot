@@ -1,7 +1,7 @@
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @doc Opportunistic flooder implementation.
 -module(oppflooder).
--export([start/1, flood/0]).
+-export([start/1, start/2, flood/0]).
 
 % Public API
 
@@ -13,6 +13,17 @@ start(FileName) ->
     Net=wsn:read_net(FileName),
     wsn:spawn_net(Net, ?MODULE, flood),
     'node_0' ! resend,
+    timer:kill_after(5000,forwarder),
+    lists:map(fun(X) -> timer:kill_after(5000,X) end, element(1,Net)).
+
+%% @doc Start the simulation with the given topology on the given hosts;
+%% the root node (zero) will start the flood.
+%% @spec start(string(), [atom()]) -> [{ok, reference()}|{error, string()}]
+-spec(start(string(), [atom()]) -> [{ok, reference()}|{error, string()}]).
+start(FileName, Hosts) ->
+    Net=wsn:read_net(FileName),
+    wsn:spawn_net(Net, Hosts, ?MODULE, flood),
+    wsn:send_ignore_gain('node_0', resend),
     timer:kill_after(5000,forwarder),
     lists:map(fun(X) -> timer:kill_after(5000,X) end, element(1,Net)).
 
