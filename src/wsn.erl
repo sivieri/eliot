@@ -85,7 +85,7 @@ send_ignore_gain(SourceId, DestId, Msg) ->
     ok.
 
 %% @doc Spawn a process executing a fun on a remote mote.
-%% @spec spawn(atom(), function() -> pid() | error
+%% @spec spawn(atom(), function()) -> pid() | error
 -spec(spawn(atom(), function()) -> pid() | error).
 spawn(DestId, Fun) ->
     case global:whereis_name(DestId) of
@@ -95,7 +95,7 @@ spawn(DestId, Fun) ->
             erlang:spawn(Node, Fun)
     end.
 
-%% @dod Spawn a process executing the given function on a remote mote.
+%% @doc Spawn a process executing the given function on a remote mote.
 %% @spec spawn(atom(), atom(), atom(), [any()]) -> pid() | error
 -spec(spawn(atom(), atom(), atom(), [any()]) -> pid() | error).
 spawn(DestId, Module, Function, Args) ->
