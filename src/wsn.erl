@@ -8,9 +8,9 @@
 
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
-%% @doc Main Wireless Sensors Network simulator. 
+%% @doc Main Wireless Sensors Network framework and simulator. 
 -module(wsn).
--export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_ignore_gain/3, execute/4, forwarder/1, echo/0, send_msg/2, spawn/2, spawn/4]).
+-export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_ignore_gain/3, execute/4, forwarder/1, echo/0, send_msg/2, spawn/3, spawn/5]).
 -define(NOISE_AVG, -75.0).
 -define(NOISE_DELTA, 5.0).
 -define(SENSITIVITY, 4.0).
@@ -38,9 +38,9 @@ read_net(Filename) ->
 %% @spec spawn_net(net(), atom(), atom()) -> ok
 -spec(spawn_net(net(), atom(), atom()) -> ok).
 spawn_net(Net, Module, Function) ->
-    register(forwarder, spawn(?MODULE, forwarder, [Net])),
+    register(forwarder, erlang:spawn(?MODULE, forwarder, [Net])),
     {NodeIds,_} = Net,
-    lists:foreach(fun(N) -> register(N, spawn(?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)])) end, NodeIds).
+    lists:foreach(fun(N) -> register(N, erlang:spawn(?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)])) end, NodeIds).
 
 %% @doc Spawns a net creating a process for each node, on different Erlang nodes in the
 %% specified hosts: the first n-1 hosts will receive a single process, while
@@ -75,37 +75,29 @@ spawn_net(Net, _Host, Module, Function) ->
 %% @spec send(atom(), atom(), any()) -> ok
 -spec(send(atom(), atom(), any()) -> ok).
 send(SourceId, DestId, Msg) ->
-    send_msg(forwarder, {gain, SourceId, DestId, Msg}),
-	ok.
+    send_msg(forwarder, {gain, SourceId, DestId, Msg}).
 
 %% @doc Send a message ignoring gain informations.
 %% @spec send_ignore_gain(atom(), atom(), any()) -> ok
 -spec(send_ignore_gain(atom(), atom(), any()) -> ok).
 send_ignore_gain(SourceId, DestId, Msg) ->
-    send_msg(forwarder, {nogain, SourceId, DestId, Msg}),
-    ok.
+    send_msg(forwarder, {nogain, SourceId, DestId, Msg}).
 
 %% @doc Spawn a process executing a fun on a remote mote.
-%% @spec spawn(atom(), function()) -> pid() | error
--spec(spawn(atom(), function()) -> pid() | error).
-spawn(DestId, Fun) ->
-    case global:whereis_name(DestId) of
-        undefined ->
-            error;
-        Node ->
-            erlang:spawn(Node, Fun)
-    end.
+%% This function is asynchronous, and the process invoking
+%% it should expect a message in the form {spawned, pid()} | {spawned, error} | [{spawned, pid() | error}].
+%% @spec spawn(atom(), atom(), function()) -> ok
+-spec(spawn(atom(), atom(), function()) -> ok).
+spawn(SourceId, DestId, Fun) ->
+    send_msg(forwarder, {spawn, SourceId, DestId, Fun}).
 
 %% @doc Spawn a process executing the given function on a remote mote.
-%% @spec spawn(atom(), atom(), atom(), [any()]) -> pid() | error
--spec(spawn(atom(), atom(), atom(), [any()]) -> pid() | error).
-spawn(DestId, Module, Function, Args) ->
-    case global:whereis_name(DestId) of
-        undefined ->
-            error;
-        Node ->
-            erlang:spawn(Node, Module, Function, Args)
-    end.
+%% This function is asynchronous, and the process invoking
+%% it should expect a message in the form {spawned, pid()} | {spawned, error} | [{spawned, pid() | error}].
+%% @spec spawn(atom(), atom(), atom(), atom(), [any()]) -> ok
+-spec(spawn(atom(), atom(), atom(), atom(), [any()]) -> ok).
+spawn(SourceId, DestId, Module, Function, Args) ->
+    send_msg(forwarder, {spawn, SourceId, DestId, Module, Function, Args}).
 
 %% @private
 %% @spec execute(atom(), atom(), atom(), integer()) -> any()
@@ -132,6 +124,22 @@ forwarder(Net) ->
         {nogain, _SourceId, DestId, Msg} ->
             send_to_one_no_gain(DestId, Msg),
             forwarder(Net);
+        {spawn, SourceId, DestId, Fun} when DestId == all ->
+            Res = lists:map(fun(E) -> spawn_remote(E, Fun) end, element(1, Net)),
+            send_msg(SourceId, {spawned, Res}),
+            forwarder(Net);
+        {spawn, SourceId, DestId, Fun} ->
+            Res = spawn_remote(DestId, Fun),
+            send_msg(SourceId, {spawned, Res}),
+            forwarder(Net);
+        {spawn, SourceId, DestId, Module, Function, Args} when DestId == all ->
+            Res = lists:map(fun(E) -> spawn_remote(E, Module, Function, Args) end, element(1, Net)),
+            send_msg(SourceId, {spawned, Res}),
+            forwarder(Net);
+        {spawn, SourceId, DestId, Module, Function, Args} ->
+            Res = spawn_remote(DestId, Module, Function, Args),
+            send_msg(SourceId, {spawned, Res}),
+            forwarder(Net);
         Any ->
 	       io:format("forwarder received ~p~n", [Any]),
            forwarder(Net)
@@ -153,6 +161,28 @@ echo() ->
 % Private API
 
 %% @private
+-spec(spawn_remote(atom(), function()) -> pid() | error).
+spawn_remote(DestId, Fun) ->
+    case global:whereis_name(DestId) of
+        undefined ->
+            error;
+        Pid ->
+            Pid2 = erlang:spawn(node(Pid), Fun),
+            Pid2
+    end.
+
+%% @private
+-spec(spawn_remote(atom(), atom(), atom(), [any()]) -> pid() | error).
+spawn_remote(DestId, Module, Function, Args) ->
+    case global:whereis_name(DestId) of
+        undefined ->
+            error;
+        Node ->
+            Pid = erlang:spawn(Node, Module, Function, Args),
+            Pid
+    end.
+
+%% @private
 -spec(send_msg(atom(), any()) -> ok).
 send_msg(Dest, Msg) ->
     case global:whereis_name(Dest) of
@@ -163,8 +193,8 @@ send_msg(Dest, Msg) ->
                 _:_Reason ->
                     io:format("Node ~p found ~p down~n", [node(), Dest])
             end;
-        _Pid ->
-            global:send(Dest, Msg)
+        Pid ->
+            Pid ! Msg
     end,
     ok.
 
