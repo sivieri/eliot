@@ -9,7 +9,7 @@
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @doc Main Wireless Sensors Network simulator. 
 -module(wsn).
--export([read_net/1, spawn_net/3, spawn_net/4, send/2, send/3, send_ignore_gain/2, execute/4, forwarder/1, echo/0, send_msg/2]).
+-export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_ignore_gain/3, execute/4, forwarder/1, echo/0, send_msg/2, spawn/2, spawn/4]).
 -define(NOISE_AVG, -75.0).
 -define(NOISE_DELTA, 5.0).
 -define(SENSITIVITY, 4.0).
@@ -52,24 +52,61 @@ spawn_net(Net, Module, Function) ->
 -spec(spawn_net(net(), [atom()], atom(), atom()) -> ok).
 spawn_net(Net, Hosts, Module, Function) when length(element(1, Net)) >= length(Hosts) ->
     {ok, ForwarderNode} = slave:start_link(utils:gethostip(), forwarder,  ?OPTS ++ atom_to_list(erlang:get_cookie())),
-    global:register_name(forwarder, spawn(ForwarderNode, ?MODULE, forwarder, [Net])),
+    global:register_name(forwarder, erlang:spawn(ForwarderNode, ?MODULE, forwarder, [Net])),
     {NodeIds,_} = Net,
     {ExtNodes, LastNodes} = lists:split(length(Hosts) - 1, NodeIds),
     {ExtHosts, [Host]} = lists:split(length(Hosts) - 1, Hosts),
     ExtNodesList = lists:zip(ExtHosts, ExtNodes),
     lists:foreach(fun({ExtHost, ExtNode}) ->
                           {ok, CurNode} = slave:start_link(ExtHost, ExtNode, ?OPTS ++ atom_to_list(erlang:get_cookie())),
-                          global:register_name(ExtNode, spawn(CurNode, ?MODULE, execute, [Module, Function, ExtNode, utils:nodeaddr(ExtNode)]))
+                          global:register_name(ExtNode, erlang:spawn(CurNode, ?MODULE, execute, [Module, Function, ExtNode, utils:nodeaddr(ExtNode)]))
                           end, ExtNodesList),
     lists:foreach(fun(N) ->
                           {ok, CurNode} = slave:start_link(Host, N, ?OPTS ++ atom_to_list(erlang:get_cookie())),
-                          global:register_name(N, spawn(CurNode, ?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)]))
+                          global:register_name(N, erlang:spawn(CurNode, ?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)]))
                   end, LastNodes),
     ok;
 spawn_net(Net, _Host, Module, Function) ->
     io:format("More hosts than nodes: reverting to local.~n"),
     spawn_net(Net, Module, Function).
 
+%% @doc Send a message.
+%% @spec send(atom(), atom(), any()) -> ok
+-spec(send(atom(), atom(), any()) -> ok).
+send(SourceId, DestId, Msg) ->
+    send_msg(forwarder, {gain, SourceId, DestId, Msg}),
+	ok.
+
+%% @doc Send a message ignoring gain informations.
+%% @spec send_ignore_gain(atom(), atom(), any()) -> ok
+-spec(send_ignore_gain(atom(), atom(), any()) -> ok).
+send_ignore_gain(SourceId, DestId, Msg) ->
+    send_msg(forwarder, {nogain, SourceId, DestId, Msg}),
+    ok.
+
+%% @doc Spawn a process executing a fun on a remote mote.
+%% @spec spawn(atom(), function() -> pid() | error
+-spec(spawn(atom(), function()) -> pid() | error).
+spawn(DestId, Fun) ->
+    case global:whereis_name(DestId) of
+        undefined ->
+            error;
+        Node ->
+            erlang:spawn(Node, Fun)
+    end.
+
+%% @dod Spawn a process executing the given function on a remote mote.
+%% @spec spawn(atom(), atom(), atom(), [any()]) -> pid() | error
+-spec(spawn(atom(), atom(), atom(), [any()]) -> pid() | error).
+spawn(DestId, Module, Function, Args) ->
+    case global:whereis_name(DestId) of
+        undefined ->
+            error;
+        Node ->
+            erlang:spawn(Node, Module, Function, Args)
+    end.
+
+%% @private
 %% @spec execute(atom(), atom(), atom(), integer()) -> any()
 -spec(execute(atom(), atom(), atom(), integer()) -> any()).
 execute(Module, Function, NodeId, NodeAddr) ->
@@ -77,51 +114,35 @@ execute(Module, Function, NodeId, NodeAddr) ->
     put(myaddr, NodeAddr),
     Module:Function(). 
 
-%% @doc Sends a message to the neighboring nodes.
-%% @spec send(atom(), any()) -> ok
--spec(send(atom(), any()) -> ok).
-send(SourceId, Msg) ->
-    send_msg(forwarder, {gain, SourceId, Msg}),
-	ok.
-
-%% @doc Unicast, necessary for CTP.
-%% @spec send(atom(), atom(), any()) -> ok
--spec(send(atom(), atom(), any()) -> ok).
-send(SourceId, DestId, Msg) ->
-    send_msg(forwarder, {gain, SourceId, DestId, Msg}),
-	ok.
-
-%% @doc Sends a message to a specific node, ignoring the gain informations.
-%% @spec send_ignore_gain(atom(), any()) -> ok
--spec(send_ignore_gain(atom(), any()) -> ok).
-send_ignore_gain(DestId, Msg) ->
-    send_msg(forwarder, {nogain, DestId, Msg}),
-    ok.
-
+%% @private
 %% @spec forwarder(net()) -> ok
 -spec(forwarder(net()) -> ok).
 forwarder(Net) ->
     receive
-	    {gain, SourceId, Msg} ->
+        {gain, SourceId, DestId, Msg} when DestId == all ->
             send_to_all(SourceId, Msg, element(1,Net), element(2,Net)),
-	        forwarder(Net);
+            forwarder(Net);
         {gain, SourceId, DestId, Msg} ->
             send_to_one(SourceId, Msg, DestId, element(2, Net)),
             forwarder(Net);
-        {nogain, DestId, Msg} ->
-            send_no_gain(DestId, Msg),
+        {nogain, SourceId, DestId, Msg} when DestId == all ->
+            send_to_all_no_gain(SourceId, DestId, Msg),
+            forwarder(Net);
+        {nogain, _SourceId, DestId, Msg} ->
+            send_to_one_no_gain(DestId, Msg),
             forwarder(Net);
         Any ->
 	       io:format("forwarder received ~p~n", [Any]),
            forwarder(Net)
     end.
 
+%% @private
 %% @spec echo() -> none()
 -spec(echo() -> none()).
 echo() ->
     receive
 	resend ->
-	    send(get(myid), "AAAA"),
+	    send(get(myid), all, "AAAA"),
 	    echo();
 	{SourceId, RSSI, Msg} ->
 	    io:format("Node ~p received: ~p from ~p with RSSI=~p~n", [get(myid), Msg, SourceId, RSSI]),
@@ -163,9 +184,19 @@ read_net(Device, Nodes, Gains) ->
     end.
 
 %% @private
--spec(send_no_gain(atom(), any()) -> ok).
-send_no_gain(DestId, Msg) ->
+-spec(send_to_one_no_gain(atom(), any()) -> ok).
+send_to_one_no_gain(DestId, Msg) ->
     send_msg(DestId, Msg).
+
+%% @private
+-spec(send_to_all_no_gain(atom(), [atom()], any()) -> ok).
+send_to_all_no_gain(_, [], _) ->
+    ok;
+send_to_all_no_gain(SourceId, [SourceId|Nodes], Msg) ->
+    send_to_all_no_gain(SourceId, Nodes, Msg);
+send_to_all_no_gain(SourceId, [DestId|Nodes], Msg) ->
+    send_msg(DestId, Msg),
+    send_to_all_no_gain(SourceId, Nodes, Msg).
 
 %% @private
 -spec(send_to_one(atom(), any(), atom(), dict()) -> ok).

@@ -39,7 +39,7 @@ ctp() ->
 %% @spec collect(atom(), any()) -> ok
 -spec(collect(atom(), any()) -> ok).
 collect(Node, Data) ->
-    wsn:send_ignore_gain(Node, {collect, Data}),
+    wsn:send_ignore_gain(get(myid), Node, {collect, Data}),
 	ok.
 
 % Private API

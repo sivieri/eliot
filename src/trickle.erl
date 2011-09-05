@@ -38,7 +38,7 @@ trickle() ->
 %% @spec update_version(atom(), integer()) -> ok
 -spec(update_version(atom(), integer()) -> ok).
 update_version(DestId, Version) ->
-    wsn:send_ignore_gain(DestId, {update, Version, string(Version)}),
+    wsn:send_ignore_gain(get(myid), DestId, {update, Version, string(Version)}),
 	ok.
 
 % Private API

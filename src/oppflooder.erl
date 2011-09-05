@@ -23,7 +23,7 @@ start(FileName) ->
 start(FileName, Hosts) ->
     Net=wsn:read_net(FileName),
     wsn:spawn_net(Net, Hosts, ?MODULE, flood),
-    wsn:send_ignore_gain('node_0', resend),
+    wsn:send_ignore_gain(get(myid), 'node_0', resend),
     timer:kill_after(5000,forwarder),
     lists:map(fun(X) -> timer:kill_after(5000,X) end, element(1,Net)).
 
