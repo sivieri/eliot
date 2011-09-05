@@ -7,6 +7,7 @@
 % P_received = 10^(gain/10) P_sent
 
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
+%% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Main Wireless Sensors Network simulator. 
 -module(wsn).
 -export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_ignore_gain/3, execute/4, forwarder/1, echo/0, send_msg/2, spawn/2, spawn/4]).
