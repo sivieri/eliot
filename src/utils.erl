@@ -68,6 +68,6 @@ nodeaddr(NodeId) ->
 %% @see utils:nodeaddr/1
 -spec(nodeid(integer()) -> atom()).
 nodeid(NodeAddr) ->
-    list_to_atom("node_" ++ NodeAddr).
+    list_to_atom("mote_" ++ NodeAddr).
 
 % Private API

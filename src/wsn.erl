@@ -20,8 +20,8 @@
 % Public API
 
 %% @doc Returns a "net", i.e., a tuple {NodeIds, Gains}, from a file of link
-%% gains. NodeIds is a list of atoms [node_0, ..., node_n], and Gains is a
-%% dictionary whose keys are couple {node_i, node_j} (two node ids) and values
+%% gains. NodeIds is a list of atoms [mote_0, ..., mote_n], and Gains is a
+%% dictionary whose keys are couple {mote_i, mote_j} (two node ids) and values
 %% are the corrensponding gains as floats. A file with link gains from a given
 %% node topology can be generated using the net.tinyos.sim.LinkLayerModel Java
 %% class (from tinyos) using a description of the topology.
@@ -71,13 +71,15 @@ spawn_net(Net, _Host, Module, Function) ->
     io:format("More hosts than nodes: reverting to local.~n"),
     spawn_net(Net, Module, Function).
 
-%% @doc Send a message.
+%% @doc Send a unicast message; if destination is "all",
+%% communication is broadcast.
 %% @spec send(atom(), atom(), any()) -> ok
 -spec(send(atom(), atom(), any()) -> ok).
 send(SourceId, DestId, Msg) ->
     send_msg(forwarder, {gain, SourceId, DestId, Msg}).
 
-%% @doc Send a message ignoring gain informations.
+%% @doc Send a unicast message ignoring gain informations;
+%% if destination is "all", communication is broadcast.
 %% @spec send_ignore_gain(atom(), atom(), any()) -> ok
 -spec(send_ignore_gain(atom(), atom(), any()) -> ok).
 send_ignore_gain(SourceId, DestId, Msg) ->
@@ -86,6 +88,7 @@ send_ignore_gain(SourceId, DestId, Msg) ->
 %% @doc Spawn a process executing a fun on a remote mote.
 %% This function is asynchronous, and the process invoking
 %% it should expect a message in the form {spawned, pid()} | {spawned, error} | [{spawned, pid() | error}].
+%% If destination is "all", communication is broadcast.
 %% @spec spawn(atom(), atom(), function()) -> ok
 -spec(spawn(atom(), atom(), function()) -> ok).
 spawn(SourceId, DestId, Fun) ->
@@ -94,6 +97,7 @@ spawn(SourceId, DestId, Fun) ->
 %% @doc Spawn a process executing the given function on a remote mote.
 %% This function is asynchronous, and the process invoking
 %% it should expect a message in the form {spawned, pid()} | {spawned, error} | [{spawned, pid() | error}].
+%% If destination is "all", communication is broadcast.
 %% @spec spawn(atom(), atom(), atom(), atom(), [any()]) -> ok
 -spec(spawn(atom(), atom(), atom(), atom(), [any()]) -> ok).
 spawn(SourceId, DestId, Module, Function, Args) ->

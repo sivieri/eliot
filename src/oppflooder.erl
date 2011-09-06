@@ -12,7 +12,7 @@
 start(FileName) ->
     Net=wsn:read_net(FileName),
     wsn:spawn_net(Net, ?MODULE, flood),
-    'node_0' ! resend,
+    'mote_0' ! resend,
     timer:kill_after(5000,forwarder),
     lists:map(fun(X) -> timer:kill_after(5000,X) end, element(1,Net)).
 
@@ -23,7 +23,7 @@ start(FileName) ->
 start(FileName, Hosts) ->
     Net=wsn:read_net(FileName),
     wsn:spawn_net(Net, Hosts, ?MODULE, flood),
-    wsn:send_ignore_gain(get(myid), 'node_0', resend),
+    wsn:send_ignore_gain(get(myid), 'mote_0', resend),
     timer:kill_after(5000,forwarder),
     lists:map(fun(X) -> timer:kill_after(5000,X) end, element(1,Net)).
 
@@ -41,11 +41,11 @@ flood(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
     receive
 	resend ->
 	    MsgId = {get(myaddr), NextMsgNum},
-	    wsn:send(get(myid), {MsgId,"Message from "++atom_to_list(get(myid))}),
+	    wsn:send(get(myid), all, {MsgId,"Message from "++atom_to_list(get(myid))}),
 	    flood(record_received(MsgId, ReceivedMsgs), WaitingMsgs, (NextMsgNum+1) rem 256);
 	{MsgId, MsgData} ->
 	    io:format("~p: Timer expired for message ~p sending it~n", [get(myid), MsgId]),
-	    wsn:send(get(myid), {MsgId, MsgData}),
+	    wsn:send(get(myid), all, {MsgId, MsgData}),
 	    flood(ReceivedMsgs, remove_waiting(MsgId, WaitingMsgs), NextMsgNum);
 	{SourceId, RSSI, {MsgId, MsgData}} ->
 	    io:format("~p: Received ~p from ~p with RSSI=~p~n", [get(myid), MsgId, SourceId, RSSI]),
