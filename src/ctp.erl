@@ -29,7 +29,7 @@ ctp() ->
     NodeId = get(myid),
     Index = root(NodeId),
     Collector = get(collector),
-    RoutingPid = spawn(fun() -> ctp_routing:routing_engine() end),
+    RoutingPid = spawn(fun() -> ctp_routing:routing_engine(NodeId) end),
     LinkPid = spawn(fun() -> ctp_link:link_engine({NodeId, Collector}, {RoutingPid, Index}) end),
     FwdPid = spawn(fun() -> ctp_fwd:fwd_engine({NodeId, Collector}, {RoutingPid, LinkPid}) end),
     ctp(RoutingPid, LinkPid, FwdPid).

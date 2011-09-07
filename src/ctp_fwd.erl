@@ -93,13 +93,18 @@ fwd_engine(DataCounter, FwdList, SentList) ->
                     fwd_engine(DataCounter, FwdList, SentList);
                 false ->
                     NewTimeout = Timeout * 2,
-                    {Parent, Etx} = utils:rpc(RoutingPid, lower),
-                    Msg = #data{etx = Etx, payload = Data, seqno = DataCounter},
-                    io:format("~p: Routing data to ~p~n", [get(myid), Parent]),
-                    wsn:send(get(myid), Parent, Msg),
-                    Block = #cache{msg = Msg, timeout = NewTimeout},
-                    erlang:send_after(NewTimeout, self(), {resend, Parent, Block}),
-                    fwd_engine(DataCounter + 1, FwdList, [Block|SentList])
+                    case utils:rpc(RoutingPid, lower) of
+                        {_, 1000} ->
+                            io:format("~p: I don't have any reliable neighbor~n", [get(myid)]),
+                            fwd_engine(DataCounter, FwdList, SentList);
+                        {Parent, Etx} ->
+                            Msg = #data{etx = Etx, payload = Data, seqno = DataCounter},
+                            io:format("~p: Routing data to ~p~n", [get(myid), Parent]),
+                            wsn:send(get(myid), Parent, Msg),
+                            Block = #cache{msg = Msg, timeout = NewTimeout},
+                            erlang:send_after(NewTimeout, self(), {resend, Parent, Block}),
+                            fwd_engine(DataCounter + 1, FwdList, [Block|SentList])
+                    end
             end;
         Any ->
             io:format("Fwd engine: received ~p~n", [Any]),

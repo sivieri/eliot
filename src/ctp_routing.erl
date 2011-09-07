@@ -4,37 +4,39 @@
 %% @reference <a href="http://www.tinyos.net/tinyos-2.x/doc/html/tep123.html">TinyOS TEP 123</a>
 -module(ctp_routing).
 -include("ctp.hrl").
--export([routing_engine/0]).
+-export([routing_engine/1]).
 
 % Public API
 
 %% @doc Start the engine.
-%% @spec routing_engine() -> none()
--spec(routing_engine() -> none()).
-routing_engine() ->
-    routing_engine(dict:new()).
+%% @spec routing_engine(atom()) -> none()
+-spec(routing_engine(atom()) -> none()).
+routing_engine(NodeId) ->
+    routing_engine(NodeId, dict:new()).
 
 % Private API
 
 %% @private
--spec(routing_engine(dict()) -> none()).
-routing_engine(Neighbors) ->
+-spec(routing_engine(atom(), dict()) -> none()).
+routing_engine(NodeId, Neighbors) ->
     receive
         {Pid, lower} ->
             Pid ! {self(), lower_node(Neighbors)},
-            routing_engine(Neighbors);
+            routing_engine(NodeId, Neighbors);
         {_Pid, update_routing, SourceId, Msg} ->
-            routing_engine(update_dst(Neighbors, SourceId, Msg));
+            routing_engine(NodeId, update_dst(Neighbors, SourceId, Msg));
         {_Pid, update_ack, SourceId} ->
-            routing_engine(update_dst_ack(Neighbors, SourceId));
+            routing_engine(NodeId, update_dst_ack(Neighbors, SourceId));
         Any ->
             io:format("Routing engine: received ~p~n", [Any]),
-            routing_engine(Neighbors)
+            routing_engine(NodeId, Neighbors)
     end.
 
 %% @doc For a neighbor node to be considered the best parent, it must have an ETX greater
 %% than 1000, which is the default value of a neighbor from which we have received only
 %% one beacon.
+%% If there are only neighbors with 1000 as ETX, then choose one randomly, and let's
+%% hope it will receive the message.
 %% @private
 -spec(lower_node(dict()) -> {atom(), integer()}).
 lower_node(Dict) ->

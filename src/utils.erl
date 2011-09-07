@@ -1,7 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Utility functions.
 -module(utils).
--export([update_tau/3, random/1, format/2, rpc/2, nodeaddr/1, nodeid/1, gethostip/0]).
+-export([update_tau/3, random/1, format/2, rpc/2, nodeaddr/1, nodeid/1, gethostip/0, print_dict/1]).
 
 % Public API
 
@@ -69,5 +69,11 @@ nodeaddr(NodeId) ->
 -spec(nodeid(integer()) -> atom()).
 nodeid(NodeAddr) ->
     list_to_atom("mote_" ++ NodeAddr).
+
+%% @doc Print a dictionary.
+%% @spec print_dict(dict()) -> ok
+-spec(print_dict(dict()) -> ok).
+print_dict(Dict) ->
+    dict:fold(fun(Key, Value, _AccIn) -> io:format("~p: ~p~n", [Key, Value]) end, ok, Dict).
 
 % Private API
