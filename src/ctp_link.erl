@@ -20,7 +20,7 @@ link_engine({NodeId, Collector}, {RoutingEngine, Counter}) ->
     if
         Counter == 1 ->
             Msg = #routing{pull = true},
-            wsn:send(get(myid), Msg);
+            wsn:send(get(myid), all, Msg);
         true ->
             ok
     end,
@@ -47,11 +47,11 @@ link_engine(Tau, TRef, BeaconCounter) ->
                             ok;
                         {Parent, Etx} ->
                             NewMsg = #routing{parent = Parent, etx = Etx, seqno = BeaconCounter},
-                            wsn:send(get(myid), NewMsg)
+                            wsn:send(get(myid), all, NewMsg)
                     end;
                 true ->
                     NewMsg = #routing{seqno = BeaconCounter},
-                    wsn:send(get(myid), NewMsg)
+                    wsn:send(get(myid), all, NewMsg)
             end,
             link_engine(Tau, TRef, BeaconCounter + 1);
          {transmit, cancel} ->

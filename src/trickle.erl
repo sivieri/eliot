@@ -50,7 +50,7 @@ trickle(Tau, {TauRef, TRef}, Counter, {Version, Payload}) ->
         {update, NewVersion, NewPayload} ->
             trickle(Tau, {TauRef, TRef}, Counter, {NewVersion, NewPayload});
         transmit when Counter < ?K ->
-            wsn:send(get(myid), {version, Version}),
+            wsn:send(get(myid), all, {version, Version}),
             trickle(Tau, {TauRef, TRef}, Counter, {Version, Payload});
         transmit ->
             trickle(Tau, {TauRef, TRef}, Counter, {Version, Payload});
@@ -62,12 +62,12 @@ trickle(Tau, {TauRef, TRef}, Counter, {Version, Payload}) ->
             trickle(NewTau, {NewTauRef, NewTRef}, 0, {Version, Payload});
         {_SourceId, _RSSI, {version, NewVersion}} when NewVersion < Version ->
             %io:format("~p: Received version ~p from ~p with RSSI = ~p (older)~n", [get(myid), NewVersion, SourceId, RSSI]),
-            wsn:send(get(myid), {update, Version, Payload}),
+            wsn:send(get(myid), all, {update, Version, Payload}),
             erlang:cancel_timer(TRef),
             trickle(Tau, {TauRef, TRef}, Counter, {Version, Payload});
         {SourceId, RSSI, {version, NewVersion}} when NewVersion > Version ->
             io:format("~p: Received version ~p from ~p with RSSI = ~p (newer)~n", [get(myid), NewVersion, SourceId, RSSI]),
-            wsn:send(get(myid), {version, Version}),
+            wsn:send(get(myid), all, {version, Version}),
             erlang:cancel_timer(TRef),
             erlang:cancel_timer(TauRef),
             NewTau = ?TAU_MIN,
