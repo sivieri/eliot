@@ -48,7 +48,13 @@ update_version(DestId, Version) ->
 trickle(Tau, {TauRef, TRef}, Counter, {Version, Payload}) ->
     receive
         {update, NewVersion, NewPayload} ->
-            trickle(Tau, {TauRef, TRef}, Counter, {NewVersion, NewPayload});
+            erlang:cancel_timer(TRef),
+            erlang:cancel_timer(TauRef),
+            NewTau = ?TAU_MIN,
+            T = utils:random(NewTau),
+            NewTRef = erlang:send_after(T, self(), transmit),
+            NewTauRef = erlang:send_after(NewTau, self(), restart),
+            trickle(Tau, {NewTauRef, NewTRef}, 0, {NewVersion, NewPayload});
         transmit when Counter < ?K ->
             wsn:send(get(myid), all, {version, Version}),
             trickle(Tau, {TauRef, TRef}, Counter, {Version, Payload});
