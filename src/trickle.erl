@@ -1,7 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @reference <a href="http://portal.acm.org/citation.cfm?id=1251177">Trickle</a>
 -module(trickle).
--export([start/1, start/2, trickle/0, update_version/2]).
+-export([start/1, start_simulation/1, start_simulation/2, trickle/0, update_version/2]).
 -define(TAU_MAX, 60000).
 -define(TAU_MIN, 1000).
 -define(K, 2).
@@ -9,18 +9,24 @@
 
 % Public API
 
+%% @doc Start a real network.
+%% @spec start([{atom(), integer()}]) -> ok
+-spec(start([{atom(), integer()}]) -> ok).
+start(Hosts) ->
+    wsn:spawn_net(Hosts, ?MODULE, trickle).
+
 %% @doc Start the simulation with the given topology.
-%% @spec start(string()) -> ok
--spec(start(string()) -> ok).
-start(Filename) ->
+%% @spec start_simulation(string()) -> ok
+-spec(start_simulation(string()) -> ok).
+start_simulation(Filename) ->
     Net = wsn:read_net(Filename),
-    wsn:spawn_net(Net, ?MODULE, trickle).
+    wsn:spawn_net(Net, [], ?MODULE, trickle).
 
 %% @doc Start the simulation with the given topology, starting each
 %% process on a new node on the specified hosts.
-%% @spec start(string(), [{atom(), integer()}]) -> ok
--spec(start(string(), [{atom(), integer()}]) -> ok).
-start(Filename, Hosts) ->
+%% @spec start_simulation(string(), [{atom(), integer()}]) -> ok
+-spec(start_simulation(string(), [{atom(), integer()}]) -> ok).
+start_simulation(Filename, Hosts) ->
     Net = wsn:read_net(Filename),
     wsn:spawn_net(Net, Hosts, ?MODULE, trickle).
 

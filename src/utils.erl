@@ -1,7 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Utility functions.
 -module(utils).
--export([update_tau/3, random/1, format/2, rpc/2, nodeaddr/1, nodeid/1, gethostip/0, print_dict/1, consistency/3]).
+-export([w/2, update_tau/3, random/1, format/2, rpc/2, nodeaddr/1, nodeid/1, gethostip/0, print_dict/1, consistency/3]).
 
 % Public API
 
@@ -85,5 +85,11 @@ consistency([], _Acc, _N) ->
     false;
 consistency([{_IP, I}|T], Acc, N) ->
     consistency(T, Acc + I, N).
+
+%% @doc Print to a string.
+%% @spec w(string(), [any()]) -> string()
+-spec(w(string(), [any()]) -> string()).
+w(Format, List) ->
+    lists:flatten(io_lib:format(Format, List)).
 
 % Private API

@@ -1,23 +1,29 @@
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @doc Opportunistic flooder implementation.
 -module(oppflooder).
--export([start/1, start/2, launch/1, flood/0]).
+-export([start/1, start_simulation/1, start_simulation/2, launch/1, flood/0]).
 -define(MAX_WAITING_OF_MSG, 100).
 
 % Public API
 
+%% @doc Start a real network.
+%% @spec start([{atom(), integer()}]) -> ok
+-spec(start([{atom(), integer()}]) -> ok).
+start(Hosts) ->
+    wsn:spawn_net(Hosts, ?MODULE, flood).
+
 %% @doc Start the simulation with the given topology;
 %% the root node (zero) will start the flood.
-%% @spec start(string()) -> [{ok, reference()}|{error, string()}]
--spec(start(string()) -> [{ok, reference()}|{error, string()}]).
-start(FileName) ->
+%% @spec start_simulation(string()) -> [{ok, reference()}|{error, string()}]
+-spec(start_simulation(string()) -> [{ok, reference()}|{error, string()}]).
+start_simulation(FileName) ->
     Net=wsn:read_net(FileName),
-    wsn:spawn_net(Net, ?MODULE, flood).
+    wsn:spawn_net(Net, [], ?MODULE, flood).
 
 %% @doc Start the simulation with the given topology on the given hosts.
-%% @spec start(string(), [{atom(), integer()}]) -> [{ok, reference()}|{error, string()}]
--spec(start(string(), [{atom(), integer()}]) -> [{ok, reference()}|{error, string()}]).
-start(FileName, Hosts) ->
+%% @spec start_simulation(string(), [{atom(), integer()}]) -> [{ok, reference()}|{error, string()}]
+-spec(start_simulation(string(), [{atom(), integer()}]) -> [{ok, reference()}|{error, string()}]).
+start_simulation(FileName, Hosts) ->
     Net=wsn:read_net(FileName),
     wsn:spawn_net(Net, Hosts, ?MODULE, flood).
 

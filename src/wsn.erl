@@ -1,11 +1,3 @@
-%erl -sname master -rsh ssh -connect_all false
-%slave:start('lap-cugola',nodo1).
-%net_adm:ping('paolo@mini-cugola').
-%process_info(self(), registered_name).
-%java net.tinyos.sim.LinkLayerModel topologyConfig.txt
-% dB = 10*Log_10(P_received/P_sent)
-% P_received = 10^(gain/10) P_sent
-
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Main Wireless Sensors Network framework and simulator. 
@@ -31,24 +23,34 @@ read_net(Filename) ->
     {ok, Device} = file:open(Filename,[read]),
     read_net(Device, sets:new(), dict:new()).
 
-%% @doc Spawns a net creating a process for each node. Such process executes the
-%% given function and is registered under the corresponding nodeid name. The
-%% dictionary is filled with two keys: myid and myaddr with the id (an atom)
-%% and address (an integer) of the node.
-%% @spec spawn_net(net(), atom(), atom()) -> ok
--spec(spawn_net(net(), atom(), atom()) -> ok).
-spawn_net(Net, Module, Function) ->
-    register(forwarder, erlang:spawn(?MODULE, forwarder, [Net])),
-    {NodeIds,_} = Net,
-    lists:foreach(fun(N) -> register(N, erlang:spawn(?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)])) end, NodeIds).
+%% @doc Spawn a non-simulated network, i.e. without a topology.
+%% The number of spawned motes will be read directly from the hosts list.
+%% @spec spawn_net([{atom(), integer()}], atom(), atom()) -> ok
+-spec(spawn_net([{atom(), integer()}], atom(), atom()) -> ok).
+spawn_net(Hosts, Module, Function) ->
+    N = lists:foldl(fun({_Host, I}, AccIn) -> AccIn + I end, 0, Hosts),
+    NodeIds = lists:foldl(fun(I, AccIn) -> [utils:nodeid(utils:w("~p", [I]))|AccIn] end, [], lists:seq(1, N)),
+    {ok, ForwarderNode} = slave:start_link(utils:gethostip(), forwarder,  ?OPTS ++ atom_to_list(erlang:get_cookie())),
+    global:register_name(forwarder, erlang:spawn(ForwarderNode, ?MODULE, forwarder, [NodeIds])),
+    lists:foldl(fun({Host, I}, Nodes) ->
+                        {CurNodes, T} = lists:split(I, Nodes),
+                        lists:foreach(fun(Node) ->
+                                              {ok, CurNode} = slave:start_link(Host, Node, ?OPTS ++ atom_to_list(erlang:get_cookie())),
+                                              global:register_name(Node, erlang:spawn(CurNode, ?MODULE, execute, [Module, Function, Node, utils:nodeaddr(Node)]))
+                                              end, CurNodes),
+                        T
+                        end, NodeIds, Hosts).
 
-%% @doc Spawns a net creating a process for each node, on different Erlang nodes in the
-%% specified hosts: each host will receive the number of nodes that it had
+%% @doc Spawns a net creating a process for each mote, on different Erlang nodes in the
+%% specified hosts: each host will receive the number of motes that it had
 %% specified along with its IP. Such processes executes the
 %% given function and is registered under the corresponding nodeid name. The
 %% dictionary is filled with two keys: myid and myaddr with the id (an atom)
-%% and address (an integer) of the node.
+%% and address (an integer) of the mote.
 %% The forwarder node is spawned on the same host of the master node.
+%%
+%% If the hosts list is empty or there are not enough hosts for motes,
+%% the simulation will revert to a local one.
 %% @spec spawn_net(net(), [{atom(), integer()}], atom(), atom()) -> ok
 -spec(spawn_net(net(), [{atom(), integer()}], atom(), atom()) -> ok).
 spawn_net(Net, Hosts, Module, Function) ->
@@ -67,8 +69,9 @@ spawn_net(Net, Hosts, Module, Function) ->
                                 end, NodeIds, Hosts),
             ok;
         false ->
-            io:format("More hosts than nodes: reverting to local.~n"),
-            spawn_net(Net, Module, Function)
+            register(forwarder, erlang:spawn(?MODULE, forwarder, [Net])),
+            {NodeIds,_} = Net,
+            lists:foreach(fun(N) -> register(N, erlang:spawn(?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)])) end, NodeIds)
     end.
 
 %% @doc Send a unicast message; if destination is "all",
@@ -112,8 +115,42 @@ execute(Module, Function, NodeId, NodeAddr) ->
     Module:Function(). 
 
 %% @private
-%% @spec forwarder(net()) -> ok
--spec(forwarder(net()) -> ok).
+%% @spec forwarder(net() | []) -> ok
+-spec(forwarder(net() | []) -> ok).
+forwarder(NodeIds) when is_list(NodeIds) ->
+    receive
+        {gain, SourceId, DestId, Msg} when DestId == all ->
+            send_to_all_no_gain(SourceId, DestId, Msg),
+            forwarder([]);
+        {gain, _SourceId, DestId, Msg} ->
+            send_to_one_no_gain(DestId, Msg),
+            forwarder([]);
+        {nogain, SourceId, DestId, Msg} when DestId == all ->
+            send_to_all_no_gain(SourceId, DestId, Msg),
+            forwarder([]);
+        {nogain, _SourceId, DestId, Msg} ->
+            send_to_one_no_gain(DestId, Msg),
+            forwarder([]);
+        {spawn, SourceId, DestId, Fun} when DestId == all ->
+            Res = lists:map(fun(E) -> spawn_remote(E, Fun) end, NodeIds),
+            send_msg(SourceId, {spawned, Res}),
+            forwarder([]);
+        {spawn, SourceId, DestId, Fun} ->
+            Res = spawn_remote(DestId, Fun),
+            send_msg(SourceId, {spawned, Res}),
+            forwarder([]);
+        {spawn, SourceId, DestId, Module, Function, Args} when DestId == all ->
+            Res = lists:map(fun(E) -> spawn_remote(E, Module, Function, Args) end, NodeIds),
+            send_msg(SourceId, {spawned, Res}),
+            forwarder([]);
+        {spawn, SourceId, DestId, Module, Function, Args} ->
+            Res = spawn_remote(DestId, Module, Function, Args),
+            send_msg(SourceId, {spawned, Res}),
+            forwarder([]);
+        Any ->
+           io:format("forwarder received ~p~n", [Any]),
+           forwarder([])
+    end;
 forwarder(Net) ->
     receive
         {gain, SourceId, DestId, Msg} when DestId == all ->

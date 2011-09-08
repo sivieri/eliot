@@ -2,23 +2,29 @@
 %% @reference <a href="http://portal.acm.org/citation.cfm?id=1644040">Collection Tree Protocol</a>
 -module(ctp).
 -include("ctp.hrl").
--export([start/1, start/2, ctp/0, collect/2]).
+-export([start/1, start_simulation/1, start_simulation/2, ctp/0, collect/2]).
 -define(TAU_MAX, 600000).
 -define(TAU_MIN, 64).
 
 % Public API
 
+%% @doc Start a real network.
+%% @spec start([{atom(), integer()}]) -> ok
+-spec(start([{atom(), integer()}]) -> ok).
+start(Hosts) ->
+    wsn:spawn_net(Hosts, ?MODULE, ctp).
+
 %% @doc Start the simulation with the given topology.
-%% @spec start(string()) -> ok
--spec(start(string()) -> ok).
-start(Filename) ->
+%% @spec start_simulation(string()) -> ok
+-spec(start_simulation(string()) -> ok).
+start_simulation(Filename) ->
     Net = wsn:read_net(Filename),
-    wsn:spawn_net(Net, ?MODULE, ctp).
+    wsn:spawn_net(Net, [], ?MODULE, ctp).
 
 %% @doc Start the simulation with the given topology on the given hosts.
-%% @spec start(string(), [{atom(), integer()}]) -> ok
--spec(start(string(), [{atom(), integer()}]) -> ok).
-start(Filename, Hosts) ->
+%% @spec start_simulation(string(), [{atom(), integer()}]) -> ok
+-spec(start_simulation(string(), [{atom(), integer()}]) -> ok).
+start_simulation(Filename, Hosts) ->
     Net = wsn:read_net(Filename),
     wsn:spawn_net(Net, Hosts, ?MODULE, ctp).
 
