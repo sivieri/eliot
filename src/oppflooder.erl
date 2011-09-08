@@ -15,8 +15,8 @@ start(FileName) ->
     wsn:spawn_net(Net, ?MODULE, flood).
 
 %% @doc Start the simulation with the given topology on the given hosts.
-%% @spec start(string(), [atom()]) -> [{ok, reference()}|{error, string()}]
--spec(start(string(), [atom()]) -> [{ok, reference()}|{error, string()}]).
+%% @spec start(string(), [{atom(), integer()}]) -> [{ok, reference()}|{error, string()}]
+-spec(start(string(), [{atom(), integer()}]) -> [{ok, reference()}|{error, string()}]).
 start(FileName, Hosts) ->
     Net=wsn:read_net(FileName),
     wsn:spawn_net(Net, Hosts, ?MODULE, flood).

@@ -18,8 +18,8 @@ start(Filename) ->
 
 %% @doc Start the simulation with the given topology, starting each
 %% process on a new node on the specified hosts.
-%% @spec start(string(), [atom()]) -> ok
--spec(start(string(), [atom()]) -> ok).
+%% @spec start(string(), [{atom(), integer()}]) -> ok
+-spec(start(string(), [{atom(), integer()}]) -> ok).
 start(Filename, Hosts) ->
     Net = wsn:read_net(Filename),
     wsn:spawn_net(Net, Hosts, ?MODULE, trickle).

@@ -1,7 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Utility functions.
 -module(utils).
--export([update_tau/3, random/1, format/2, rpc/2, nodeaddr/1, nodeid/1, gethostip/0, print_dict/1]).
+-export([update_tau/3, random/1, format/2, rpc/2, nodeaddr/1, nodeid/1, gethostip/0, print_dict/1, consistency/3]).
 
 % Public API
 
@@ -75,5 +75,15 @@ nodeid(NodeAddr) ->
 -spec(print_dict(dict()) -> ok).
 print_dict(Dict) ->
     dict:fold(fun(Key, Value, _AccIn) -> io:format("~p: ~p~n", [Key, Value]) end, ok, Dict).
+
+%% @doc Check the consistency of the hosts list.
+%% @spec consistency([{atom(), integer()}], integer(), integer()) -> boolean()
+-spec(consistency([{atom(), integer()}], integer(), integer()) -> boolean()).
+consistency([], Acc, N) when N == Acc ->
+    true;
+consistency([], _Acc, _N) ->
+    false;
+consistency([{_IP, I}|T], Acc, N) ->
+    consistency(T, Acc + I, N).
 
 % Private API
