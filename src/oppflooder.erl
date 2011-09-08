@@ -2,6 +2,7 @@
 %% @doc Opportunistic flooder implementation.
 -module(oppflooder).
 -export([start/1, start/2, launch/1, flood/0]).
+-define(MAX_WAITING_OF_MSG, 100).
 
 % Public API
 
@@ -62,16 +63,25 @@ flood(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
 			    Delay = 1000 + RSSI*10 + random:uniform(100),
 			    io:format("~p: forwarding msg in ~p ms~n", [get(myid), Delay]),
 			    TRef = erlang:send_after(Delay, self(), {MsgId, MsgData}),
-			    flood(record_received(MsgId, ReceivedMsgs), add_waiting(MsgId, TRef, WaitingMsgs), NextMsgNum)
+			    flood(record_received(MsgId, ReceivedMsgs), add_waiting(MsgId, TRef, WaitingMsgs, dict:size(WaitingMsgs)), NextMsgNum)
 		    end
 	    end
     end.
 
 %% @private
--spec(add_waiting(integer(), reference(), dict()) -> dict()).
-add_waiting(MsgId, TRef, WaitingMsgs) ->
-    % TODO: add only if there is space and remove oldest, cancelling timer
-    dict:store(MsgId, TRef, WaitingMsgs).
+-spec(add_waiting(integer(), reference(), dict(), integer()) -> dict()).
+add_waiting(MsgId, TRef, WaitingMsgs, QueueLength) when QueueLength < ?MAX_WAITING_OF_MSG ->
+    dict:store(MsgId, TRef, WaitingMsgs);
+add_waiting(MsgId, TRef, WaitingMsgs, _QueueLength) ->
+    Instants = dict:fold(fun(Id, Timer, AccIn) ->
+                                 [{Id, erlang:read_timer(Timer)}|AccIn]
+                                 end, [], WaitingMsgs),
+    [{FirstId, _FirstT}|_] = lists:sort(fun({_Id1, T1}, {_Id2, T2}) ->
+                                         T1 =< T2
+                                         end, Instants),
+    erlang:cancel_timer(dict:fetch(FirstId, WaitingMsgs)),
+    NewWaitingMsgs = dict:erase(FirstId, WaitingMsgs),
+    dict:store(MsgId, TRef, NewWaitingMsgs).
 
 %% @private
 -spec(remove_waiting(integer(), dict()) -> dict()).
