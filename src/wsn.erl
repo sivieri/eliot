@@ -29,7 +29,7 @@ read_net(Filename) ->
 -spec(spawn_net([{atom(), integer()}], atom(), atom()) -> ok).
 spawn_net(Hosts, Module, Function) ->
     N = lists:foldl(fun({_Host, I}, AccIn) -> AccIn + I end, 0, Hosts),
-    NodeIds = lists:foldl(fun(I, AccIn) -> [utils:nodeid(utils:w("~p", [I]))|AccIn] end, [], lists:seq(1, N)),
+    NodeIds = lists:foldl(fun(I, AccIn) -> [utils:nodeid(utils:w("~p", [I]))|AccIn] end, [], lists:seq(0, N - 1)),
     {ok, ForwarderNode} = slave:start_link(utils:gethostip(), forwarder,  ?OPTS ++ atom_to_list(erlang:get_cookie())),
     global:register_name(forwarder, erlang:spawn(ForwarderNode, ?MODULE, forwarder, [NodeIds])),
     lists:foldl(fun({Host, I}, Nodes) ->
@@ -120,36 +120,36 @@ execute(Module, Function, NodeId, NodeAddr) ->
 forwarder(NodeIds) when is_list(NodeIds) ->
     receive
         {gain, SourceId, DestId, Msg} when DestId == all ->
-            send_to_all_no_gain(SourceId, DestId, Msg),
-            forwarder([]);
-        {gain, _SourceId, DestId, Msg} ->
-            send_to_one_no_gain(DestId, Msg),
-            forwarder([]);
+            send_to_all_no_gain(SourceId, NodeIds, Msg),
+            forwarder(NodeIds);
+        {gain, SourceId, DestId, Msg} ->
+            send_to_one_no_gain(SourceId, DestId, Msg),
+            forwarder(NodeIds);
         {nogain, SourceId, DestId, Msg} when DestId == all ->
-            send_to_all_no_gain(SourceId, DestId, Msg),
-            forwarder([]);
-        {nogain, _SourceId, DestId, Msg} ->
-            send_to_one_no_gain(DestId, Msg),
-            forwarder([]);
+            send_to_all_no_gain(SourceId, NodeIds, Msg),
+            forwarder(NodeIds);
+        {nogain, SourceId, DestId, Msg} ->
+            send_to_one_no_gain(SourceId, DestId, Msg),
+            forwarder(NodeIds);
         {spawn, SourceId, DestId, Fun} when DestId == all ->
             Res = lists:map(fun(E) -> spawn_remote(E, Fun) end, NodeIds),
             send_msg(SourceId, {spawned, Res}),
-            forwarder([]);
+            forwarder(NodeIds);
         {spawn, SourceId, DestId, Fun} ->
             Res = spawn_remote(DestId, Fun),
             send_msg(SourceId, {spawned, Res}),
-            forwarder([]);
+            forwarder(NodeIds);
         {spawn, SourceId, DestId, Module, Function, Args} when DestId == all ->
             Res = lists:map(fun(E) -> spawn_remote(E, Module, Function, Args) end, NodeIds),
             send_msg(SourceId, {spawned, Res}),
-            forwarder([]);
+            forwarder(NodeIds);
         {spawn, SourceId, DestId, Module, Function, Args} ->
             Res = spawn_remote(DestId, Module, Function, Args),
             send_msg(SourceId, {spawned, Res}),
-            forwarder([]);
+            forwarder(NodeIds);
         Any ->
            io:format("forwarder received ~p~n", [Any]),
-           forwarder([])
+           forwarder(NodeIds)
     end;
 forwarder(Net) ->
     receive
@@ -162,8 +162,8 @@ forwarder(Net) ->
         {nogain, SourceId, DestId, Msg} when DestId == all ->
             send_to_all_no_gain(SourceId, DestId, Msg),
             forwarder(Net);
-        {nogain, _SourceId, DestId, Msg} ->
-            send_to_one_no_gain(DestId, Msg),
+        {nogain, SourceId, DestId, Msg} ->
+            send_to_one_no_gain(SourceId, DestId, Msg),
             forwarder(Net);
         {spawn, SourceId, DestId, Fun} when DestId == all ->
             Res = lists:map(fun(E) -> spawn_remote(E, Fun) end, element(1, Net)),
@@ -256,9 +256,9 @@ read_net(Device, Nodes, Gains) ->
     end.
 
 %% @private
--spec(send_to_one_no_gain(atom(), any()) -> ok).
-send_to_one_no_gain(DestId, Msg) ->
-    send_msg(DestId, Msg).
+-spec(send_to_one_no_gain(atom(), atom(), any()) -> ok).
+send_to_one_no_gain(SourceId, DestId, Msg) ->
+    send_msg(DestId, {SourceId, 0, Msg}).
 
 %% @private
 -spec(send_to_all_no_gain(atom(), [atom()], any()) -> ok).
@@ -267,7 +267,7 @@ send_to_all_no_gain(_, [], _) ->
 send_to_all_no_gain(SourceId, [SourceId|Nodes], Msg) ->
     send_to_all_no_gain(SourceId, Nodes, Msg);
 send_to_all_no_gain(SourceId, [DestId|Nodes], Msg) ->
-    send_msg(DestId, Msg),
+    send_msg(DestId, {SourceId, 0, Msg}),
     send_to_all_no_gain(SourceId, Nodes, Msg).
 
 %% @private

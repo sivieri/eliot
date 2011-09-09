@@ -66,10 +66,10 @@ ctp(RoutingPid, LinkPid, FwdPid) ->
             io:format("~p: Received msg ~p from ~p with RSSI = ~p~n", [get(myid), Msg, SourceId, RSSI]),
             FwdPid ! {SourceId, RSSI, Msg},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {collect, Data} ->
+        {_SourceId, _RSSI, {collect, Data}} ->
             FwdPid ! {collect, Data},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {collect, Data, Timeout} ->
+        {_SourceId, _RSSI, {collect, Data, Timeout}} ->
             FwdPid ! {collect, Data, Timeout},
             ctp(RoutingPid, LinkPid, FwdPid);
         Any ->

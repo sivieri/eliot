@@ -44,7 +44,7 @@ trickle() ->
 %% @spec update_version(atom(), integer()) -> ok
 -spec(update_version(atom(), integer()) -> ok).
 update_version(DestId, Version) ->
-    wsn:send_ignore_gain(get(myid), DestId, {update, Version, string(Version)}),
+    wsn:send_ignore_gain(console, DestId, {update, Version, string(Version)}),
 	ok.
 
 % Private API
@@ -53,14 +53,6 @@ update_version(DestId, Version) ->
 -spec(trickle(non_neg_integer(), {reference(), reference()}, non_neg_integer(), {integer(), string()}) -> none()).
 trickle(Tau, {TauRef, TRef}, Counter, {Version, Payload}) ->
     receive
-        {update, NewVersion, NewPayload} ->
-            erlang:cancel_timer(TRef),
-            erlang:cancel_timer(TauRef),
-            NewTau = ?TAU_MIN,
-            T = utils:random(NewTau),
-            NewTRef = erlang:send_after(T, self(), transmit),
-            NewTauRef = erlang:send_after(NewTau, self(), restart),
-            trickle(Tau, {NewTauRef, NewTRef}, 0, {NewVersion, NewPayload});
         transmit when Counter < ?K ->
             wsn:send(get(myid), all, {version, Version}),
             trickle(Tau, {TauRef, TRef}, Counter, {Version, Payload});
@@ -97,7 +89,7 @@ trickle(Tau, {TauRef, TRef}, Counter, {Version, Payload}) ->
             NewTau = ?TAU_MIN,
             T = utils:random(NewTau),
             NewTRef = erlang:send_after(T, self(), transmit),
-            NewTauRef = erlang:send_after(NewTau*1000, self(), restart),
+            NewTauRef = erlang:send_after(NewTau, self(), restart),
             trickle(NewTau, {NewTauRef, NewTRef}, 0, {NewVersion, NewPayload});
         {_SourceId, _RSSI, {version, _NewVersion, _NewPayload}} ->
             %io:format("~p: Received code ~p from ~p with RSSI = ~p (same or older)~n", [get(myid), NewVersion, SourceId, RSSI]),

@@ -45,7 +45,7 @@ flood() ->
 -spec(flood([{integer(), integer()}], dict(), integer()) -> none()).
 flood(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
     receive
-	resend ->
+	{_SourceId, _RSSI, resend} ->
 	    MsgId = {get(myaddr), NextMsgNum},
 	    wsn:send(get(myid), all, {MsgId,"Message from "++atom_to_list(get(myid))}),
 	    flood(record_received(MsgId, ReceivedMsgs), WaitingMsgs, (NextMsgNum+1) rem 256);

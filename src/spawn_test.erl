@@ -34,7 +34,7 @@ launch(DestId) ->
 -spec(test() -> none()).
 test() ->
     receive
-        go ->
+        {_SourceId, _RSSI, go} ->
             wsn:spawn(get(myid), all, fun() -> io:format("~p~n", [node()]) end),
             test();
         Any ->
