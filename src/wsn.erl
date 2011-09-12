@@ -69,6 +69,7 @@ spawn_net(Net, Hosts, Module, Function) ->
                                 end, NodeIds, Hosts),
             ok;
         false ->
+            io:format("Going on local simulation...~n"),
             register(forwarder, erlang:spawn(?MODULE, forwarder, [Net])),
             {NodeIds,_} = Net,
             lists:foreach(fun(N) -> register(N, erlang:spawn(?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)])) end, NodeIds)

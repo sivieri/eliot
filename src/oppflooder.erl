@@ -1,8 +1,12 @@
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @doc Opportunistic flooder implementation.
 -module(oppflooder).
--export([start/1, start_simulation/1, start_simulation/2, launch/1, flood/0]).
--define(MAX_WAITING_OF_MSG, 100).
+-export([start/1, start_simulation/1, start_simulation/2, send/2, flood/0]).
+-define(MAX_WAITING_OF_MSG, 3).
+-define(SRCADDR, 16/unsigned-little-integer).
+-define(SEQNUM, 8/unsigned-little-integer).
+-define(TTL, 8/unsigned-little-integer).
+-define(INITIAL_OF_TTL, 20).
 
 % Public API
 
@@ -27,11 +31,11 @@ start_simulation(FileName, Hosts) ->
     Net=wsn:read_net(FileName),
     wsn:spawn_net(Net, Hosts, ?MODULE, flood).
 
-%% @doc Launch the flood from the given node.
-%% @spec launch(atom()) -> ok
--spec(launch(atom()) -> ok).
-launch(NodeId) ->
-    wsn:send_ignore_gain(get(myid), NodeId, resend).
+%% @doc Send a message from the given node.
+%% @spec send(atom(), any() -> ok
+-spec(send(atom(), any()) -> ok).
+send(NodeId, Payload) ->
+    wsn:send_ignore_gain(get(myid), NodeId, {send, Payload}).
 
 %% @doc The flood implementation for the single node.
 %% @spec flood() -> none()
@@ -45,37 +49,38 @@ flood() ->
 -spec(flood([{integer(), integer()}], dict(), integer()) -> none()).
 flood(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
     receive
-	{_SourceId, _RSSI, resend} ->
-	    MsgId = {get(myaddr), NextMsgNum},
-	    wsn:send(get(myid), all, {MsgId,"Message from "++atom_to_list(get(myid))}),
-	    flood(record_received(MsgId, ReceivedMsgs), WaitingMsgs, (NextMsgNum+1) rem 256);
-	{MsgId, MsgData} ->
-	    io:format("~p: Timer expired for message ~p sending it~n", [get(myid), MsgId]),
-	    wsn:send(get(myid), all, {MsgId, MsgData}),
-	    flood(ReceivedMsgs, remove_waiting(MsgId, WaitingMsgs), NextMsgNum);
-	{SourceId, RSSI, {MsgId, MsgData}} ->
-	    io:format("~p: Received ~p from ~p with RSSI=~p~n", [get(myid), MsgId, SourceId, RSSI]),
-	    case find_waiting(MsgId, WaitingMsgs) of
-		{ok, TRef} ->
-		    io:format("~p: same msg in my waiting queue, cancelling~n", [get(myid)]),
-		    erlang:cancel_timer(TRef),
-		    flood(ReceivedMsgs, remove_waiting(MsgId, WaitingMsgs), NextMsgNum);
-		error ->
-		    case already_received(MsgId, ReceivedMsgs) of
-			true -> 
-			    io:format("~p: already received this msg~n", [get(myid)]),
-			    flood(ReceivedMsgs, WaitingMsgs, NextMsgNum);
-			false ->
-			    Delay = 1000 + RSSI*10 + random:uniform(100),
-			    io:format("~p: forwarding msg in ~p ms~n", [get(myid), Delay]),
-			    TRef = erlang:send_after(Delay, self(), {MsgId, MsgData}),
-			    flood(record_received(MsgId, ReceivedMsgs), add_waiting(MsgId, TRef, WaitingMsgs, dict:size(WaitingMsgs)), NextMsgNum)
-		    end
-	    end
+	{_SourceId, _RSSI, {send, Payload}} ->
+        PayloadB = term_to_binary(Payload),
+        Id = get(myaddr),
+        Msg = <<Id:?SRCADDR, NextMsgNum:?SEQNUM, ?INITIAL_OF_TTL:?TTL, PayloadB/binary>>,
+	    wsn:send(get(myid), all, Msg),
+	    flood(record_received({Id, NextMsgNum}, ReceivedMsgs), WaitingMsgs, (NextMsgNum + 1) rem 256);
+	{Src, Seq} ->
+	    io:format("~p: Timer expired for message (~p, ~p) sending it~n", [get(myid), Src, Seq]),
+        Msg = get_waiting(Src, Seq, WaitingMsgs),
+	    wsn:send(get(myid), all, Msg),
+	    flood(ReceivedMsgs, remove_waiting(Msg, WaitingMsgs), NextMsgNum);
+	{SourceId, RSSI, <<Src:?SRCADDR, Seq:?SEQNUM, TTL:?TTL, Payload/binary>>} when TTL > 1 ->
+	    io:format("~p: Received message from ~p with RSSI=~p~n", [get(myid), SourceId, RSSI]),
+	    case already_received({Src, Seq}, ReceivedMsgs) of
+		true ->
+		    io:format("~p: already received this msg~n", [get(myid)]),
+            flood(ReceivedMsgs, WaitingMsgs, NextMsgNum);
+		false ->
+			Delay = 1000 + RSSI * 10 + random:uniform(100),
+			io:format("~p: forwarding msg in ~p ms~n", [get(myid), Delay]),
+			TRef = erlang:send_after(Delay, self(), {Src, Seq}),
+            NewTTL = TTL + 1,
+            NewMsg = <<Src:?SRCADDR, Seq:?SEQNUM, NewTTL:?TTL, Payload/binary>>,
+			flood(record_received({Src, Seq}, ReceivedMsgs), add_waiting(NewMsg, TRef, WaitingMsgs, dict:size(WaitingMsgs)), NextMsgNum)
+	    end;
+    {SourceId, RSSI, <<_Src:?SRCADDR, _Seq:?SEQNUM, _TTL:?TTL, _Payload/binary>>} -> % TTL finished
+        io:format("~p: Received message from ~p with RSSI=~p~n", [get(myid), SourceId, RSSI]),
+        flood(ReceivedMsgs, WaitingMsgs, NextMsgNum)
     end.
 
 %% @private
--spec(add_waiting(integer(), reference(), dict(), integer()) -> dict()).
+-spec(add_waiting(binary(), reference(), dict(), integer()) -> dict()).
 add_waiting(MsgId, TRef, WaitingMsgs, QueueLength) when QueueLength < ?MAX_WAITING_OF_MSG ->
     dict:store(MsgId, TRef, WaitingMsgs);
 add_waiting(MsgId, TRef, WaitingMsgs, _QueueLength) ->
@@ -93,20 +98,21 @@ add_waiting(MsgId, TRef, WaitingMsgs, _QueueLength) ->
 -spec(remove_waiting(integer(), dict()) -> dict()).
 remove_waiting(MsgId, WaitingMsgs) ->
     dict:erase(MsgId, WaitingMsgs).
-    
-%% Returns {ok, TRef} | error.
-%% @private
--spec(find_waiting(integer(), dict()) -> {ok, reference()} | error).
-find_waiting(MsgId, WaitingMsgs) ->
-    dict:find(MsgId, WaitingMsgs).
 
 %% @private
--spec(record_received({atom(), integer()}, [{integer(), integer()}]) -> [{integer(), integer()}]).
+-spec(get_waiting(integer(), integer(), dict()) -> binary()).
+get_waiting(Src, Seq, WaitingMsgs) ->
+    Msgs = dict:fetch_keys(WaitingMsgs),
+    hd(lists:filter(fun(<<Src2:?SRCADDR, Seq2:?SEQNUM, _TTL:?TTL, _Payload/binary>>) when Src == Src2, Seq == Seq2 -> true;
+                       (<<_Src2:?SRCADDR, _Seq2:?SEQNUM, _TTL:?TTL, _Payload/binary>>) -> false end, Msgs)).
+
+%% @private
+-spec(record_received({integer(), integer()}, [{integer(), integer()}]) -> [{integer(), integer()}]).
 record_received(MsgId, ReceivedMsgs) ->
     % TODO: add only if there is space and remove oldest, cancelling timer
     [MsgId|ReceivedMsgs].
 
 %% @private
--spec(already_received(integer(), [{integer(), integer()}]) -> boolean()).
+-spec(already_received({integer(), integer()}, [{integer(), integer()}]) -> boolean()).
 already_received(MsgId, ReceivedMsgs) ->
     lists:member(MsgId, ReceivedMsgs).
