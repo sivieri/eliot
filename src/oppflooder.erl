@@ -3,6 +3,7 @@
 -module(oppflooder).
 -export([start/1, start_simulation/1, start_simulation/2, send/2, flood/0]).
 -define(MAX_WAITING_OF_MSG, 3).
+-define(MAX_RECEIVED_MSG, 30).
 -define(SRCADDR, 16/unsigned-little-integer).
 -define(SEQNUM, 8/unsigned-little-integer).
 -define(TTL, 8/unsigned-little-integer).
@@ -59,21 +60,28 @@ flood(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
 	    io:format("~p: Timer expired for message (~p, ~p) sending it~n", [get(myid), Src, Seq]),
         Msg = get_waiting(Src, Seq, WaitingMsgs),
 	    wsn:send(get(myid), all, Msg),
-	    flood(ReceivedMsgs, remove_waiting(Msg, WaitingMsgs), NextMsgNum);
+	    flood(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum);
 	{SourceId, RSSI, <<Src:?SRCADDR, Seq:?SEQNUM, TTL:?TTL, Payload/binary>>} when TTL > 1 ->
 	    io:format("~p: Received message from ~p with RSSI=~p~n", [get(myid), SourceId, RSSI]),
-	    case already_received({Src, Seq}, ReceivedMsgs) of
-		true ->
-		    io:format("~p: already received this msg~n", [get(myid)]),
-            flood(ReceivedMsgs, WaitingMsgs, NextMsgNum);
-		false ->
-			Delay = 1000 + RSSI * 10 + random:uniform(100),
-			io:format("~p: forwarding msg in ~p ms~n", [get(myid), Delay]),
-			TRef = erlang:send_after(Delay, self(), {Src, Seq}),
-            NewTTL = TTL + 1,
-            NewMsg = <<Src:?SRCADDR, Seq:?SEQNUM, NewTTL:?TTL, Payload/binary>>,
-			flood(record_received({Src, Seq}, ReceivedMsgs), add_waiting(NewMsg, TRef, WaitingMsgs, dict:size(WaitingMsgs)), NextMsgNum)
-	    end;
+        case find_waiting(Src, Seq, WaitingMsgs) of
+            error ->
+	           case already_received({Src, Seq}, ReceivedMsgs) of
+		          true ->
+		              io:format("~p: Already received this msg~n", [get(myid)]),
+                      flood(ReceivedMsgs, WaitingMsgs, NextMsgNum);
+		          false ->
+			          Delay = 1000 + RSSI * 10 + random:uniform(100),
+			          io:format("~p: forwarding msg in ~p ms~n", [get(myid), Delay]),
+			          TRef = erlang:send_after(Delay, self(), {Src, Seq}),
+                      NewTTL = TTL + 1,
+                      NewMsg = <<Src:?SRCADDR, Seq:?SEQNUM, NewTTL:?TTL, Payload/binary>>,
+			          flood(record_received({Src, Seq}, ReceivedMsgs), add_waiting(NewMsg, TRef, WaitingMsgs, dict:size(WaitingMsgs)), NextMsgNum)
+	           end;
+            TRef ->
+                io:format("~p: Message (~p, ~p) already in queue, canceling timer~n", [get(myid), Src, Seq]),
+                erlang:cancel_timer(TRef),
+                flood(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum)
+        end;
     {SourceId, RSSI, <<_Src:?SRCADDR, _Seq:?SEQNUM, _TTL:?TTL, _Payload/binary>>} -> % TTL finished
         io:format("~p: Received message from ~p with RSSI=~p~n", [get(myid), SourceId, RSSI]),
         flood(ReceivedMsgs, WaitingMsgs, NextMsgNum)
@@ -95,9 +103,10 @@ add_waiting(MsgId, TRef, WaitingMsgs, _QueueLength) ->
     dict:store(MsgId, TRef, NewWaitingMsgs).
 
 %% @private
--spec(remove_waiting(integer(), dict()) -> dict()).
-remove_waiting(MsgId, WaitingMsgs) ->
-    dict:erase(MsgId, WaitingMsgs).
+-spec(remove_waiting(integer(), integer(), dict()) -> dict()).
+remove_waiting(Src, Seq, WaitingMsgs) ->
+    dict:filter(fun(<<Src2:?SRCADDR, Seq2:?SEQNUM, _TTL:?TTL, _Payload/binary>>, _Value) when Src == Src2, Seq == Seq2 -> false;
+                   (<<_Src2:?SRCADDR, _Seq2:?SEQNUM, _TTL:?TTL, _Payload/binary>>, _Value) -> true end, WaitingMsgs).
 
 %% @private
 -spec(get_waiting(integer(), integer(), dict()) -> binary()).
@@ -107,10 +116,19 @@ get_waiting(Src, Seq, WaitingMsgs) ->
                        (<<_Src2:?SRCADDR, _Seq2:?SEQNUM, _TTL:?TTL, _Payload/binary>>) -> false end, Msgs)).
 
 %% @private
+-spec(find_waiting(integer(), integer(), dict()) -> reference() | error).
+find_waiting(Src, Seq, WaitingMsgs) ->
+    dict:fold(fun(<<Src2:?SRCADDR, Seq2:?SEQNUM, _TTL:?TTL, _Payload/binary>>, Value, AccIn) when Src == Src2, Seq == Seq2, AccIn == error ->
+                        Value;
+                 (<<_Src2:?SRCADDR, _Seq2:?SEQNUM, _TTL:?TTL, _Payload/binary>>, _Value, AccIn) ->
+                        AccIn end, error, WaitingMsgs).
+
+%% @private
 -spec(record_received({integer(), integer()}, [{integer(), integer()}]) -> [{integer(), integer()}]).
-record_received(MsgId, ReceivedMsgs) ->
-    % TODO: add only if there is space and remove oldest, cancelling timer
-    [MsgId|ReceivedMsgs].
+record_received(MsgId, ReceivedMsgs) when length(ReceivedMsgs) < ?MAX_RECEIVED_MSG ->
+    [MsgId|ReceivedMsgs];
+record_received(_MsgId, ReceivedMsgs) ->
+    ReceivedMsgs.
 
 %% @private
 -spec(already_received({integer(), integer()}, [{integer(), integer()}]) -> boolean()).
