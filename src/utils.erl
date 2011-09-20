@@ -64,9 +64,11 @@ nodeaddr(NodeId) ->
     list_to_integer(string:substr(atom_to_list(NodeId), 6)).
 
 %% @doc Converts a node address into the corresponding nodeid.
-%% @spec nodeid(integer()) -> atom()
+%% @spec nodeid(integer() | string()) -> atom()
 %% @see utils:nodeaddr/1
--spec(nodeid(integer()) -> atom()).
+-spec(nodeid(integer() | string()) -> atom()).
+nodeid(NodeAddr) when is_integer(NodeAddr) ->
+    list_to_atom("mote_" ++ w("~p", [NodeAddr]));
 nodeid(NodeAddr) ->
     list_to_atom("mote_" ++ NodeAddr).
 
