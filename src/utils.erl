@@ -1,7 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Utility functions.
 -module(utils).
--export([w/2, update_tau/3, random/1, format/2, rpc/2, nodeaddr/1, nodeid/1, gethostip/0, print_dict/1, consistency/3]).
+-export([format/2, gethostip/0, consistency/3]).
 
 % Public API
 
@@ -16,26 +16,6 @@ gethostip() ->
     {ok, [{addr, Addr}]} = inet:ifget(Real, [addr]),
     erlang:list_to_atom(inet_parse:ntoa(Addr)).
 
-%% @doc Update tau with the double of its current value. If
-%% the new value is higher than the max, set it to max; if
-%% it is zero, set it to min.
-%% @spec update_tau(integer(), integer(), integer()) -> integer()
--spec(update_tau(OldTau::integer(), TauMin::integer(), TauMax::integer()) -> integer()).
-update_tau(OldTau, TauMin, _) when OldTau == 0 ->
-    TauMin;
-update_tau(OldTau, _, TauMax) when OldTau*2 =< TauMax ->
-    OldTau*2;
-update_tau(_, _, TauMax) ->
-    TauMax.
-
-%% @doc Get a random value, uniformly distributed between
-%% {tau/2, tau}.
-%% @spec random(integer()) -> integer()
--spec(random(Tau::integer()) -> integer()).
-random(Tau) ->
-    N = random:uniform(),
-    erlang:round(Tau/2 + erlang:round(N*Tau/2)).
-
 %% @doc Insert the given elements into a string, returning it
 %% as a string itself.
 %% @spec format(string(), [any()]) -> string()
@@ -44,39 +24,6 @@ random(Tau) ->
 format(String, Elements) ->
     Pass = io_lib:format(String, Elements),
     lists:flatten(Pass).
-
-%% @doc Send a message to a certain process and wait for
-%% an answer.
-%% @spec rpc(pid(), any()) -> any()
--spec(rpc(pid(), any()) -> any()).
-rpc(Pid, Message) ->
-    Pid ! {self(), Message},
-    receive
-        {_, Response} ->
-            Response
-    end.
-
-%% @doc Converts a nodeid into its address.
-%% @spec nodeaddr(atom()) -> integer()
-%% @see utils:nodeid/1
--spec(nodeaddr(atom()) -> integer()).
-nodeaddr(NodeId) ->
-    list_to_integer(string:substr(atom_to_list(NodeId), 6)).
-
-%% @doc Converts a node address into the corresponding nodeid.
-%% @spec nodeid(integer() | string()) -> atom()
-%% @see utils:nodeaddr/1
--spec(nodeid(integer() | string()) -> atom()).
-nodeid(NodeAddr) when is_integer(NodeAddr) ->
-    list_to_atom("mote_" ++ w("~p", [NodeAddr]));
-nodeid(NodeAddr) ->
-    list_to_atom("mote_" ++ NodeAddr).
-
-%% @doc Print a dictionary.
-%% @spec print_dict(dict()) -> ok
--spec(print_dict(dict()) -> ok).
-print_dict(Dict) ->
-    dict:fold(fun(Key, Value, _AccIn) -> io:format("~p: ~p~n", [Key, Value]) end, ok, Dict).
 
 %% @doc Check the consistency of the hosts list.
 %% @spec consistency([{atom(), integer()}], integer(), integer()) -> boolean()
@@ -87,11 +34,5 @@ consistency([], _Acc, _N) ->
     false;
 consistency([{_IP, I}|T], Acc, N) ->
     consistency(T, Acc + I, N).
-
-%% @doc Print to a string.
-%% @spec w(string(), [any()]) -> string()
--spec(w(string(), [any()]) -> string()).
-w(Format, List) ->
-    lists:flatten(io_lib:format(Format, List)).
 
 % Private API

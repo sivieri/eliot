@@ -36,7 +36,7 @@ start_simulation(Filename, Hosts) ->
 -spec(trickle() -> none()).
 trickle() ->
     Tau = ?TAU_MIN,
-    T = utils:random(Tau),
+    T = random(Tau),
     TRef = erlang:send_after(T, self(), transmit),
     TauRef = erlang:send_after(Tau, self(), restart),
     Id = get(myaddr),
@@ -47,7 +47,7 @@ trickle() ->
 %% @spec update_version(atom(), integer(), any()) -> ok
 -spec(update_version(atom(), integer(), any()) -> ok).
 update_version(DestId, Version, Payload) ->
-    Id = utils:nodeaddr(DestId),
+    Id = wsn:nodeaddr(DestId),
     PayloadB = term_to_binary(Payload),
     Msg = <<Id:?SRCADDR, Version:?VERSION, PayloadB/binary>>,
     wsn:send_ignore_gain(console, DestId, {version, Msg}),
@@ -66,8 +66,8 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
         transmit ->
             trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>);
         restart ->
-            NewTau = utils:update_tau(Tau, ?TAU_MIN, ?TAU_MAX),
-            T = utils:random(NewTau),
+            NewTau = update_tau(Tau, ?TAU_MIN, ?TAU_MAX),
+            T = random(NewTau),
             NewTRef = erlang:send_after(T, self(), transmit),
             NewTauRef = erlang:send_after(NewTau, self(), restart),
             trickle(NewTau, {NewTauRef, NewTRef}, 0, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>);
@@ -76,7 +76,7 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
             erlang:cancel_timer(TRef),
             erlang:cancel_timer(TauRef),
             NewTau = ?TAU_MIN,
-            T = utils:random(NewTau),
+            T = random(NewTau),
             NewTRef = erlang:send_after(T, self(), transmit),
             NewTauRef = erlang:send_after(NewTau, self(), restart),
             trickle(NewTau, {NewTauRef, NewTRef}, 0, <<NewSrc:?SRCADDR, NewVersion:?VERSION, NewPayload/binary>>);
@@ -84,3 +84,18 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
             %io:format("~p: Received code ~p from ~p with RSSI = ~p (same or older)~n", [get(myid), NewVersion, SourceId, RSSI]),
             trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>)
     end.
+
+%% @private
+-spec(update_tau(OldTau::integer(), TauMin::integer(), TauMax::integer()) -> integer()).
+update_tau(OldTau, TauMin, _) when OldTau == 0 ->
+    TauMin;
+update_tau(OldTau, _, TauMax) when OldTau*2 =< TauMax ->
+    OldTau*2;
+update_tau(_, _, TauMax) ->
+    TauMax.
+
+%% @private
+-spec(random(Tau::integer()) -> integer()).
+random(Tau) ->
+    N = random:uniform(),
+    erlang:round(Tau/2 + erlang:round(N*Tau/2)).

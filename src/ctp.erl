@@ -80,7 +80,7 @@ ctp(RoutingPid, LinkPid, FwdPid) ->
 %% @private
 -spec(root(atom()) -> 0 | 1).
 root(Id) ->
-    N = utils:nodeaddr(Id),
+    N = wsn:nodeaddr(Id),
     if
         N rem 16 == 15 ->
             put(collector, true),

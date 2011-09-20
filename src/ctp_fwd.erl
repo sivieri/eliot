@@ -52,7 +52,7 @@ fwd_engine(DataCounter, FwdList, SentList) ->
             AckMsg = #ack{id = Msg#data.seqno},
             wsn:send(get(myid), SourceId, AckMsg),
             % Check ETX
-            {_, Etx} = utils:rpc(RoutingPid, lower),
+            {_, Etx} = wsn:rpc(RoutingPid, lower),
             if
                 Etx >= Msg#data.etx ->
                     LinkPid ! {transmit, cancel};

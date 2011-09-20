@@ -33,7 +33,7 @@ start_simulation(FileName, Hosts) ->
     wsn:spawn_net(Net, Hosts, ?MODULE, flood).
 
 %% @doc Send a message from the given node.
-%% @spec send(atom(), any() -> ok
+%% @spec send(atom(), any()) -> ok
 -spec(send(atom(), any()) -> ok).
 send(NodeId, Payload) ->
     wsn:send_ignore_gain(get(myid), NodeId, {send, Payload}).

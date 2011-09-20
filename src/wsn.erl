@@ -2,7 +2,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Main Wireless Sensors Network framework and simulator. 
 -module(wsn).
--export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_ignore_gain/3, execute/4, forwarder/1, echo/0, send_msg/2, spawn/3, spawn/5]).
+-export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_ignore_gain/3, execute/4, forwarder/1, echo/0, send_msg/2, spawn/3, spawn/5, rpc/2, nodeid/1, nodeaddr/1]).
 -define(NOISE_AVG, -75.0).
 -define(NOISE_DELTA, 5.0).
 -define(SENSITIVITY, 4.0).
@@ -29,14 +29,14 @@ read_net(Filename) ->
 -spec(spawn_net([{atom(), integer()}], atom(), atom()) -> ok).
 spawn_net(Hosts, Module, Function) ->
     N = lists:foldl(fun({_Host, I}, AccIn) -> AccIn + I end, 0, Hosts),
-    NodeIds = lists:foldl(fun(I, AccIn) -> [utils:nodeid(utils:w("~p", [I]))|AccIn] end, [], lists:seq(0, N - 1)),
+    NodeIds = lists:foldl(fun(I, AccIn) -> [nodeid(utils:format("~p", [I]))|AccIn] end, [], lists:seq(0, N - 1)),
     {ok, ForwarderNode} = slave:start_link(utils:gethostip(), forwarder,  ?OPTS ++ atom_to_list(erlang:get_cookie())),
     global:register_name(forwarder, erlang:spawn(ForwarderNode, ?MODULE, forwarder, [NodeIds])),
     lists:foldl(fun({Host, I}, Nodes) ->
                         {CurNodes, T} = lists:split(I, Nodes),
                         lists:foreach(fun(Node) ->
                                               {ok, CurNode} = slave:start_link(Host, Node, ?OPTS ++ atom_to_list(erlang:get_cookie())),
-                                              global:register_name(Node, erlang:spawn(CurNode, ?MODULE, execute, [Module, Function, Node, utils:nodeaddr(Node)]))
+                                              global:register_name(Node, erlang:spawn(CurNode, ?MODULE, execute, [Module, Function, Node, nodeaddr(Node)]))
                                               end, CurNodes),
                         T
                         end, NodeIds, Hosts).
@@ -63,7 +63,7 @@ spawn_net(Net, Hosts, Module, Function) ->
                                 {CurNodes, T} = lists:split(I, Nodes),
                                 lists:foreach(fun(Node) ->
                                                       {ok, CurNode} = slave:start_link(Host, Node, ?OPTS ++ atom_to_list(erlang:get_cookie())),
-                                                      global:register_name(Node, erlang:spawn(CurNode, ?MODULE, execute, [Module, Function, Node, utils:nodeaddr(Node)]))
+                                                      global:register_name(Node, erlang:spawn(CurNode, ?MODULE, execute, [Module, Function, Node, nodeaddr(Node)]))
                                                       end, CurNodes),
                                 T
                                 end, NodeIds, Hosts),
@@ -72,7 +72,7 @@ spawn_net(Net, Hosts, Module, Function) ->
             io:format("Going on local simulation...~n"),
             register(forwarder, erlang:spawn(?MODULE, forwarder, [Net])),
             {NodeIds,_} = Net,
-            lists:foreach(fun(N) -> register(N, erlang:spawn(?MODULE, execute, [Module, Function, N, utils:nodeaddr(N)])) end, NodeIds)
+            lists:foreach(fun(N) -> register(N, erlang:spawn(?MODULE, execute, [Module, Function, N, nodeaddr(N)])) end, NodeIds)
     end.
 
 %% @doc Send a unicast message; if destination is "all",
@@ -106,6 +106,35 @@ spawn(SourceId, DestId, Fun) ->
 -spec(spawn(atom(), atom(), atom(), atom(), [any()]) -> ok).
 spawn(SourceId, DestId, Module, Function, Args) ->
     send_msg(forwarder, {spawn, SourceId, DestId, Module, Function, Args}).
+
+%% @doc Send a message to a certain process and wait for
+%% an answer.
+%% @spec rpc(pid(), any()) -> any()
+-spec(rpc(pid(), any()) -> any()).
+rpc(Pid, Message) ->
+    Pid ! {self(), Message},
+    receive
+        {_, Response} ->
+            Response
+    end.
+
+%% @doc Converts a nodeid into its address.
+%% @spec nodeaddr(atom()) -> integer()
+%% @see nodeid/1
+-spec(nodeaddr(atom()) -> integer()).
+nodeaddr(NodeId) ->
+    list_to_integer(string:substr(atom_to_list(NodeId), 6)).
+
+%% @doc Converts a node address into the corresponding nodeid.
+%% @spec nodeid(integer() | string()) -> atom()
+%% @see nodeaddr/1
+-spec(nodeid(integer() | string()) -> atom()).
+nodeid(NodeAddr) when is_integer(NodeAddr) ->
+    list_to_atom("mote_" ++ utils:format("~p", [NodeAddr]));
+nodeid(NodeAddr) ->
+    list_to_atom("mote_" ++ NodeAddr).
+
+% Private API
 
 %% @private
 %% @spec execute(atom(), atom(), atom(), integer()) -> any()
@@ -183,7 +212,7 @@ forwarder(Net) ->
             send_msg(SourceId, {spawned, Res}),
             forwarder(Net);
         Any ->
-	       io:format("forwarder received ~p~n", [Any]),
+           io:format("forwarder received ~p~n", [Any]),
            forwarder(Net)
     end.
 
@@ -192,15 +221,13 @@ forwarder(Net) ->
 -spec(echo() -> none()).
 echo() ->
     receive
-	resend ->
-	    send(get(myid), all, "AAAA"),
-	    echo();
-	{SourceId, RSSI, Msg} ->
-	    io:format("Node ~p received: ~p from ~p with RSSI=~p~n", [get(myid), Msg, SourceId, RSSI]),
-	    echo()
+    resend ->
+        send(get(myid), all, "AAAA"),
+        echo();
+    {SourceId, RSSI, Msg} ->
+        io:format("Node ~p received: ~p from ~p with RSSI=~p~n", [get(myid), Msg, SourceId, RSSI]),
+        echo()
     end.
-
-% Private API
 
 %% @private
 -spec(spawn_remote(atom(), function()) -> pid() | error).
@@ -247,8 +274,8 @@ read_net(Device, Nodes, Gains) ->
 	"gain"++Rest ->
 	    [Node1, Node2, Gain] = string:tokens(Rest," \t"),
 	    {G,_}=string:to_float(Gain), % remove trailing CR and LF
-	    NewNodes = sets:add_element(utils:nodeid(Node1), Nodes),
-	    NewGains = dict:store({utils:nodeid(Node1), utils:nodeid(Node2)}, G, Gains),
+	    NewNodes = sets:add_element(nodeid(Node1), Nodes),
+	    NewGains = dict:store({nodeid(Node1), nodeid(Node2)}, G, Gains),
 	    read_net(Device, NewNodes, NewGains);
 	_Else ->
 	    file:close(Device),
