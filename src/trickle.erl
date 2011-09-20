@@ -50,7 +50,7 @@ update_version(DestId, Version, Payload) ->
     Id = wsn:nodeaddr(DestId),
     PayloadB = term_to_binary(Payload),
     Msg = <<Id:?SRCADDR, Version:?VERSION, PayloadB/binary>>,
-    wsn:send_ignore_gain(console, DestId, {version, Msg}),
+    wsn:send_direct(console, DestId, {version, Msg}),
 	ok.
 
 % Private API

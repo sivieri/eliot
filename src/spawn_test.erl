@@ -27,7 +27,7 @@ start_simulation(Filename, Hosts) ->
 %% @spec launch(atom()) -> ok
 -spec(launch(atom()) -> ok).
 launch(DestId) ->
-    wsn:send_ignore_gain(get(myid), DestId, go),
+    wsn:send_direct(get(myid), DestId, go),
     ok.
 
 %% @private

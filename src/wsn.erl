@@ -2,7 +2,8 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Main Wireless Sensors Network framework and simulator. 
 -module(wsn).
--export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_ignore_gain/3, execute/4, forwarder/1, echo/0, send_msg/2, spawn/3, spawn/5, rpc/2, nodeid/1, nodeaddr/1]).
+-export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_direct/3, spawn/3, spawn/5, rpc/2, nodeid/1, nodeaddr/1]).
+-export([execute/4, forwarder/1, echo/0, send_msg/2]).
 -define(NOISE_AVG, -75.0).
 -define(NOISE_DELTA, 5.0).
 -define(SENSITIVITY, 4.0).
@@ -84,9 +85,9 @@ send(SourceId, DestId, Msg) ->
 
 %% @doc Send a unicast message ignoring gain informations;
 %% if destination is "all", communication is broadcast.
-%% @spec send_ignore_gain(atom(), atom(), any()) -> ok
--spec(send_ignore_gain(atom(), atom(), any()) -> ok).
-send_ignore_gain(SourceId, DestId, Msg) ->
+%% @spec send_direct(atom(), atom(), any()) -> ok
+-spec(send_direct(atom(), atom(), any()) -> ok).
+send_direct(SourceId, DestId, Msg) ->
     send_msg(forwarder, {nogain, SourceId, DestId, Msg}).
 
 %% @doc Spawn a process executing a fun on a remote mote.

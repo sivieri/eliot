@@ -36,7 +36,7 @@ start_simulation(FileName, Hosts) ->
 %% @spec send(atom(), any()) -> ok
 -spec(send(atom(), any()) -> ok).
 send(NodeId, Payload) ->
-    wsn:send_ignore_gain(get(myid), NodeId, {send, Payload}).
+    wsn:send_direct(get(myid), NodeId, {send, Payload}).
 
 %% @doc The flood implementation for the single node.
 %% @spec flood() -> none()
