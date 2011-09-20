@@ -8,6 +8,7 @@
 -define(NOISE_DELTA, 5.0).
 -define(SENSITIVITY, 4.0).
 -define(OPTS, " -rsh ssh -setcookie ").
+%% @type net() = {[atom()], dict()} | {[{atom(), atom()}], dict()}
 -type(net()::{[atom()], dict()} | {[{atom(), atom()}], dict()}).
 
 % Public API
