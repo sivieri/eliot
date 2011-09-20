@@ -47,7 +47,7 @@ trickle() ->
 %% @spec update_version(atom(), integer(), any()) -> ok
 -spec(update_version(atom(), integer(), any()) -> ok).
 update_version(DestId, Version, Payload) ->
-    Id = wsn:nodeaddr(DestId),
+    Id = wsn:moteaddr(DestId),
     PayloadB = term_to_binary(Payload),
     Msg = <<Id:?SRCADDR, Version:?VERSION, PayloadB/binary>>,
     wsn:send_direct(console, DestId, {version, Msg}),

@@ -2,7 +2,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Main Wireless Sensors Network framework and simulator. 
 -module(wsn).
--export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_direct/3, spawn/3, spawn/5, lpc/2, nodeid/1, nodeaddr/1]).
+-export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_direct/3, spawn/3, spawn/5, lpc/2, moteid/1, moteaddr/1]).
 -export([execute/4, forwarder/1, echo/0, send_msg/2]).
 -define(NOISE_AVG, -75.0).
 -define(NOISE_DELTA, 5.0).
@@ -30,14 +30,14 @@ read_net(Filename) ->
 -spec(spawn_net([{atom(), integer()}], atom(), atom()) -> ok).
 spawn_net(Hosts, Module, Function) ->
     N = lists:foldl(fun({_Host, I}, AccIn) -> AccIn + I end, 0, Hosts),
-    NodeIds = lists:foldl(fun(I, AccIn) -> [nodeid(utils:format("~p", [I]))|AccIn] end, [], lists:seq(0, N - 1)),
+    NodeIds = lists:foldl(fun(I, AccIn) -> [moteid(utils:format("~p", [I]))|AccIn] end, [], lists:seq(0, N - 1)),
     {ok, ForwarderNode} = slave:start_link(utils:gethostip(), forwarder,  ?OPTS ++ atom_to_list(erlang:get_cookie())),
     global:register_name(forwarder, erlang:spawn(ForwarderNode, ?MODULE, forwarder, [NodeIds])),
     lists:foldl(fun({Host, I}, Nodes) ->
                         {CurNodes, T} = lists:split(I, Nodes),
                         lists:foreach(fun(Node) ->
                                               {ok, CurNode} = slave:start_link(Host, Node, ?OPTS ++ atom_to_list(erlang:get_cookie())),
-                                              global:register_name(Node, erlang:spawn(CurNode, ?MODULE, execute, [Module, Function, Node, nodeaddr(Node)]))
+                                              global:register_name(Node, erlang:spawn(CurNode, ?MODULE, execute, [Module, Function, Node, moteaddr(Node)]))
                                               end, CurNodes),
                         T
                         end, NodeIds, Hosts).
@@ -45,7 +45,7 @@ spawn_net(Hosts, Module, Function) ->
 %% @doc Spawns a net creating a process for each mote, on different Erlang nodes in the
 %% specified hosts: each host will receive the number of motes that it had
 %% specified along with its IP. Such processes executes the
-%% given function and is registered under the corresponding nodeid name. The
+%% given function and is registered under the corresponding moteid name. The
 %% dictionary is filled with two keys: myid and myaddr with the id (an atom)
 %% and address (an integer) of the mote.
 %% The forwarder node is spawned on the same host of the master node.
@@ -64,7 +64,7 @@ spawn_net(Net, Hosts, Module, Function) ->
                                 {CurNodes, T} = lists:split(I, Nodes),
                                 lists:foreach(fun(Node) ->
                                                       {ok, CurNode} = slave:start_link(Host, Node, ?OPTS ++ atom_to_list(erlang:get_cookie())),
-                                                      global:register_name(Node, erlang:spawn(CurNode, ?MODULE, execute, [Module, Function, Node, nodeaddr(Node)]))
+                                                      global:register_name(Node, erlang:spawn(CurNode, ?MODULE, execute, [Module, Function, Node, moteaddr(Node)]))
                                                       end, CurNodes),
                                 T
                                 end, NodeIds, Hosts),
@@ -73,7 +73,7 @@ spawn_net(Net, Hosts, Module, Function) ->
             io:format("Going on local simulation...~n"),
             register(forwarder, erlang:spawn(?MODULE, forwarder, [Net])),
             {NodeIds,_} = Net,
-            lists:foreach(fun(N) -> register(N, erlang:spawn(?MODULE, execute, [Module, Function, N, nodeaddr(N)])) end, NodeIds)
+            lists:foreach(fun(N) -> register(N, erlang:spawn(?MODULE, execute, [Module, Function, N, moteaddr(N)])) end, NodeIds)
     end.
 
 %% @doc Send a unicast message; if destination is "all",
@@ -119,20 +119,20 @@ lpc(Pid, Message) ->
             Response
     end.
 
-%% @doc Converts a nodeid into its address.
-%% @spec nodeaddr(atom()) -> integer()
-%% @see nodeid/1
--spec(nodeaddr(atom()) -> integer()).
-nodeaddr(NodeId) ->
+%% @doc Converts a mote address (i.e. mote_1) into its ID (i.e. 1).
+%% @spec moteaddr(atom()) -> integer()
+%% @see moteid/1
+-spec(moteaddr(atom()) -> integer()).
+moteaddr(NodeId) ->
     list_to_integer(string:substr(atom_to_list(NodeId), 6)).
 
-%% @doc Converts a node address into the corresponding nodeid.
-%% @spec nodeid(integer() | string()) -> atom()
-%% @see nodeaddr/1
--spec(nodeid(integer() | string()) -> atom()).
-nodeid(NodeAddr) when is_integer(NodeAddr) ->
+%% @doc Converts a node ID (i.e. 1) into its address (i.e. mote_1).
+%% @spec moteid(integer() | string()) -> atom()
+%% @see moteaddr/1
+-spec(moteid(integer() | string()) -> atom()).
+moteid(NodeAddr) when is_integer(NodeAddr) ->
     list_to_atom("mote_" ++ utils:format("~p", [NodeAddr]));
-nodeid(NodeAddr) ->
+moteid(NodeAddr) ->
     list_to_atom("mote_" ++ NodeAddr).
 
 % Private API
@@ -275,8 +275,8 @@ read_net(Device, Nodes, Gains) ->
 	"gain"++Rest ->
 	    [Node1, Node2, Gain] = string:tokens(Rest," \t"),
 	    {G,_}=string:to_float(Gain), % remove trailing CR and LF
-	    NewNodes = sets:add_element(nodeid(Node1), Nodes),
-	    NewGains = dict:store({nodeid(Node1), nodeid(Node2)}, G, Gains),
+	    NewNodes = sets:add_element(moteid(Node1), Nodes),
+	    NewGains = dict:store({moteid(Node1), moteid(Node2)}, G, Gains),
 	    read_net(Device, NewNodes, NewGains);
 	_Else ->
 	    file:close(Device),
