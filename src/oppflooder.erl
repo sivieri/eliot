@@ -1,4 +1,5 @@
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
+%% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Opportunistic flooder implementation.
 -module(oppflooder).
 -export([start/1, start_simulation/1, start_simulation/2, send/2, flood/0]).
