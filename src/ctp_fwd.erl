@@ -52,7 +52,7 @@ fwd_engine(DataCounter, FwdList, SentList) ->
             AckMsg = #ack{id = Msg#data.seqno},
             wsn:send(get(myid), SourceId, AckMsg),
             % Check ETX
-            {_, Etx} = wsn:lpc(RoutingPid, lower),
+            {_, Etx} = lpc(RoutingPid, lower),
             if
                 Etx >= Msg#data.etx ->
                     LinkPid ! {transmit, cancel};
@@ -93,7 +93,7 @@ fwd_engine(DataCounter, FwdList, SentList) ->
                     fwd_engine(DataCounter, FwdList, SentList);
                 false ->
                     NewTimeout = Timeout * 2,
-                    case wsn:lpc(RoutingPid, lower) of
+                    case lpc(RoutingPid, lower) of
                         {_, 1000} ->
                             io:format("~p: I don't have any reliable neighbor~n", [get(myid)]),
                             fwd_engine(DataCounter, FwdList, SentList);
@@ -120,4 +120,13 @@ add_to_queue(Element, Queue) ->
             queue:in(Element, Q1);
         _ ->
             queue:in(Element, Queue)
+    end.
+
+%% @private
+-spec(lpc(pid(), any()) -> any()).
+lpc(Pid, Message) ->
+    Pid ! {self(), Message},
+    receive
+        {_, Response} ->
+            Response
     end.

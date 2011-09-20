@@ -42,7 +42,7 @@ link_engine(Tau, TRef, BeaconCounter) ->
             % neighbor table, which stays empty
             case get(collector) of
                 false ->
-                    case wsn:lpc(RoutingPid, lower) of
+                    case lpc(RoutingPid, lower) of
                         {_, 1000} ->
                             ok;
                         {Parent, Etx} ->
@@ -101,6 +101,15 @@ update_tau(OldTau, _, TauMax) when OldTau*2 =< TauMax ->
     OldTau*2;
 update_tau(_, _, TauMax) ->
     TauMax.
+
+%% @private
+-spec(lpc(pid(), any()) -> any()).
+lpc(Pid, Message) ->
+    Pid ! {self(), Message},
+    receive
+        {_, Response} ->
+            Response
+    end.
 
 %% @private
 -spec(random(Tau::integer()) -> integer()).
