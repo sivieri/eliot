@@ -42,7 +42,7 @@ link_engine(Tau, TRef, BeaconCounter) ->
             % neighbor table, which stays empty
             case get(collector) of
                 false ->
-                    case utils:rpc(RoutingPid, lower) of
+                    case wsn:lpc(RoutingPid, lower) of
                         {_, 1000} ->
                             ok;
                         {Parent, Etx} ->

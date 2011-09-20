@@ -2,7 +2,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Main Wireless Sensors Network framework and simulator. 
 -module(wsn).
--export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_direct/3, spawn/3, spawn/5, rpc/2, nodeid/1, nodeaddr/1]).
+-export([read_net/1, spawn_net/3, spawn_net/4, send/3, send_direct/3, spawn/3, spawn/5, lpc/2, nodeid/1, nodeaddr/1]).
 -export([execute/4, forwarder/1, echo/0, send_msg/2]).
 -define(NOISE_AVG, -75.0).
 -define(NOISE_DELTA, 5.0).
@@ -108,11 +108,11 @@ spawn(SourceId, DestId, Fun) ->
 spawn(SourceId, DestId, Module, Function, Args) ->
     send_msg(forwarder, {spawn, SourceId, DestId, Module, Function, Args}).
 
-%% @doc Send a message to a certain process and wait for
+%% @doc Send a message to a certain local process and wait for
 %% an answer.
-%% @spec rpc(pid(), any()) -> any()
--spec(rpc(pid(), any()) -> any()).
-rpc(Pid, Message) ->
+%% @spec lpc(pid(), any()) -> any()
+-spec(lpc(pid(), any()) -> any()).
+lpc(Pid, Message) ->
     Pid ! {self(), Message},
     receive
         {_, Response} ->
