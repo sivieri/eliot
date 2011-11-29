@@ -1,9 +1,9 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Main Wireless Sensors Network framework and simulator.
 -module(wsn).
--export([read_net/1, moteid/1, moteaddr/1]).
+-include("wsn.hrl").
+-export([read_net/1, nodeid/1, nodeaddr/1]).
 -export([myaddr/0, register/2, send/3, bcast/2, spawn/2, spawn/4, bcast_spawn/1, bcast_spawn/3]).
--type(net()::{[atom()], dict()} | {[{atom(), atom()}], dict()}).
 
 % Public API
 
@@ -12,39 +12,39 @@ read_net(Filename) ->
     {ok, Device} = file:open(Filename,[read]),
     read_net(Device, sets:new(), dict:new()).
 
--spec(moteid(integer() | string()) -> atom()).
-moteid(NodeAddr) when is_integer(NodeAddr) ->
+-spec(nodeid(integer() | string()) -> atom()).
+nodeid(NodeAddr) when is_integer(NodeAddr) ->
     list_to_atom("mote_" ++ utils:format("~p", [NodeAddr]));
-moteid(NodeAddr) ->
+nodeid(NodeAddr) ->
     list_to_atom("mote_" ++ NodeAddr).
 
--spec(moteaddr(atom()) -> integer()).
-moteaddr(NodeId) ->
+-spec(nodeaddr(atom()) -> integer()).
+nodeaddr(NodeId) ->
     list_to_integer(string:substr(atom_to_list(NodeId), 6)).
 
 myaddr() ->
-	ok.
+	erlang:node().
 
 register(Name, Pid) ->
-	ok.
+	erlang:register(Name, Pid).
 
 send(Name, NodeAddr, Msg) ->
-	ok.
+	{Name, NodeAddr} ! Msg.
 
 bcast(Name, Msg) ->
-	ok.
+	rpc:abcast(nodes(), Name, Msg).
 
 spawn(NodeAddr, Fun) ->
-	ok.
+	erlang:spawn(NodeAddr, Fun).
 
 spawn(NodeAddr, Module, Function, Args) ->
-	ok.
+	erlang:spawn(NodeAddr, Module, Function, Args).
 
 bcast_spawn(Fun) ->
-	ok.
+	lists:foreach(fun(Node) -> erlang:spawn(Node, Fun) end, nodes()).
 
 bcast_spawn(Module, Function, Args) ->
-	ok.
+	lists:foreach(fun(Node) -> erlang:spawn(Node, Module, Function, Args) end, nodes()).
 
 % Private API
 
@@ -54,8 +54,8 @@ read_net(Device, Nodes, Gains) ->
 	"gain"++Rest ->
 	    [Node1, Node2, Gain] = string:tokens(Rest," \t"),
 	    {G,_}=string:to_float(Gain), % remove trailing CR and LF
-	    NewNodes = sets:add_element(moteid(Node1), Nodes),
-	    NewGains = dict:store({moteid(Node1), moteid(Node2)}, G, Gains),
+	    NewNodes = sets:add_element(nodeid(Node1), Nodes),
+	    NewGains = dict:store({nodeid(Node1), nodeid(Node2)}, G, Gains),
 	    read_net(Device, NewNodes, NewGains);
 	_Else ->
 	    file:close(Device),
