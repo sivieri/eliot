@@ -1,0 +1,6 @@
+** this is the overview.doc file for the application 'WSN-Erlang' **
+@author Alessandro Sivieri <sivieri@elet.polimi.it>
+@copyright 2011 Alessandro Sivieri
+@version 1.0.0
+@title Welcome to the `WSN-Erlang' application framework
+@doc `WSN-Erlang` is an application framework for developing programs to be deployed on Wireless Sensor Networks.

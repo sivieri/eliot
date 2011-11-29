@@ -1,6 +1,3 @@
-######################################################################
-## Erlang
-
 ERL := erl
 ERLC := $(ERL)c
 
@@ -43,15 +40,19 @@ $(DOC_DIR)/%.html: %.erl
 	$(ERL) -noshell -run edoc file $< -run init stop
 	mv *.html $(DOC_DIR)
 
-all:
-	mkdir -p ebin
-	(cd src;$(MAKE))
+APPLICATION=wsn
+DOC_OPTS={dir,\"../doc\"}
+
+all: $(EBIN_FILES_NO_DOCS)
 
 edoc:
-	(cd src;$(MAKE) edoc)
+	mkdir -p ../doc
+	$(ERL) -noshell -pa ../ebin \
+            -eval "edoc:application($(APPLICATION), \".\", [$(DOC_OPTS)])" \
+            -s init stop
+
+debug:
+	$(MAKE) DEBUG=-DDEBUG
 
 clean:
-	(cd src;$(MAKE) clean)
-
-typer:
-	typer -I src src/*.erl
+	rm -rf $(EBIN_FILES)
