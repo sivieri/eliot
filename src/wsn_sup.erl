@@ -11,6 +11,7 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(wsn_export, worker)]} }.
+    {ok, { {one_for_one, 5, 10}, [?CHILD(wsn_export, worker),
+								  ?CHILD(wsn_dispatcher, worker)]} }.
 
 % Private API

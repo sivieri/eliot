@@ -3,7 +3,7 @@
 -module(wsn).
 -include("wsn.hrl").
 -export([read_net/1, nodeid/1, nodeaddr/1]).
--export([register/2, send/3, bcast_send/1, bcast_send/2, spawn/2, spawn/4, bcast_spawn/1, bcast_spawn/2, bcast_spawn/3, bcast_spawn/4, export/1, unexport/1]).
+-export([send/3, bcast_send/1, bcast_send/2, spawn/2, spawn/4, bcast_spawn/1, bcast_spawn/2, bcast_spawn/3, bcast_spawn/4, export/1, unexport/1]).
 
 % Public API
 
@@ -22,23 +22,20 @@ nodeid(NodeAddr) ->
 nodeaddr(NodeId) ->
     list_to_integer(string:substr(atom_to_list(NodeId), 6)).
 
-register(Name, Pid) ->
-	ok.
-
 export(Subject) ->
-	ok.
+	wsn_export:export(Subject).
 
 unexport(Subject) ->
-	ok.
+	wsn_export:unexport(Subject).
 
 send(Name, NodeAddr, Msg) ->
-	ok.
+	{dispatcher, NodeAddr} ! {connect, Name, Msg}.
 
 bcast_send(Msg) ->
-	ok.
+	rpc:abcast(nodes(), dispatcher, {connect, all, Msg}).
 
 bcast_send(Name, Msg) ->
-	ok.
+	rpc:abcast(nodes(), dispatcher, {connect, Name, Msg}).
 
 spawn(NodeAddr, Fun) ->
 	ok.
