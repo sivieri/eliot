@@ -3,7 +3,7 @@
 -module(wsn).
 -include("wsn.hrl").
 -export([read_net/1, nodeid/1, nodeaddr/1]).
--export([myaddr/0, register/2, send/3, bcast/2, spawn/2, spawn/4, bcast_spawn/1, bcast_spawn/3]).
+-export([register/2, send/3, bcast_send/1, bcast_send/2, spawn/2, spawn/4, bcast_spawn/1, bcast_spawn/2, bcast_spawn/3, bcast_spawn/4, export/1, unexport/1]).
 
 % Public API
 
@@ -22,29 +22,41 @@ nodeid(NodeAddr) ->
 nodeaddr(NodeId) ->
     list_to_integer(string:substr(atom_to_list(NodeId), 6)).
 
-myaddr() ->
-	erlang:node().
-
 register(Name, Pid) ->
-	erlang:register(Name, Pid).
+	ok.
+
+export(Subject) ->
+	ok.
+
+unexport(Subject) ->
+	ok.
 
 send(Name, NodeAddr, Msg) ->
-	{Name, NodeAddr} ! Msg.
+	ok.
 
-bcast(Name, Msg) ->
-	rpc:abcast(nodes(), Name, Msg).
+bcast_send(Msg) ->
+	ok.
+
+bcast_send(Name, Msg) ->
+	ok.
 
 spawn(NodeAddr, Fun) ->
-	erlang:spawn(NodeAddr, Fun).
+	ok.
 
 spawn(NodeAddr, Module, Function, Args) ->
-	erlang:spawn(NodeAddr, Module, Function, Args).
+	ok.
 
 bcast_spawn(Fun) ->
-	lists:foreach(fun(Node) -> erlang:spawn(Node, Fun) end, nodes()).
+	ok.
+
+bcast_spawn(Name, Fun) ->
+	ok.
 
 bcast_spawn(Module, Function, Args) ->
-	lists:foreach(fun(Node) -> erlang:spawn(Node, Module, Function, Args) end, nodes()).
+	ok.
+
+bcast_spawn(Name, Module, Function, Args) ->
+	ok.
 
 % Private API
 
