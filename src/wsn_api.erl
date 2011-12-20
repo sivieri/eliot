@@ -29,14 +29,14 @@ unexport(Subject) ->
 	wsn_export:unexport(Subject).
 
 send(Name, NodeAddr, Msg) ->
-	{dispatcher, NodeAddr} ! {connect, Name, Msg},
+	{wsn_dispatcher, NodeAddr} ! {connect, Name, Msg},
 	ok.
 
 bcast_send(Msg) ->
-	rpc:abcast(nodes(), dispatcher, {connect, all, Msg}).
+	rpc:abcast(nodes(), wsn_dispatcher, {connect, all, Msg}).
 
 bcast_send(Name, Msg) ->
-	rpc:abcast(nodes(), dispatcher, {connect, Name, Msg}).
+	rpc:abcast(nodes(), wsn_dispatcher, {connect, Name, Msg}).
 
 spawn(NodeAddr, Fun) ->
 	_Pid = erlang:spawn(NodeAddr, Fun),

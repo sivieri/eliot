@@ -7,7 +7,7 @@
 
 start_link() ->
 	Pid = spawn_link(?MODULE, loop, []),
-	register(dispatcher, Pid),
+	register(wsn_dispatcher, Pid),
 	{ok, Pid}.
 
 loop() ->
@@ -23,7 +23,7 @@ loop() ->
 			end,
 			loop();
 		Any ->
-			io:format("Dispatcher: unable to parse ~p~n", [Any]),
+			io:format("WSN dispatcher: unable to parse ~p~n", [Any]),
 			loop()
 	end.
 
