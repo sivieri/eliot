@@ -1,4 +1,4 @@
 {application,wsn}.
 {packages,[]}.
-{modules,[ctp,ctp_fwd,ctp_link,ctp_routing,oppflooder,spawn_test,trickle,
-          utils,wsn]}.
+{modules,[utils,wsn,wsn_api,wsn_app,wsn_dispatcher,wsn_export,wsn_parser,
+          wsn_sup]}.

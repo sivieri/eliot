@@ -1,7 +1,8 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Utility functions.
 -module(utils).
--export([format/2, gethostip/0, consistency/3]).
+-export([format/2, gethostip/0, consistency/3, echo/0, get_bcast_addr/0]).
+-define(IFACE, "wlan0").
 
 % Public API
 
@@ -34,5 +35,19 @@ consistency([], _Acc, _N) ->
     false;
 consistency([{_IP, I}|T], Acc, N) ->
     consistency(T, Acc + I, N).
+
+-spec(echo() -> ok).
+echo() ->
+    receive
+        Any ->
+            io:format("~p~n", [Any]),
+            echo()
+    end.
+
+get_bcast_addr() ->
+    {ok, IfList} = inet:getifaddrs(),
+    {?IFACE, IfOpts} = lists:keyfind(?IFACE, 1, IfList),
+    {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
+    Address.
 
 % Private API

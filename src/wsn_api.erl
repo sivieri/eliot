@@ -22,33 +22,44 @@ nodeid(NodeAddr) ->
 nodeaddr(NodeId) ->
     list_to_integer(string:substr(atom_to_list(NodeId), 6)).
 
+-spec(export(atom() | pid()) -> ok).
 export(Subject) ->
 	wsn_export:export(Subject).
 
+-spec(unexport(atom() | pid()) -> ok).
 unexport(Subject) ->
 	wsn_export:unexport(Subject).
 
+-spec(send(atom() | pid(), node(), any()) -> ok).
 send(Name, NodeAddr, Msg) ->
 	{wsn_dispatcher, NodeAddr} ! {connect, Name, Msg},
 	ok.
 
+-spec(bcast_send(any()) -> ok).
 bcast_send(Msg) ->
-	rpc:abcast(nodes(), wsn_dispatcher, {connect, all, Msg}).
+	rpc:abcast(nodes(), wsn_dispatcher, {connect, all, Msg}),
+    ok.
 
+-spec(bcast_send(atom() | pid(), any()) -> ok).
 bcast_send(Name, Msg) ->
-	rpc:abcast(nodes(), wsn_dispatcher, {connect, Name, Msg}).
+	rpc:abcast(nodes(), wsn_dispatcher, {connect, Name, Msg}),
+    ok.
 
+-spec(spawn(node(), fun()) -> ok).
 spawn(NodeAddr, Fun) ->
 	_Pid = erlang:spawn(NodeAddr, Fun),
 	ok.
 
+-spec(spawn(node(), atom(), atom(), list()) -> ok).
 spawn(NodeAddr, Module, Function, Args) ->
 	_Pid = erlang:spawn(NodeAddr, Module, Function, Args),
 	ok.
 
+-spec(bcast_spawn(fun()) -> ok).
 bcast_spawn(Fun) ->
 	lists:foreach(fun(Node) -> wsn_api:spawn(Node, Fun) end, nodes()).
 
+-spec(bcast_spawn(atom(), atom(), list()) -> ok).
 bcast_spawn(Module, Function, Args) ->
 	lists:foreach(fun(Node) -> wsn_api:spawn(Node, Module, Function, Args) end, nodes()).
 

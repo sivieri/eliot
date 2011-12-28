@@ -12,6 +12,7 @@ start_link() ->
 
 init([]) ->
     {ok, { {one_for_one, 5, 10}, [?CHILD(wsn_export, worker),
-								  ?CHILD(wsn_dispatcher, worker)]} }.
+								  ?CHILD(wsn_dispatcher, worker),
+                                  ?CHILD(wsn_ping, worker)]} }.
 
 % Private API

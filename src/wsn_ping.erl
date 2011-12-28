@@ -1,0 +1,42 @@
+%% @author Alessandro Sivieri <sivieri@elet.polimi.it>
+%% @doc Ping module.
+-module(wsn_ping).
+-export([start_link/0, ping/0]).
+-define(TIMEOUT, 60000).
+-define(PORT, 40001).
+
+% Public API
+
+start_link() ->
+    Pid = spawn_link(?MODULE, ping, []),
+    {ok, Pid}.
+
+ping() ->
+    case gen_udp:open(?PORT) of
+        {ok, Socket} ->
+            gen_udp:controlling_process(Socket, self()),
+            ping(Socket);
+        {error, Reason} ->
+            io:format("Unable to open UDP socket: ~p~n", [Reason])
+    end.
+
+% Private API
+
+ping(Socket) ->
+    erlang:send_after(?TIMEOUT, self(), wakeup),
+    receive
+        wakeup ->
+            case gen_udp:send(Socket, utils:get_bcast_addr(), ?PORT, node()) of
+                ok ->
+                    ok;
+                {error, Reason} ->
+                    io:format("UDP sender error ~p~n", [Reason])
+            end,
+            ping(Socket);
+        {udp, _Socket, _IP, _InPortNo, Packet} ->
+            net_adm:ping(Packet),
+            ping(Socket);
+        Any ->
+            io:format("UDP server receiving ~p~n", [Any]),
+            ping(Socket)
+    end.
