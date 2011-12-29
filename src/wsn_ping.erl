@@ -13,7 +13,7 @@ start_link() ->
     {ok, Pid}.
 
 ping() ->
-    case gen_udp:open(?PORT) of
+    case gen_udp:open(?PORT, [{broadcast, true}]) of
         {ok, Socket} ->
             gen_udp:controlling_process(Socket, self()),
             erlang:send_after(?TIMEOUT, self(), wakeup),
