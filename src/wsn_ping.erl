@@ -29,7 +29,6 @@ ping(Socket) ->
         wakeup ->
             case gen_udp:send(Socket, utils:get_bcast_addr(), ?PORT, "") of
                 ok ->
-                    io:format("UDP sender has sent~n"),
                     ok;
                 {error, Reason} ->
                     io:format("UDP sender error ~p~n", [Reason])
@@ -37,7 +36,6 @@ ping(Socket) ->
             erlang:send_after(?TIMEOUT, self(), wakeup),
             ping(Socket);
         {udp, _Socket, IP, _InPortNo, _Packet} ->
-            io:format("UDP packet received from ~p~n", [IP]),
             net_adm:ping(erlang:list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa(IP))),
             ping(Socket);
         Any ->
