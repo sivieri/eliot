@@ -2,7 +2,7 @@
 %% @doc Utility functions.
 -module(utils).
 -export([format/2, gethostip/0, consistency/3, echo/0, get_bcast_addr/0]).
--define(IFACE, "wlan0").
+-define(IFACE, "vboxnet0").
 
 % Public API
 
@@ -45,9 +45,16 @@ echo() ->
     end.
 
 get_bcast_addr() ->
-    {ok, IfList} = inet:getifaddrs(),
-    {?IFACE, IfOpts} = lists:keyfind(?IFACE, 1, IfList),
-    {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
-    Address.
+    case inet:getifaddrs() of
+        {ok, IfList} when length(IfList) == 2 ->
+            [{_Real, IfOpts}] = lists:filter(fun({Name, _IfOpts}) when Name == "lo" -> false;
+                                     ({_Name, _IfOpts}) -> true end, IfList),
+            {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
+            Address;
+        {ok, IfList} ->
+            {?IFACE, IfOpts} = lists:keyfind(?IFACE, 1, IfList),
+            {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
+            Address
+    end.
 
 % Private API

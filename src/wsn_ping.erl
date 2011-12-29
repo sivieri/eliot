@@ -2,6 +2,7 @@
 %% @doc Ping module.
 -module(wsn_ping).
 -export([start_link/0, ping/0]).
+-include("wsn.hrl").
 -define(TIMEOUT, 60000).
 -define(PORT, 40001).
 
@@ -15,6 +16,7 @@ ping() ->
     case gen_udp:open(?PORT) of
         {ok, Socket} ->
             gen_udp:controlling_process(Socket, self()),
+            erlang:send_after(?TIMEOUT, self(), wakeup),
             ping(Socket);
         {error, Reason} ->
             io:format("Unable to open UDP socket: ~p~n", [Reason])
@@ -23,18 +25,18 @@ ping() ->
 % Private API
 
 ping(Socket) ->
-    erlang:send_after(?TIMEOUT, self(), wakeup),
     receive
         wakeup ->
-            case gen_udp:send(Socket, utils:get_bcast_addr(), ?PORT, node()) of
+            case gen_udp:send(Socket, utils:get_bcast_addr(), ?PORT, "") of
                 ok ->
                     ok;
                 {error, Reason} ->
                     io:format("UDP sender error ~p~n", [Reason])
             end,
+            erlang:send_after(?TIMEOUT, self(), wakeup),
             ping(Socket);
-        {udp, _Socket, _IP, _InPortNo, Packet} ->
-            net_adm:ping(Packet),
+        {udp, _Socket, IP, _InPortNo, _Packet} ->
+            net_adm:ping(erlang:list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa(IP))),
             ping(Socket);
         Any ->
             io:format("UDP server receiving ~p~n", [Any]),
