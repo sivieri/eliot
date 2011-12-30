@@ -1,14 +1,15 @@
 % Module skeleton from: http://forum.trapexit.org/viewtopic.php?p=20260
 
 -module(wsn_parser).
--export([parse_transform/2, function/4]).
+-export([parse_transform/2, function/5]).
 -define(ERROR(R, T, F, I),
     begin
         rpt_error(R, T, F, I),
         throw({error,erl_syntax:get_pos(
                proplists:get_value(form,I)),{unknown,R}})
     end).
--define(CHANGED, [{{erlang, spawn}, {utils, spawn}}, {{erlang, register}, {utils, register}}]).
+-define(CHANGED, [{{erlang, send}, {utils, send}}, {{erlang, register}, {utils, register}}]).
+-define(CHANGED2, {utils, send}).
 
 % Public API
 
@@ -16,8 +17,8 @@ parse_transform(Forms, Options) ->
     lists:foldl(fun({{StartModule, StartFunction}, {EndModule, EndFunction}}, AccIn) ->
         parse_function(AccIn, Options, StartModule, StartFunction, EndModule, EndFunction) end, Forms, ?CHANGED).
 
-function({_Module, _Function} = MF, F, Forms, Options) when is_function(F) ->
-    parse_transform(MF, F, Forms, Options).
+function({_Module, _Function} = MF, F1, F2, Forms, Options) when is_function(F1) andalso is_function(F2) ->
+    parse_transform(MF, F1, F2, Forms, Options).
 
 % Private API
 
@@ -26,12 +27,22 @@ parse_function(Forms, Options, StartModule, StartFunction, EndModule, EndFunctio
          fun(Form, _Context) ->
              erl_syntax:application(erl_syntax:module_qualifier(erl_syntax:atom(EndModule), erl_syntax:atom(EndFunction)),
                                     erl_syntax:application_arguments(Form))
+         end,
+         fun(Form, _Context) ->
+             case erl_syntax:operator_name(erl_syntax:infix_expr_operator(Form)) of
+                '!' ->
+                    {Module, Function} = ?CHANGED2,
+                    erl_syntax:application(erl_syntax:module_qualifier(erl_syntax:atom(Module), erl_syntax:atom(Function)),
+                                    [erl_syntax:infix_expr_left(Form), erl_syntax:infix_expr_right(Form)]);
+                _Any ->
+                    Form
+             end
          end, Forms, Options).
 
-parse_transform(MF, Fun, Forms, _Options) ->
+parse_transform(MF, Fun, Fun2, Forms, _Options) ->
     [File|_] = [F || {attribute,_,file,{F,_}} <- Forms],
     try begin
-        NewTree = xform(MF, Fun, Forms, [{file, File}]),
+        NewTree = xform(MF, Fun, Fun2, Forms, [{file, File}]),
         revert_tree(NewTree)
     end
     catch
@@ -42,7 +53,7 @@ parse_transform(MF, Fun, Forms, _Options) ->
 revert_tree(Tree) ->
     [erl_syntax:revert(T) || T <- lists:flatten(Tree)].
 
-xform({M,F}, Fun, Forms, Context0) ->
+xform({M,F}, Fun, Fun2, Forms, Context0) ->
     Bef = fun(function, Form, Ctxt) ->
           {Fname, Arity} = erl_syntax_lib:analyze_function(Form),
           VarNames = erl_syntax_lib:new_variable_names(
@@ -90,6 +101,8 @@ xform({M,F}, Fun, Forms, Context0) ->
                 end
             end, Form),
           Form1;
+         (infix_expr, Form, Context) ->
+          Fun2(Form, Context);
          (_, Form, _Context) ->
           Form
       end,
