@@ -1,4 +1,4 @@
 {application,wsn}.
 {packages,[]}.
 {modules,[utils,wsn,wsn_api,wsn_app,wsn_dispatcher,wsn_export,wsn_parser,
-          wsn_sup]}.
+          wsn_ping,wsn_sup]}.

@@ -2,7 +2,7 @@
 %% @doc Main Wireless Sensors Network framework and simulator.
 -module(wsn_api).
 -include("wsn.hrl").
--export([read_net/1, nodeid/1, nodeaddr/1]).
+-export([read_net/1, nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0]).
 -export([send/3, bcast_send/1, bcast_send/2, spawn/2, spawn/4, bcast_spawn/1, bcast_spawn/3, export/1, unexport/1]).
 
 % Public API
@@ -12,15 +12,30 @@ read_net(Filename) ->
     {ok, Device} = file:open(Filename,[read]),
     read_net(Device, sets:new(), dict:new()).
 
--spec(nodeid(integer() | string()) -> atom()).
-nodeid(NodeAddr) when is_integer(NodeAddr) ->
-    list_to_atom("mote_" ++ utils:format("~p", [NodeAddr]));
-nodeid(NodeAddr) ->
-    list_to_atom("mote_" ++ NodeAddr).
+-spec(set_node_name(atom()) -> ok).
+set_node_name(NodeId) ->
+    Name = nodeaddr(NodeId),
+    application:set_env(wsn, name, Name),
+    application:set_env(trickle, name, Name).
 
--spec(nodeaddr(atom()) -> integer()).
+-spec(get_node_name() -> atom() | error).
+get_node_name() ->
+    case application:get_env(trickle, name) of
+        {ok, Name} ->
+            Name;
+        undefined ->
+            error
+    end.
+
+-spec(nodeaddr(integer() | string()) -> atom()).
+nodeaddr(NodeId) when is_integer(NodeId) ->
+    list_to_atom("node_" ++ utils:format("~p", [NodeId]));
 nodeaddr(NodeId) ->
-    list_to_integer(string:substr(atom_to_list(NodeId), 6)).
+    list_to_atom("node_" ++ NodeId).
+
+-spec(nodeid(atom()) -> integer()).
+nodeid(NodeAddr) ->
+    list_to_integer(string:substr(atom_to_list(NodeAddr), 6)).
 
 -spec(export(atom() | pid()) -> ok).
 export(Subject) ->
