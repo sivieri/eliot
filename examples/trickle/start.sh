@@ -6,4 +6,4 @@ if [ $# -lt 2 ]; then
 fi
 
 cd `dirname $0`
-exec erl +P 1000000 -pa $PWD/ebin $PWD/deps/*/ebin -boot start_sasl -name wsn@$1 -setcookie abc -s trickle start $2
+exec erl +P 1000000 -pa $PWD/ebin $PWD/deps/*/ebin -boot start_sasl -name wsn@$1 -setcookie abc -s trickle start $2 false

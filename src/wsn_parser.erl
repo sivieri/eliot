@@ -8,8 +8,8 @@
         throw({error,erl_syntax:get_pos(
                proplists:get_value(form,I)),{unknown,R}})
     end).
--define(CHANGED, [{{erlang, send}, {utils, send}}, {{erlang, register}, {utils, register}}]).
--define(CHANGED2, {utils, send}).
+-define(CHANGED, [{{erlang, send}, {wsn_simulator, send}}, {{erlang, register}, {wsn_simulator, register}}]).
+-define(CHANGED2, {wsn_simulator, send}).
 
 % Public API
 

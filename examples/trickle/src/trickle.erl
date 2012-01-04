@@ -5,9 +5,13 @@
 
 % Public API
 
-start(Node) ->
+start([Node, Config]) ->
+    application:set_env(wsn, simulation, true),
     application:start(wsn),
+    wsn_simulator:start(Node, Config);
+start(Node) ->
     wsn_api:set_node_name(Node),
+    application:start(wsn),
     application:start(trickle).
 
 stop() ->

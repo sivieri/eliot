@@ -1,16 +1,11 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
-%% @doc Main Wireless Sensors Network framework and simulator.
+%% @doc Framework.
 -module(wsn_api).
 -include("wsn.hrl").
--export([read_net/1, nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0]).
+-export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0]).
 -export([send/3, bcast_send/1, bcast_send/2, spawn/2, spawn/4, bcast_spawn/1, bcast_spawn/3, export/1, unexport/1]).
 
 % Public API
-
--spec(read_net(string()) -> net()).
-read_net(Filename) ->
-    {ok, Device} = file:open(Filename,[read]),
-    read_net(Device, sets:new(), dict:new()).
 
 -spec(set_node_name(atom()) -> ok).
 set_node_name(NodeId) ->
@@ -78,21 +73,6 @@ bcast_spawn(Module, Function, Args) ->
 	lists:foreach(fun(Node) -> wsn_api:spawn(Node, Module, Function, Args) end, nodes()).
 
 % Private API
-
--spec(read_net(pid(), set(), dict()) -> net()).
-read_net(Device, Nodes, Gains) ->
-    case io:get_line(Device, "") of
-	"gain"++Rest ->
-	    [Node1, Node2, Gain] = string:tokens(Rest," \t"),
-	    {G,_}=string:to_float(Gain), % remove trailing CR and LF
-	    NewNodes = sets:add_element(nodeid(Node1), Nodes),
-	    NewGains = dict:store({nodeid(Node1), nodeid(Node2)}, G, Gains),
-	    read_net(Device, NewNodes, NewGains);
-	_Else ->
-	    file:close(Device),
-	    SortedNodes = lists:sort(sets:to_list(Nodes)),
-	    {SortedNodes, Gains}
-    end.
 
 msg(Msg) ->
     {wsn_api:get_node_name(), Msg}.
