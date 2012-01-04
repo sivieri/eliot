@@ -35,7 +35,7 @@ update_version(DestId, Version, Payload) ->
     Id = wsn_api:nodeid(DestId),
     PayloadB = term_to_binary(Payload),
     Msg = <<Id:?SRCADDR, Version:?VERSION, PayloadB/binary>>,
-    wsn_api:send(trickle, node(), Msg),
+    wsn_api:send(trickle, node(), {version, Msg}),
     ok.
 
 % Private API
