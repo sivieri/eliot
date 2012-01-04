@@ -46,6 +46,7 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
         transmit when Counter < ?K ->
             Id = wsn_api:nodeid(wsn_api:get_node_name()),
             wsn_api:bcast_send(trickle, {version, <<Id:?SRCADDR, Version:?VERSION, Payload/binary>>}),
+            io:format("~p: Sending code ~p~n", [wsn_api:get_node_name(), Version]),
             trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>);
         transmit ->
             trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>);

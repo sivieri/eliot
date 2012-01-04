@@ -15,23 +15,22 @@ read_net(Filename) ->
 -spec(set_node_name(atom()) -> ok).
 set_node_name(NodeId) ->
     Name = nodeaddr(NodeId),
-    application:set_env(wsn, name, Name),
-    application:set_env(trickle, name, Name).
+    application:set_env(wsn, name, Name).
 
 -spec(get_node_name() -> atom() | error).
 get_node_name() ->
-    case application:get_env(trickle, name) of
+    case application:get_env(wsn, name) of
         {ok, Name} ->
             Name;
         undefined ->
             error
     end.
 
--spec(nodeaddr(integer() | string()) -> atom()).
-nodeaddr(NodeId) when is_integer(NodeId) ->
-    list_to_atom("node_" ++ utils:format("~p", [NodeId]));
+-spec(nodeaddr(atom()) -> atom()).
+nodeaddr(NodeId) when is_list(NodeId) ->
+    list_to_atom("node_" ++ atom_to_list(hd(NodeId)));
 nodeaddr(NodeId) ->
-    list_to_atom("node_" ++ NodeId).
+    list_to_atom("node_" ++ atom_to_list(NodeId)).
 
 -spec(nodeid(atom()) -> integer()).
 nodeid(NodeAddr) ->

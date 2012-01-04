@@ -7,8 +7,8 @@
 
 start(Node) ->
     application:start(wsn),
-    application:start(trickle),
-    wsn_api:set_node_name(Node).
+    wsn_api:set_node_name(Node),
+    application:start(trickle).
 
 stop() ->
     Res = application:stop(trickle),
