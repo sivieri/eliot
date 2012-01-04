@@ -47,17 +47,17 @@ unexport(Subject) ->
 
 -spec(send(atom() | pid(), node(), any()) -> ok).
 send(Name, NodeAddr, Msg) ->
-	{wsn_dispatcher, NodeAddr} ! {connect, Name, Msg},
+	{wsn_dispatcher, NodeAddr} ! {connect, Name, msg(Msg)},
 	ok.
 
 -spec(bcast_send(any()) -> ok).
 bcast_send(Msg) ->
-	rpc:abcast(nodes(), wsn_dispatcher, {connect, all, Msg}),
+	rpc:abcast(nodes(), wsn_dispatcher, {connect, all, msg(Msg)}),
     ok.
 
 -spec(bcast_send(atom() | pid(), any()) -> ok).
 bcast_send(Name, Msg) ->
-	rpc:abcast(nodes(), wsn_dispatcher, {connect, Name, Msg}),
+	rpc:abcast(nodes(), wsn_dispatcher, {connect, Name, msg(Msg)}),
     ok.
 
 -spec(spawn(node(), fun()) -> ok).
@@ -94,3 +94,6 @@ read_net(Device, Nodes, Gains) ->
 	    SortedNodes = lists:sort(sets:to_list(Nodes)),
 	    {SortedNodes, Gains}
     end.
+
+msg(Msg) ->
+    {wsn_api:get_node_name(), Msg}.

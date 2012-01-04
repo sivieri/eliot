@@ -36,7 +36,13 @@ ping(Socket) ->
             erlang:send_after(?TIMEOUT, self(), wakeup),
             ping(Socket);
         {udp, _Socket, IP, _InPortNo, _Packet} ->
-            net_adm:ping(erlang:list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa(IP))),
+            NodeName = erlang:list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa(IP)),
+            case lists:member(NodeName, nodes()) of
+                true ->
+                    ok;
+                false ->
+                    net_adm:ping(NodeName)
+            end,
             ping(Socket);
         Any ->
             io:format("UDP server receiving ~p~n", [Any]),
