@@ -8,11 +8,26 @@
 % Public API
 
 -spec(set_node_name(atom()) -> ok).
+-ifdef(simulation).
+set_node_name(NodeId) ->
+    Name = nodeaddr(NodeId),
+    put(name, Name).
+-else.
 set_node_name(NodeId) ->
     Name = nodeaddr(NodeId),
     application:set_env(wsn, name, Name).
+-endif.
 
 -spec(get_node_name() -> atom() | error).
+-ifdef(simulation).
+get_node_name() ->
+    case get(name) of
+        {ok, Name} ->
+            Name;
+        undefined ->
+            error
+    end.
+-else.
 get_node_name() ->
     case application:get_env(wsn, name) of
         {ok, Name} ->
@@ -20,8 +35,11 @@ get_node_name() ->
         undefined ->
             error
     end.
+-endif.
 
--spec(nodeaddr(atom()) -> atom()).
+-spec(nodeaddr(atom() | [atom()] | integer()) -> atom()).
+nodeaddr(NodeId) when is_integer(NodeId) ->
+    list_to_atom("node_" ++ utils:format("~p", [NodeId]));
 nodeaddr(NodeId) when is_list(NodeId) ->
     list_to_atom("node_" ++ atom_to_list(hd(NodeId)));
 nodeaddr(NodeId) ->

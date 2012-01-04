@@ -3,14 +3,17 @@
 
 % Public API
 
-start([Node, Config]) ->
+-ifdef(simulation).
+start(Param) ->
     application:set_env(wsn, simulation, true),
     application:start(wsn),
-    wsn_simulator:start(Node, Config);;
-start(Node) ->
-    wsn_api:set_node_name(Node),
+    wsn_simulator:start({{appid}}_task, Param).
+-else.
+start(Param) ->
+    wsn_api:set_node_name(Param),
     application:start(wsn),
     application:start({{appid}}).
+-endif.
 
 stop() ->
     Res = application:stop({{appid}}),

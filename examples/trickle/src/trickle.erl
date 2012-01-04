@@ -4,15 +4,17 @@
 -export([start/1, stop/0]).
 
 % Public API
-
-start([Node, Config]) ->
+-ifdef(simulation).
+start(Param) ->
     application:set_env(wsn, simulation, true),
     application:start(wsn),
-    wsn_simulator:start(Node, Config);
-start(Node) ->
-    wsn_api:set_node_name(Node),
+    wsn_simulator:start(trickle_task, Param).
+-else.
+start(Param) ->
+    wsn_api:set_node_name(Param),
     application:start(wsn),
     application:start(trickle).
+-endif.
 
 stop() ->
     Res = application:stop(trickle),

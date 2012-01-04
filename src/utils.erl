@@ -1,7 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Utility functions.
 -module(utils).
--export([format/2, gethostip/0, consistency/3, echo/0, get_bcast_addr/0]).
+-export([format/2, gethostip/0, consistency/3, echo/0, get_bcast_addr/0, to_int/1]).
 -define(IFACE, "vboxnet0").
 
 % Public API
@@ -56,5 +56,9 @@ get_bcast_addr() ->
             {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
             Address
     end.
+
+to_int(String) ->
+    {Res, _} = string:to_integer(String),
+    Res.
 
 % Private API
