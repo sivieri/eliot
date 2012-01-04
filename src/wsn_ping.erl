@@ -29,6 +29,7 @@ ping(Socket) ->
         wakeup ->
             case gen_udp:send(Socket, utils:get_bcast_addr(), ?PORT, "") of
                 ok ->
+                    io:format("UDP server: ping!~n"),
                     ok;
                 {error, Reason} ->
                     io:format("UDP sender error ~p~n", [Reason])
@@ -37,6 +38,7 @@ ping(Socket) ->
             ping(Socket);
         {udp, _Socket, IP, _InPortNo, _Packet} ->
             NodeName = erlang:list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa(IP)),
+            io:format("UDP server: pinged by ~p~n", [NodeName]),
             case lists:member(NodeName, nodes()) of
                 true ->
                     ok;
