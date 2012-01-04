@@ -13,6 +13,7 @@
 start_link() ->
     Pid = spawn_link(?MODULE, trickle, []),
     register(trickle, Pid),
+    wsn_export:export(trickle),
     {ok, Pid}.
 
 %% @doc Implementation of the algorithm for each node.
@@ -34,7 +35,7 @@ update_version(DestId, Version, Payload) ->
     Id = wsn_api:nodeid(DestId),
     PayloadB = term_to_binary(Payload),
     Msg = <<Id:?SRCADDR, Version:?VERSION, PayloadB/binary>>,
-    wsn:send_direct(console, DestId, {version, Msg}),
+    wsn_api:send(trickle, DestId, Msg),
     ok.
 
 % Private API
