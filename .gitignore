@@ -2,4 +2,5 @@ doc/*.html
 doc/*.png
 doc/*.css
 ebin
+simbin
 erl_crash.dump

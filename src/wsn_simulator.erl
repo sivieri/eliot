@@ -10,11 +10,11 @@ start(Module, Config) ->
     {Nodes, Gains} = read_net(Config),
     wsn_sup:start_task(wsn_forwarder),
     wsn_forwarder:set_gains(Gains),
-    lists:foreach(fun(NodeAddr) -> spawn(start_task(NodeAddr, Module, start_link, [])) end, Nodes).
+    lists:foreach(fun(NodeAddr) -> spawn(fun() -> start_task(NodeAddr, Module, start_link) end) end, Nodes).
 
-start_task(NodeAddr, Module, Function, Args) ->
+start_task(NodeAddr, Module, Function) ->
     wsn_api:set_node_name(nodeid(NodeAddr)),
-    Module:Function(Args).
+    Module:Function().
 
 send(Dest, Msg) when is_atom(Dest) ->
     erlang:send(get_simname(Dest), Msg);
@@ -30,10 +30,10 @@ read_net(Filename) ->
     read_net(Device, sets:new(), dict:new()).
 
 get_simname(Name) ->
-    list_to_atom(atom_to_list(Name) ++ $_ ++ atom_to_list(wsn_api:get_node_name())).
+    list_to_atom(atom_to_list(Name) ++ "_" ++ atom_to_list(wsn_api:get_node_name())).
 
 get_simname(Name, NodeName) ->
-    list_to_atom(atom_to_list(Name) ++ $_ ++ atom_to_list(NodeName)).
+    list_to_atom(atom_to_list(Name) ++ "_" ++ atom_to_list(NodeName)).
 
 get_name(Name) ->
     NameString = atom_to_list(Name),
