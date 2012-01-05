@@ -13,7 +13,8 @@ start_link() ->
 loop() ->
 	receive
 		{connect, all, Msg} ->
-			lists:foreach(fun(Subject) -> Subject ! Msg end, wsn_export:get_exported());
+			lists:foreach(fun(Subject) -> Subject ! Msg end, wsn_export:get_exported()),
+            loop();
 		{connect, Subject, Msg} ->
 			case wsn_export:is_exported(Subject) of
 				true ->
@@ -22,19 +23,20 @@ loop() ->
 					ok
 			end,
 			loop();
-        {simulation, all, Msg} ->
-            lists:foreach(fun(Subject) -> Subject ! Msg end, wsn_export:get_exported());
-        {simulation, {Subject, Node}, Msg} ->
+        {simulation, all, Msg = {{SenderName, _SenderNode}, _Msg}} ->
+            lists:foreach(fun(Subject) -> send_msg(SenderName, Subject, Msg) end, wsn_export:get_exported()),
+            loop();
+        {simulation, {Subject, Node}, Msg = {{SenderName, _SenderNode}, _Msg}} ->
             QName = wsn_simulator:get_simname(Subject, Node),
             case wsn_export:is_exported(QName) of
                 true ->
-                    QName ! Msg;
+                    send_msg(SenderName, QName, Msg);
                 false ->
                     ok
             end,
             loop();
-        {simulation, Subject, Msg} ->
-            lists:foreach(fun(Elem) -> Elem ! Msg end, wsn_export:get_exported(Subject)),
+        {simulation, Subject, Msg = {{SenderName, _SenderNode}, _Msg}} ->
+            lists:foreach(fun(Elem) -> send_msg(SenderName, Elem, Msg) end, wsn_export:get_exported(Subject)),
             loop();
 		Any ->
 			io:format("WSN dispatcher: unable to parse ~p~n", [Any]),
@@ -42,3 +44,11 @@ loop() ->
 	end.
 
 % Private API
+
+send_msg(Node1, Node2, Msg) ->
+    case wsn_forwarder:get_gain(Node1, wsn_simulator:get_name(Node2)) of
+        inf ->
+            ok;
+        _Any ->
+            Node2 ! Msg
+  end.
