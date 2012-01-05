@@ -2,7 +2,7 @@
 %% @doc Simulator.
 -module(wsn_simulator).
 -include("wsn.hrl").
--export([start/2, send/2, register/2, read_net/1]).
+-export([start/2, send/2, register/2, read_net/1, get_simname/1, get_simname/2]).
 
 % Public API
 
@@ -27,10 +27,13 @@ read_net(Filename) ->
     {ok, Device} = file:open(Filename, [read]),
     read_net(Device, sets:new(), dict:new()).
 
-% Private API
-
 get_simname(Name) ->
     list_to_atom(atom_to_list(Name) ++ "_" ++ atom_to_list(wsn_api:get_node_name())).
+
+get_simname(Name, NodeName) ->
+    list_to_atom(atom_to_list(Name) ++ "_" ++ atom_to_list(NodeName)).
+
+% Private API
 
 nodeid(NodeAddr) ->
     list_to_atom(string:substr(atom_to_list(NodeAddr), 6)).

@@ -2,7 +2,7 @@
 %% @doc WSN export module.
 -module(wsn_export).
 -behaviour(gen_server).
--export([start_link/0, export/1, unexport/1, is_exported/1, get_exported/0]).
+-export([start_link/0, export/1, unexport/1, is_exported/1, get_exported/0, get_exported/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -record(state, {exported}).
 
@@ -23,6 +23,9 @@ is_exported(Subject) ->
 get_exported() ->
 	gen_server:call(wsn_export, {get}).
 
+get_exported(StartName) ->
+    gen_server:call(wsn_export, {get, StartName}).
+
 init([]) ->
     {ok, #state{exported = []}}.
 
@@ -30,7 +33,19 @@ handle_call({is_exported, Subject}, _From, State = #state{exported = Exported}) 
     Reply = lists:member(Subject, Exported),
     {reply, Reply, State};
 handle_call({get}, _From, State = #state{exported = Exported}) ->
-    {reply, Exported, State}.
+    {reply, Exported, State};
+handle_call({get, StartName}, _From, State = #state{exported = Exported}) ->
+    AtomList = lists:filter(fun(Elem) when is_atom(Elem) -> true;
+                               (_Elem) -> false end, Exported),
+    ResultList = lists:filter(fun(Name) ->
+                                      StrName = atom_to_list(Name),
+                                      case string:str(StrName, StartName) of
+                                          1 ->
+                                              true;
+                                          _Any ->
+                                              false
+                                      end end, AtomList),
+    {reply, ResultList, State}.
 
 handle_cast({export, Subject}, _State = #state{exported = Exported}) ->
     {noreply, #state{exported = [Subject|Exported]}};

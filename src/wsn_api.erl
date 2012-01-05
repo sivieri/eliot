@@ -50,27 +50,59 @@ nodeid(NodeAddr) ->
     list_to_integer(string:substr(atom_to_list(NodeAddr), 6)).
 
 -spec(export(atom() | pid()) -> ok).
+-ifdef(simulator).
+export(Subject) when is_atom(Subject) ->
+	wsn_export:export(wsn_simulator:get_simname(Subject));
 export(Subject) ->
-	wsn_export:export(Subject).
+    wsn_export:export(Subject).
+-else.
+export(Subject) ->
+    wsn_export:export(Subject).
+-endif.
 
 -spec(unexport(atom() | pid()) -> ok).
+-ifdef(simulator).
+unexport(Subject) when is_atom(Subject) ->
+	wsn_export:unexport(wsn_simulator:get_simname(Subject));
 unexport(Subject) ->
-	wsn_export:unexport(Subject).
+    wsn_export:unexport(Subject).
+-else.
+unexport(Subject) ->
+    wsn_export:unexport(Subject).
+-endif.
 
--spec(send(atom() | pid(), node(), any()) -> ok).
-send(Name, NodeAddr, Msg) ->
+-spec(send(atom() | pid(), {atom(), node()}, any()) -> ok).
+-ifdef(simulator).
+send(Name, {NodeName, _NodeAddr}, Msg) ->
+    wsn_dispatcher ! {simulation, {Name, NodeName}, msg(Msg)},
+    ok.
+-else.
+send(Name, {_NodeName, NodeAddr}, Msg) ->
 	{wsn_dispatcher, NodeAddr} ! {connect, Name, msg(Msg)},
 	ok.
+-endif.
 
 -spec(bcast_send(any()) -> ok).
+-ifdef(simulator).
+bcast_send(Msg) ->
+    wsn_dispatcher ! {simulation, all, msg(Msg)},
+    ok.
+-else.
 bcast_send(Msg) ->
 	rpc:abcast(nodes(), wsn_dispatcher, {connect, all, msg(Msg)}),
     ok.
+-endif.
 
 -spec(bcast_send(atom() | pid(), any()) -> ok).
+-ifdef(simulator).
+bcast_send(Name, Msg) ->
+    wsn_dispatcher ! {simulation, Name, msg(Msg)},
+    ok.
+-else.
 bcast_send(Name, Msg) ->
 	rpc:abcast(nodes(), wsn_dispatcher, {connect, Name, msg(Msg)}),
     ok.
+-endif.
 
 -spec(spawn(node(), fun()) -> ok).
 spawn(NodeAddr, Fun) ->
@@ -93,4 +125,4 @@ bcast_spawn(Module, Function, Args) ->
 % Private API
 
 msg(Msg) ->
-    {wsn_api:get_node_name(), Msg}.
+    {{wsn_api:get_node_name(), node()}, Msg}.
