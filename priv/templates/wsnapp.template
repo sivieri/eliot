@@ -1,4 +1,5 @@
 {variables, [{appid, "myapp"}]}.
+{template, "wsnapp.sh", "start.sh"}.
 {template, "wsnapp.app.src", "src/{{appid}}.app.src"}.
 {template, "wsnapp.erl", "src/{{appid}}.erl"}.
 {template, "wsnapp_app.erl", "src/{{appid}}_app.erl"}.
