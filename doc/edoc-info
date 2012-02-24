@@ -1,4 +1,5 @@
-{application,wsn}.
+{application,eliot}.
 {packages,[]}.
-{modules,[utils,wsn,wsn_api,wsn_app,wsn_dispatcher,wsn_export,wsn_parser,
-          wsn_ping,wsn_sup]}.
+{modules,[eliot,eliot_api,eliot_app,eliot_dispatcher,eliot_export,
+          eliot_forwarder,eliot_parser,eliot_ping,eliot_simulator,eliot_sup,
+          utils]}.

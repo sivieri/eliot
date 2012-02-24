@@ -6,19 +6,19 @@
 % Public API
 -ifdef(simulation).
 start(Param) ->
-    application:set_env(wsn, simulation, true),
-    application:start(wsn),
-    wsn_simulator:start(trickle_task, Param).
+    application:set_env(eliot, simulation, true),
+    application:start(eliot),
+    eliot_simulator:start(trickle_task, Param).
 -else.
 start(Param) ->
-    wsn_api:set_node_name(Param),
-    application:start(wsn),
+    eliot_api:set_node_name(Param),
+    application:start(eliot),
     application:start(trickle).
 -endif.
 
 stop() ->
     Res = application:stop(trickle),
-    application:stop(wsn),
+    application:stop(eliot),
     Res.
 
 % Private API
