@@ -1,8 +1,8 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Simulator forwarder.
--module(wsn_forwarder).
+-module(eliot_forwarder).
 -behaviour(gen_server).
--include("wsn.hrl").
+-include("eliot.hrl").
 -export([start_link/0, set_gains/1, get_gain/2]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -record(state, {gains}).

@@ -1,14 +1,14 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Start the application.
--module(wsn).
+-module(eliot).
 -export([start/0, stop/0]).
 
 % Public API
 
 start() ->
-	application:start(wsn).
+	application:start(eliot).
 
 stop() ->
-	application:stop(wsn).
+	application:stop(eliot).
 
 % Private API

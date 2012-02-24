@@ -1,4 +1,4 @@
-{application, wsn,
+{application, eliot,
  [
   {description, ""},
   {vsn, "1"},
@@ -7,6 +7,6 @@
                   kernel,
                   stdlib
                  ]},
-  {mod, { wsn_app, []}},
+  {mod, { eliot_app, []}},
   {env, []}
  ]}.

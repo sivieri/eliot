@@ -1,8 +1,8 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Ping module.
--module(wsn_ping).
+-module(eliot_ping).
 -export([start_link/0, ping/0]).
--include("wsn.hrl").
+-include("eliot.hrl").
 -define(TIMEOUT, 60000).
 -define(PORT, 40001).
 

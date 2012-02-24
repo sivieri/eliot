@@ -1,19 +1,19 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Simulator.
--module(wsn_simulator).
--include("wsn.hrl").
+-module(eliot_simulator).
+-include("eliot.hrl").
 -export([start/2, send/2, register/2, read_net/1, get_simname/1, get_simname/2, get_name/1]).
 
 % Public API
 
 start(Module, Config) ->
     {Nodes, Gains} = read_net(Config),
-    wsn_sup:start_task(wsn_forwarder),
-    wsn_forwarder:set_gains(Gains),
+    eliot_sup:start_task(eliot_forwarder),
+    eliot_forwarder:set_gains(Gains),
     lists:foreach(fun(NodeAddr) -> spawn(fun() -> start_task(NodeAddr, Module, start_link) end) end, Nodes).
 
 start_task(NodeAddr, Module, Function) ->
-    wsn_api:set_node_name(nodeid(NodeAddr)),
+    eliot_api:set_node_name(nodeid(NodeAddr)),
     Module:Function().
 
 send(Dest, Msg) when is_atom(Dest) ->
@@ -30,7 +30,7 @@ read_net(Filename) ->
     read_net(Device, sets:new(), dict:new()).
 
 get_simname(Name) ->
-    list_to_atom(atom_to_list(Name) ++ "_" ++ atom_to_list(wsn_api:get_node_name())).
+    list_to_atom(atom_to_list(Name) ++ "_" ++ atom_to_list(eliot_api:get_node_name())).
 
 get_simname(Name, NodeName) ->
     list_to_atom(atom_to_list(Name) ++ "_" ++ atom_to_list(NodeName)).
@@ -54,8 +54,8 @@ read_net(Device, Nodes, Gains) ->
         "gain" ++ Rest ->
             [Node1, Node2, Gain] = string:tokens(Rest, " \t"),
             {G, _} = string:to_float(Gain), % remove trailing CR and LF
-            NewNodes = sets:add_element(wsn_api:nodeaddr(utils:to_int(Node1)), Nodes),
-            NewGains = dict:store({wsn_api:nodeaddr(utils:to_int(Node1)), wsn_api:nodeaddr(utils:to_int(Node2))}, G, Gains),
+            NewNodes = sets:add_element(eliot_api:nodeaddr(utils:to_int(Node1)), Nodes),
+            NewGains = dict:store({eliot_api:nodeaddr(utils:to_int(Node1)), eliot_api:nodeaddr(utils:to_int(Node2))}, G, Gains),
             read_net(Device, NewNodes, NewGains);
         _Any ->
             file:close(Device),

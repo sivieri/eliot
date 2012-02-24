@@ -1,7 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Framework.
--module(wsn_api).
--include("wsn.hrl").
+-module(eliot_api).
+-include("eliot.hrl").
 -export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0]).
 -export([send/3, bcast_send/1, bcast_send/2, spawn/2, spawn/4, bcast_spawn/1, bcast_spawn/3, export/1, unexport/1]).
 
@@ -15,7 +15,7 @@ set_node_name(NodeId) ->
 -else.
 set_node_name(NodeId) ->
     Name = nodeaddr(NodeId),
-    application:set_env(wsn, name, Name).
+    application:set_env(eliot, name, Name).
 -endif.
 
 -spec(get_node_name() -> atom() | error).
@@ -29,7 +29,7 @@ get_node_name() ->
     end.
 -else.
 get_node_name() ->
-    case application:get_env(wsn, name) of
+    case application:get_env(eliot, name) of
         {ok, Name} ->
             Name;
         undefined ->
@@ -52,55 +52,55 @@ nodeid(NodeAddr) ->
 -spec(export(atom() | pid()) -> ok).
 -ifdef(simulator).
 export(Subject) when is_atom(Subject) ->
-	wsn_export:export(wsn_simulator:get_simname(Subject));
+	eliot_export:export(eliot_simulator:get_simname(Subject));
 export(Subject) ->
-    wsn_export:export(Subject).
+    eliot_export:export(Subject).
 -else.
 export(Subject) ->
-    wsn_export:export(Subject).
+    eliot_export:export(Subject).
 -endif.
 
 -spec(unexport(atom() | pid()) -> ok).
 -ifdef(simulator).
 unexport(Subject) when is_atom(Subject) ->
-	wsn_export:unexport(wsn_simulator:get_simname(Subject));
+	eliot_export:unexport(eliot_simulator:get_simname(Subject));
 unexport(Subject) ->
-    wsn_export:unexport(Subject).
+    eliot_export:unexport(Subject).
 -else.
 unexport(Subject) ->
-    wsn_export:unexport(Subject).
+    eliot_export:unexport(Subject).
 -endif.
 
 -spec(send(atom() | pid(), {atom(), node()}, any()) -> ok).
 -ifdef(simulator).
 send(Name, {NodeName, _NodeAddr}, Msg) ->
-    wsn_dispatcher ! {simulation, {Name, NodeName}, msg(Msg)},
+    eliot_dispatcher ! {simulation, {Name, NodeName}, msg(Msg)},
     ok.
 -else.
 send(Name, {_NodeName, NodeAddr}, Msg) ->
-	{wsn_dispatcher, NodeAddr} ! {connect, Name, msg(Msg)},
+	{eliot_dispatcher, NodeAddr} ! {connect, Name, msg(Msg)},
 	ok.
 -endif.
 
 -spec(bcast_send(any()) -> ok).
 -ifdef(simulator).
 bcast_send(Msg) ->
-    wsn_dispatcher ! {simulation, all, msg(Msg)},
+    eliot_dispatcher ! {simulation, all, msg(Msg)},
     ok.
 -else.
 bcast_send(Msg) ->
-	rpc:abcast(nodes(), wsn_dispatcher, {connect, all, msg(Msg)}),
+	rpc:abcast(nodes(), eliot_dispatcher, {connect, all, msg(Msg)}),
     ok.
 -endif.
 
 -spec(bcast_send(atom() | pid(), any()) -> ok).
 -ifdef(simulator).
 bcast_send(Name, Msg) ->
-    wsn_dispatcher ! {simulation, Name, msg(Msg)},
+    eliot_dispatcher ! {simulation, Name, msg(Msg)},
     ok.
 -else.
 bcast_send(Name, Msg) ->
-	rpc:abcast(nodes(), wsn_dispatcher, {connect, Name, msg(Msg)}),
+	rpc:abcast(nodes(), eliot_dispatcher, {connect, Name, msg(Msg)}),
     ok.
 -endif.
 
@@ -116,13 +116,13 @@ spawn(NodeAddr, Module, Function, Args) ->
 
 -spec(bcast_spawn(fun()) -> ok).
 bcast_spawn(Fun) ->
-	lists:foreach(fun(Node) -> wsn_api:spawn(Node, Fun) end, nodes()).
+	lists:foreach(fun(Node) -> eliot_api:spawn(Node, Fun) end, nodes()).
 
 -spec(bcast_spawn(atom(), atom(), list()) -> ok).
 bcast_spawn(Module, Function, Args) ->
-	lists:foreach(fun(Node) -> wsn_api:spawn(Node, Module, Function, Args) end, nodes()).
+	lists:foreach(fun(Node) -> eliot_api:spawn(Node, Module, Function, Args) end, nodes()).
 
 % Private API
 
 msg(Msg) ->
-    {{wsn_api:get_node_name(), node()}, Msg}.
+    {{eliot_api:get_node_name(), node()}, Msg}.

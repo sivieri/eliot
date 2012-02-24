@@ -1,6 +1,6 @@
 % Module skeleton from: http://forum.trapexit.org/viewtopic.php?p=20260
 
--module(wsn_parser).
+-module(eliot_parser).
 -export([parse_transform/2, function/5]).
 -define(ERROR(R, T, F, I),
     begin
@@ -8,8 +8,8 @@
         throw({error,erl_syntax:get_pos(
                proplists:get_value(form,I)),{unknown,R}})
     end).
--define(CHANGED, [{{erlang, send}, {wsn_simulator, send}}, {{erlang, register}, {wsn_simulator, register}}]).
--define(CHANGED2, {wsn_simulator, send}).
+-define(CHANGED, [{{erlang, send}, {eliot_simulator, send}}, {{erlang, register}, {eliot_simulator, register}}]).
+-define(CHANGED2, {eliot_simulator, send}).
 
 % Public API
 

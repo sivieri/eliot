@@ -1,6 +1,6 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
-%% @doc WSN export module.
--module(wsn_export).
+%% @doc eliot export module.
+-module(eliot_export).
 -behaviour(gen_server).
 -export([start_link/0, export/1, unexport/1, is_exported/1, get_exported/0, get_exported/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -12,19 +12,19 @@ start_link() ->
 	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 export(Subject) ->
-	gen_server:cast(wsn_export, {export, Subject}).
+	gen_server:cast(eliot_export, {export, Subject}).
 
 unexport(Subject) ->
-	gen_server:cast(wsn_export, {unexport, Subject}).
+	gen_server:cast(eliot_export, {unexport, Subject}).
 
 is_exported(Subject) ->
-	gen_server:call(wsn_export, {is_exported, Subject}).
+	gen_server:call(eliot_export, {is_exported, Subject}).
 
 get_exported() ->
-	gen_server:call(wsn_export, {get}).
+	gen_server:call(eliot_export, {get}).
 
 get_exported(StartName) ->
-    gen_server:call(wsn_export, {get, StartName}).
+    gen_server:call(eliot_export, {get, StartName}).
 
 init([]) ->
     {ok, #state{exported = []}}.
