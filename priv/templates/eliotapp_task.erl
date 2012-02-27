@@ -6,8 +6,9 @@
 start_link() ->
     Pid = spawn_link(?MODULE, {{appid}}, []),
     register({{appid}}, Pid),
-    wsn_export:export({{appid}}),
+    eliot_export:export({{appid}}),
     {ok, Pid}.
 
 {{appid}}() ->
+    % Task implementation goes here
     ok.

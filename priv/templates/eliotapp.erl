@@ -5,19 +5,19 @@
 
 -ifdef(simulation).
 start(Param) ->
-    application:set_env(wsn, simulation, true),
-    application:start(wsn),
+    application:set_env(eliot, simulation, true),
+    application:start(eliot),
     wsn_simulator:start({{appid}}_task, Param).
 -else.
 start(Param) ->
-    wsn_api:set_node_name(Param),
-    application:start(wsn),
+    eliot_api:set_node_name(Param),
+    application:start(eliot),
     application:start({{appid}}).
 -endif.
 
 stop() ->
     Res = application:stop({{appid}}),
-    application:stop(wsn),
+    application:stop(eliot),
     Res.
 
 % Private API

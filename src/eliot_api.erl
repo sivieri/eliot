@@ -22,18 +22,18 @@ set_node_name(NodeId) ->
 -ifdef(simulation).
 get_node_name() ->
     case get(name) of
-        {ok, Name} ->
-            Name;
         undefined ->
-            error
+            error;
+        Name ->
+            Name
     end.
 -else.
 get_node_name() ->
     case application:get_env(eliot, name) of
-        {ok, Name} ->
-            Name;
         undefined ->
-            error
+            error;
+        Name ->
+            Name
     end.
 -endif.
 

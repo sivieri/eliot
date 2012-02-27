@@ -1,0 +1,7 @@
+{variables, [{appid, "myapp"}]}.
+{template, "eliotapp.sh", "start.sh"}.
+{template, "eliotapp.app.src", "src/{{appid}}.app.src"}.
+{template, "eliotapp.erl", "src/{{appid}}.erl"}.
+{template, "eliotapp_app.erl", "src/{{appid}}_app.erl"}.
+{template, "eliotapp_sup.erl", "src/{{appid}}_sup.erl"}.
+{template, "eliotapp_task.erl", "src/{{appid}}_task.erl"}.
