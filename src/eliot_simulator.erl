@@ -2,7 +2,7 @@
 %% @doc Simulator.
 -module(eliot_simulator).
 -include("eliot.hrl").
--export([start/2, send/2, register/2, read_net/1, get_simname/1, get_simname/2, get_name/1]).
+-export([start/2, send/2, send_after/3, register/2, spawn/1, spawn/3, spawn_link/1, spawn_link/3, read_net/1, get_simname/1, get_simname/2, get_name/1]).
 
 % Public API
 
@@ -10,7 +10,7 @@ start(Module, Config) ->
     {Nodes, Gains} = read_net(Config),
     eliot_sup:start_task(eliot_forwarder),
     eliot_forwarder:set_gains(Gains),
-    lists:foreach(fun(NodeAddr) -> spawn(fun() -> start_task(NodeAddr, Module, start_link) end) end, Nodes).
+    lists:foreach(fun(NodeAddr) -> erlang:spawn(fun() -> start_task(NodeAddr, Module, start_link) end) end, Nodes).
 
 start_task(NodeAddr, Module, Function) ->
     eliot_api:set_node_name(nodeid(NodeAddr)),
@@ -21,8 +21,29 @@ send(Dest, Msg) when is_atom(Dest) ->
 send(Dest, Msg) ->
     erlang:send(Dest, Msg).
 
+send_after(Time, Dest, Msg) when is_atom(Dest) ->
+    erlang:send_after(Time, get_simname(Dest), Msg);
+send_after(Time, Dest, Msg) ->
+    erlang:send_after(Time, Dest, Msg).
+
 register(Name, Pid) ->
     erlang:register(get_simname(Name), Pid).
+
+spawn(Fun) ->
+    Name = eliot_api:get_node_name(),
+    erlang:spawn(fun() -> spawn_helper(Name, Fun) end).
+
+spawn(M, F, A) ->
+    Name = eliot_api:get_node_name(),
+    erlang:spawn(fun() -> spawn_helper(Name, M, F, A) end).
+
+spawn_link(Fun) ->
+    Name = eliot_api:get_node_name(),
+    erlang:spawn_link(fun() -> spawn_helper(Name, Fun) end).
+
+spawn_link(M, F, A) ->
+    Name = eliot_api:get_node_name(),
+    erlang:spawn_link(fun() -> spawn_helper(Name, M, F, A) end).
 
 -spec(read_net(string()) -> net()).
 read_net(Filename) ->
@@ -44,6 +65,14 @@ get_name(Name) ->
     list_to_atom(FinalString).
 
 % Private API
+
+spawn_helper(Name, Fun) ->
+    eliot_api:set_node_name(Name),
+    Fun().
+
+spawn_helper(Name, Module, Function, Args) ->
+    eliot_api:set_node_name(Name),
+    erlang:apply(Module, Function, Args).
 
 nodeid(NodeAddr) ->
     list_to_atom(string:substr(atom_to_list(NodeAddr), 6)).

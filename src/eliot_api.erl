@@ -40,10 +40,22 @@ get_node_name() ->
 -spec(nodeaddr(atom() | [atom()] | integer()) -> atom()).
 nodeaddr(NodeId) when is_integer(NodeId) ->
     list_to_atom("node_" ++ utils:format("~p", [NodeId]));
-nodeaddr(NodeId) when is_list(NodeId) ->
+nodeaddr(NodeId) when is_list(NodeId) andalso is_atom(hd(NodeId))->
     list_to_atom("node_" ++ atom_to_list(hd(NodeId)));
+nodeaddr(NodeId) when is_atom(NodeId) ->
+    case string:chr(atom_to_list(NodeId), $_) of
+        0 ->
+            list_to_atom("node_" ++ atom_to_list(NodeId));
+        _ ->
+            NodeId
+    end;
 nodeaddr(NodeId) ->
-    list_to_atom("node_" ++ atom_to_list(NodeId)).
+    case string:chr(NodeId, $_) of
+        0 ->
+            list_to_atom("node_" ++ NodeId);
+        _ ->
+            list_to_atom(NodeId)
+    end.
 
 -spec(nodeid(atom()) -> integer()).
 nodeid(NodeAddr) ->

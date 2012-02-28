@@ -8,7 +8,7 @@
         throw({error,erl_syntax:get_pos(
                proplists:get_value(form,I)),{unknown,R}})
     end).
--define(CHANGED, [{{erlang, send}, {eliot_simulator, send}}, {{erlang, register}, {eliot_simulator, register}}]).
+-define(CHANGED, [{{erlang, send}, {eliot_simulator, send}}, {{erlang, send_after}, {eliot_simulator, send_after}}, {{erlang, register}, {eliot_simulator, register}}, {{erlang, spawn}, {eliot_simulator, spawn}}, {{erlang, spawn_link}, {eliot_simulator, spawn_link}}]).
 -define(CHANGED2, {eliot_simulator, send}).
 
 % Public API
