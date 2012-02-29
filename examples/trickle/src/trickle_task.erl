@@ -57,8 +57,8 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
             NewTRef = erlang:send_after(T, trickle, transmit),
             NewTauRef = erlang:send_after(NewTau, trickle, restart),
             trickle(NewTau, {NewTauRef, NewTRef}, 0, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>);
-        {SourceId, {version, <<NewSrc:?SRCADDR, NewVersion:?VERSION, NewPayload/binary>>}} when NewVersion > Version ->
-            io:format("~p: Received version ~p from ~p (newer)~n", [eliot_api:get_node_name(), NewVersion, SourceId]),
+        {RSSI, {SourceId, {version, <<NewSrc:?SRCADDR, NewVersion:?VERSION, NewPayload/binary>>}}} when NewVersion > Version ->
+            io:format("~p: Received version ~p from ~p (newer) with RSSI ~p~n", [eliot_api:get_node_name(), NewVersion, SourceId, RSSI]),
             erlang:cancel_timer(TRef),
             erlang:cancel_timer(TauRef),
             NewTau = ?TAU_MIN,
@@ -66,8 +66,8 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
             NewTRef = erlang:send_after(T, trickle, transmit),
             NewTauRef = erlang:send_after(NewTau, trickle, restart),
             trickle(NewTau, {NewTauRef, NewTRef}, 0, <<NewSrc:?SRCADDR, NewVersion:?VERSION, NewPayload/binary>>);
-        {SourceId, {version, <<_NewSrc:?SRCADDR, NewVersion:?VERSION, _NewPayload/binary>>}} ->
-            io:format("~p: Received code ~p from ~p (same or older)~n", [eliot_api:get_node_name(), NewVersion, SourceId]),
+        {_RSSI, {_SourceId, {version, <<_NewSrc:?SRCADDR, _NewVersion:?VERSION, _NewPayload/binary>>}}} ->
+            %io:format("~p: Received code ~p from ~p (same or older)~n", [eliot_api:get_node_name(), NewVersion, SourceId]),
             trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>)
     end.
 

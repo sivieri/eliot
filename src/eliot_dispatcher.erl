@@ -18,7 +18,7 @@ loop() ->
 		{connect, Subject, Msg} ->
 			case eliot_export:is_exported(Subject) of
 				true ->
-					Subject ! Msg;
+					Subject ! {0, Msg};
 				false ->
 					ok
 			end,
@@ -49,6 +49,6 @@ send_msg(Node1, Node2, Msg) ->
     case eliot_forwarder:get_gain(Node1, eliot_simulator:get_name(Node2)) of
         inf ->
             ok;
-        _Any ->
-            Node2 ! Msg
+        RSSI ->
+            Node2 ! {RSSI, Msg}
   end.

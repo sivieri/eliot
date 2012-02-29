@@ -36,7 +36,7 @@ oppflooder() ->
 -spec(oppflooder([{integer(), integer()}], dict(), integer()) -> none()).
 oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
     receive
-    {_SourceId, _RSSI, {send, Payload}} ->
+    {RSSI, {_SourceId, {send, Payload}}} ->
         PayloadB = term_to_binary(Payload),
         Id = eliot_api:nodeid(eliot_api:get_node_name()),
         Msg = <<Id:?SRCADDR, NextMsgNum:?SEQNUM, ?INITIAL_OF_TTL:?TTL, PayloadB/binary>>,
@@ -47,7 +47,7 @@ oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
         Msg = get_waiting(Src, Seq, WaitingMsgs),
         eliot_api:bcast_send(oppflooder, Msg),
         oppflooder(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum);
-    {SourceId, RSSI,  <<Src:?SRCADDR, Seq:?SEQNUM, TTL:?TTL, Payload/binary>>} when TTL > 1 ->
+    {RSSI, {SourceId,  <<Src:?SRCADDR, Seq:?SEQNUM, TTL:?TTL, Payload/binary>>}} when TTL > 1 ->
         io:format("~p: Received message from ~p with RSSI=~p~n", [get(myid), SourceId, RSSI]),
         case find_waiting(Src, Seq, WaitingMsgs) of
             error ->
@@ -68,7 +68,7 @@ oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
                 erlang:cancel_timer(TRef),
                 oppflooder(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum)
         end;
-    {SourceId, RSSI, <<_Src:?SRCADDR, _Seq:?SEQNUM, _TTL:?TTL, _Payload/binary>>} -> % TTL finished
+    {RSSI, {SourceId, <<_Src:?SRCADDR, _Seq:?SEQNUM, _TTL:?TTL, _Payload/binary>>}} -> % TTL finished
         io:format("~p: Received message from ~p with RSSI=~p~n", [get(myid), SourceId, RSSI]),
         oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum)
     end.
