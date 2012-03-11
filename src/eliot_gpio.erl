@@ -55,11 +55,11 @@ create_port() ->
             io:format("~w priv directory not found!", [eliot]),
             exit(error);
         PrivDir ->
-            open_port({spawn, filename:join([PrivDir, "eliot_gpio"])}, [binary, {packet, 4}, exit_status])
+            open_port({spawn, filename:join([PrivDir, "eliot-gpio"])}, [binary, {packet, 4}, exit_status])
     end.
 
 send_int(Port, Msg) ->
-    Port ! {self(), {command, term_to_binary(Msg)}},
+    erlang:port_command(Port, term_to_binary(Msg)),
     receive
         {Port, {data, Data}} ->
             Res = binary_to_term(Data),

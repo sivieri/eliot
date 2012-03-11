@@ -2,5 +2,6 @@ doc/*.html
 doc/*.png
 doc/*.css
 ebin
+priv/eliot-gpio
 simbin
 erl_crash.dump
