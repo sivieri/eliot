@@ -3,3 +3,4 @@
 -define(NOISE_DELTA, 5.0).
 -define(SENSITIVITY, 4.0).
 -define(NODENAME, "wsn").
+-define(INTERFACE, "wlan0").

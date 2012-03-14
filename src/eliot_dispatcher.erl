@@ -1,6 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Dispatcher.
 -module(eliot_dispatcher).
+-include("eliot.hrl").
 -export([start_link/0, loop/0]).
 
 % Public API
@@ -18,7 +19,7 @@ loop() ->
 		{connect, Subject, Msg} ->
 			case eliot_export:is_exported(Subject) of
 				true ->
-					Subject ! {0, Msg};
+					Subject ! {eliot_rssi:rssi(?INTERFACE, Subject), Msg};
 				false ->
 					ok
 			end,

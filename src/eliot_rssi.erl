@@ -24,7 +24,9 @@ handle_call({all, Interface}, _From, #state{port = Port} = State) ->
     Res = send_int(Port, {scan, Interface}),
     {reply, Res, State};
 handle_call({single, Interface, Client}, _From, #state{port = Port} = State) ->
-    Res = send_int(Port, {scan, Interface}),
+    {ok, List} = send_int(Port, {scan, Interface}),
+    Res = lists:foldl(fun({Addr, _RSSI}, _AccIn) when Addr == Client -> Client;
+                                   (_Tuple, AccIn) -> AccIn end, {}, List),
     {reply, Res, State}.
 
 handle_cast(_Msg, State) ->
