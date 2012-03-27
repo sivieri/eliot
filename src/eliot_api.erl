@@ -64,7 +64,7 @@ nodeid(NodeAddr) ->
 -spec(export(atom() | pid()) -> ok).
 -ifdef(simulator).
 export(Subject) when is_atom(Subject) ->
-	eliot_export:export(eliot_simulator:get_simname(Subject));
+	eliot_simulator:export(Subject);
 export(Subject) ->
     eliot_export:export(Subject).
 -else.

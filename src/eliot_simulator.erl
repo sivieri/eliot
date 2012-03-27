@@ -2,7 +2,7 @@
 %% @doc Simulator.
 -module(eliot_simulator).
 -include("eliot.hrl").
--export([start/2, send/2, send_after/3, register/2, spawn/1, spawn/3, spawn_link/1, spawn_link/3, read_net/1, get_simname/1, get_simname/2, get_name/1]).
+-export([start/2, send/2, send_after/3, register/2, spawn/1, spawn/3, spawn_link/1, spawn_link/3, read_net/1, get_simname/1, get_simname/2, get_name/1, export/1]).
 
 % Public API
 
@@ -64,6 +64,15 @@ get_name(Name) ->
     FinalString = string:sub_string(NameString, SecondIdx + 1, string:len(NameString) - SecondIdx),
     list_to_atom(FinalString).
 
+export(Name) ->
+    case lists:member(Name, registered()) of
+        true ->
+            ok;
+        false ->
+            Pid = erlang:spawn(fun() -> gateway() end),
+            erlang:register(Name, Pid)
+    end.
+
 % Private API
 
 spawn_helper(Name, Fun) ->
@@ -90,4 +99,14 @@ read_net(Device, Nodes, Gains) ->
             file:close(Device),
             SortedNodes = lists:sort(sets:to_list(Nodes)),
             {SortedNodes, Gains}
+    end.
+
+gateway() ->
+    receive
+        Msg ->
+            Processes = registered(),
+            {registered_name, OwnName} = process_info(self(), registered_name),
+            List = lists:filter(fun(X) -> lists:prefix(OwnName, X) end, Processes),
+            lists:foreach(fun(X) -> X ! Msg end, List),
+            gateway()
     end.
