@@ -64,9 +64,8 @@ ctp(RoutingPid, LinkPid, FwdPid) ->
 %% @private
 -spec(root(atom()) -> 0 | 1).
 root(Id) ->
-    N = eliot_api:nodeid(Id),
     if
-        N rem 16 == 15 ->
+        Id rem 16 == 15 ->
             put(collector, true),
             1;
         true ->
