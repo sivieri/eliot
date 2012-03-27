@@ -85,8 +85,13 @@ unexport(Subject) ->
 
 -spec(send(atom() | pid(), {atom(), node()}, any()) -> ok).
 -ifdef(simulator).
-send(Name, {NodeName, _NodeAddr}, Msg) ->
-    eliot_dispatcher ! {simulation, {Name, NodeName}, msg(Msg)},
+send(Name, {NodeName, NodeAddr}, Msg) ->
+    case utils:get_host_ip() == NodeAddr of
+        true ->
+            eliot_dispatcher ! {simulation, {Name, NodeName}, msg(Msg)}; % Send to simulated nodes if receiver is the same node...
+        false ->
+            {eliot_dispatcher, NodeAddr} ! {connect, Name, msg(Msg)} % ... or send to all if receiver is different
+    end,
     ok.
 -else.
 send(Name, {_NodeName, NodeAddr}, Msg) ->
@@ -97,7 +102,8 @@ send(Name, {_NodeName, NodeAddr}, Msg) ->
 -spec(bcast_send(any()) -> ok).
 -ifdef(simulator).
 bcast_send(Msg) ->
-    eliot_dispatcher ! {simulation, all, msg(Msg)},
+    eliot_dispatcher ! {simulation, all, msg(Msg)}, % Send to simulated nodes...
+    rpc:abcast(nodes(), eliot_dispatcher, {connect, all, msg(Msg)}), % ... and to real ones, in case we are in mixed simulation.
     ok.
 -else.
 bcast_send(Msg) ->
@@ -109,6 +115,7 @@ bcast_send(Msg) ->
 -ifdef(simulator).
 bcast_send(Name, Msg) ->
     eliot_dispatcher ! {simulation, Name, msg(Msg)},
+    rpc:abcast(nodes(), eliot_dispatcher, {connect, Name, msg(Msg)}),
     ok.
 -else.
 bcast_send(Name, Msg) ->

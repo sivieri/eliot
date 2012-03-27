@@ -70,7 +70,8 @@ export(Name) ->
             ok;
         false ->
             Pid = erlang:spawn(fun() -> gateway() end),
-            erlang:register(Name, Pid)
+            erlang:register(Name, Pid),
+            eliot_export:export(Name)
     end.
 
 % Private API
