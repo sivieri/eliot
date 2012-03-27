@@ -1,0 +1,12 @@
+{application, ctp,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { ctp_app, []}},
+  {env, []}
+ ]}.
