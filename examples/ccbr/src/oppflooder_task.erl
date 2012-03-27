@@ -1,7 +1,7 @@
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 -module(oppflooder_task).
--export([start_link/0, oppflooder/0]).
+-export([start_link/0, oppflooder/0, send/1]).
 -define(MAX_WAITING_OF_MSG, 3).
 -define(MAX_RECEIVED_MSG, 30).
 -define(SRCADDR, 16/unsigned-little-integer).
@@ -18,9 +18,9 @@ start_link() ->
     {ok, Pid}.
 
 %% @doc Send a message from the given node.
-%% @spec send(atom(), any()) -> ok
--spec(send(atom(), any()) -> ok).
-send(NodeId, Payload) ->
+%% @spec send(any()) -> ok
+-spec(send(any()) -> ok).
+send(Payload) ->
     eliot_api:send(oppflooder, node(), {send, Payload}),
     ok.
 
@@ -36,17 +36,12 @@ oppflooder() ->
 -spec(oppflooder([{integer(), integer()}], dict(), integer()) -> none()).
 oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
     receive
-    {RSSI, {_SourceId, {send, Payload}}} ->
+    {_RSSI, {_SourceId, {send, Payload}}} ->
         PayloadB = term_to_binary(Payload),
         Id = eliot_api:nodeid(eliot_api:get_node_name()),
         Msg = <<Id:?SRCADDR, NextMsgNum:?SEQNUM, ?INITIAL_OF_TTL:?TTL, PayloadB/binary>>,
         eliot_api:bcast_send(oppflooder, Msg),
         oppflooder(record_received({Id, NextMsgNum}, ReceivedMsgs), WaitingMsgs, (NextMsgNum + 1) rem 256);
-    {Src, Seq} ->
-        io:format("~p: Timer expired for message (~p, ~p) sending it~n", [get(myid), Src, Seq]),
-        Msg = get_waiting(Src, Seq, WaitingMsgs),
-        eliot_api:bcast_send(oppflooder, Msg),
-        oppflooder(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum);
     {RSSI, {SourceId,  <<Src:?SRCADDR, Seq:?SEQNUM, TTL:?TTL, Payload/binary>>}} when TTL > 1 ->
         io:format("~p: Received message from ~p with RSSI=~p~n", [get(myid), SourceId, RSSI]),
         case find_waiting(Src, Seq, WaitingMsgs) of
@@ -70,7 +65,12 @@ oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
         end;
     {RSSI, {SourceId, <<_Src:?SRCADDR, _Seq:?SEQNUM, _TTL:?TTL, _Payload/binary>>}} -> % TTL finished
         io:format("~p: Received message from ~p with RSSI=~p~n", [get(myid), SourceId, RSSI]),
-        oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum)
+        oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum);
+    {Src, Seq} ->
+        io:format("~p: Timer expired for message (~p, ~p) sending it~n", [get(myid), Src, Seq]),
+        Msg = get_waiting(Src, Seq, WaitingMsgs),
+        eliot_api:bcast_send(oppflooder, Msg),
+        oppflooder(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum)
     end.
 
 %% @private
