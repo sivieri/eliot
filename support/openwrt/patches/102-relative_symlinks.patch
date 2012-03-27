@@ -1,0 +1,21 @@
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -910,13 +910,11 @@ install.Install:
+ #
+ 
+ install.bin:
+-	@ DESTDIR="$(DESTDIR)" EXTRA_PREFIX="$(EXTRA_PREFIX)"		\
+-	  LN_S="$(LN_S)" BINDIR_SYMLINKS="$(BINDIR_SYMLINKS)"  		\
+-		$(ERL_TOP)/make/install_bin				\
+-			--bindir "$(bindir)"				\
+-			--erlang-bindir "$(erlang_bindir)"		\
+-			--exec-prefix "$(exec_prefix)"			\
+-			$(ERL_BASE_PUB_FILES)
++	cd $(BINDIR); \
++	for file in $(ERL_BASE_PUB_FILES); do \
++		rm -f $(BINDIR)/$$file; \
++		${LN_S} ../lib/erlang/bin/$$file .; \
++	done
+ 
+ #
+ # Directories needed before we can install
