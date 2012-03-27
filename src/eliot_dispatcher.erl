@@ -13,13 +13,13 @@ start_link() ->
 
 loop() ->
 	receive
-		{connect, all, Msg} ->
-			lists:foreach(fun(Subject) -> Subject ! Msg end, eliot_export:get_exported()),
+		{connect, all, {{_Name, Ip}, _PLoad} = Msg} ->
+			lists:foreach(fun(Subject) -> Subject ! {eliot_rssi:rssi(?INTERFACE, eliot_mac:get(Ip)), Msg} end, eliot_export:get_exported()),
             loop();
-		{connect, Subject, Msg} ->
+		{connect, Subject, {{_Name, Ip}, _PLoad} = Msg} ->
 			case eliot_export:is_exported(Subject) of
 				true ->
-					Subject ! {eliot_rssi:rssi(?INTERFACE, Subject), Msg};
+					Subject ! {eliot_rssi:rssi(?INTERFACE, eliot_mac:get(Ip)), Msg};
 				false ->
 					ok
 			end,

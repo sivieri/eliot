@@ -137,4 +137,4 @@ bcast_spawn(Module, Function, Args) ->
 % Private API
 
 msg(Msg) ->
-    {{eliot_api:get_node_name(), node()}, Msg}.
+    {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}.

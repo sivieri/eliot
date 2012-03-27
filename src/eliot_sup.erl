@@ -15,7 +15,8 @@ init([]) ->
 								              ?CHILD(eliot_dispatcher, worker),
                                                ?CHILD(eliot_ping, worker),
                                                ?CHILD(eliot_gpio, worker),
-                                               ?CHILD(eliot_rssi, worker)]}}.
+                                               ?CHILD(eliot_rssi, worker),
+                                               ?CHILD(eliot_mac, worker)]}}.
 
 start_task(Module) ->
     supervisor:start_child(?MODULE, ?CHILD(Module, worker)).

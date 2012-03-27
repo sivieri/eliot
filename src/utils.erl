@@ -1,21 +1,10 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Utility functions.
 -module(utils).
--export([format/2, gethostip/0, consistency/3, echo/0, get_bcast_addr/0, to_int/1]).
--define(IFACE, "vboxnet0").
+-export([format/2, get_host_ip/0, consistency/3, echo/0, get_bcast_addr/0, to_int/1, get_host_mac/0]).
+-include("eliot.hrl").
 
 % Public API
-
-%% @doc Get the IP of the active interface (avoiding loopback).
-%% @spec gethostip() -> atom()
--spec(gethostip() -> atom()).
-gethostip() ->
-    {ok, Ifs} = inet:getiflist(),
-    Ifs2 = lists:filter(fun(Elem) when Elem == "lo" -> false;
-                           (_Elem) -> true end, Ifs),
-    [Real|_] = Ifs2,
-    {ok, [{addr, Addr}]} = inet:ifget(Real, [addr]),
-    erlang:list_to_atom(inet_parse:ntoa(Addr)).
 
 %% @doc Insert the given elements into a string, returning it
 %% as a string itself.
@@ -52,9 +41,36 @@ get_bcast_addr() ->
             {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
             Address;
         {ok, IfList} ->
-            {?IFACE, IfOpts} = lists:keyfind(?IFACE, 1, IfList),
+            {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
             {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
             Address
+    end.
+
+get_host_ip() ->
+    case inet:getifaddrs() of
+        {ok, IfList} when length(IfList) == 2 ->
+            [{_Real, IfOpts}] = lists:filter(fun({Name, _IfOpts}) when Name == "lo" -> false;
+                                     ({_Name, _IfOpts}) -> true end, IfList),
+            {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
+            Address;
+        {ok, IfList} ->
+            {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
+            {addr, Address} = lists:keyfind(addr, 1, IfOpts),
+            Address
+    end.
+
+get_host_mac() ->
+    case inet:getifaddrs() of
+        {ok, IfList} when length(IfList) == 2 ->
+            [{_Real, IfOpts}] = lists:filter(fun({Name, _IfOpts}) when Name == "lo" -> false;
+                                     ({_Name, _IfOpts}) -> true end, IfList),
+            {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
+            Address;
+        {ok, IfList} ->
+            {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
+            {hwaddr, Address} = lists:keyfind(hwaddr, 1, IfOpts),
+            StringAddress = lists:map(fun(X) -> format("~2.16.0b", X) end, Address),
+            string:join(StringAddress, ":")
     end.
 
 to_int(String) ->

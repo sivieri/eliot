@@ -27,7 +27,7 @@ ping() ->
 ping(Socket) ->
     receive
         wakeup ->
-            case gen_udp:send(Socket, utils:get_bcast_addr(), ?PORT, "") of
+            case gen_udp:send(Socket, utils:get_bcast_addr(), ?PORT, erlang:list_to_binary(utils:get_host_mac())) of
                 ok ->
                     io:format("UDP server: ping!~n"),
                     ok;
@@ -36,8 +36,10 @@ ping(Socket) ->
             end,
             erlang:send_after(?TIMEOUT, self(), wakeup),
             ping(Socket);
-        {udp, _Socket, IP, _InPortNo, _Packet} ->
+        {udp, _Socket, IP, _InPortNo, Packet} ->
             NodeName = erlang:list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa(IP)),
+            MacAddr = erlang:binary_to_list(Packet),
+            eliot_mac:set(inet_parse:ntoa(IP), MacAddr),
             io:format("UDP server: pinged by ~p~n", [NodeName]),
             case lists:member(NodeName, nodes()) of
                 true ->
