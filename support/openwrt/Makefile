@@ -67,6 +67,20 @@ $(call Package/erlang/Default/description)
 endef
 
 
+define Package/erlang-runtime_tools
+$(call Package/erlang/Default)
+  TITLE:=Runtime tools
+  VERSION:=1.8.7
+  DEPENDS+= +erlang
+endef
+
+define Package/erlang-runtime_tools/description
+$(call Package/erlang/Default/description)
+ .
+ Runtime tools, tools to include in a production system.
+endef
+
+
 # Host
 
 HOST_CONFIGURE_ARGS += \
@@ -167,3 +181,4 @@ endef
 $(eval $(call HostBuild))
 $(eval $(call BuildPackage,erlang))
 $(eval $(call BuildModule,observer,observer))
+$(eval $(call BuildModule,runtime_tools,runtime_tools))
