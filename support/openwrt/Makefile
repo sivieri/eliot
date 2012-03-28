@@ -52,6 +52,21 @@ $(call Package/erlang/Default/description)
  modules (erts, kernel, sasl & stdlib).
 endef
 
+
+define Package/erlang-observer
+$(call Package/erlang/Default)
+  TITLE:=Observer support
+  VERSION:=1.0
+  DEPENDS+= +erlang
+endef
+
+define Package/erlang-observer/description
+$(call Package/erlang/Default/description)
+ .
+ Observer, tools for tracing and investigation of distributed systems.
+endef
+
+
 # Host
 
 HOST_CONFIGURE_ARGS += \
@@ -135,5 +150,20 @@ define Package/erlang/install
 endef
 
 
+define BuildModule
+
+  define Package/erlang-$(1)/install
+	$(INSTALL_DIR) $$(1)/usr/lib/erlang/lib
+	for m in $(2); do \
+		$(CP) $(PKG_INSTALL_DIR)/usr/lib/erlang/lib/$$$$$$$$m-* $$(1)/usr/lib/erlang/lib/ ; \
+		rm -rf $$(1)/usr/lib/erlang/lib/$$$$$$$$m-*/{examples,priv/obj,src} ; \
+	done
+  endef
+
+  $$(eval $$(call BuildPackage,erlang-$(1)))
+
+endef
+
 $(eval $(call HostBuild))
 $(eval $(call BuildPackage,erlang))
+$(eval $(call BuildModule,observer,observer))
