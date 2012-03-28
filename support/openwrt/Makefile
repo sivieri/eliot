@@ -79,7 +79,6 @@ endef
 CONFIGURE_ARGS += \
 	--disable-hipe \
 	--disable-smp-support \
-	--disable-threads \
 	--without-java \
 	--with-ssl="$(STAGING_DIR)/usr" \
 	--enable-dynamic-ssl-lib
