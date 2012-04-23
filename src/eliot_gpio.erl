@@ -64,7 +64,7 @@ create_port() ->
 -endif.
 
 -ifdef(simulation).
-send_int(Port, Msg) ->
+send_int(_Port, Msg) ->
     case Msg of
         {get, _Pin} ->
             case random:uniform(2) of
