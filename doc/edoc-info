@@ -1,5 +1,5 @@
 {application,eliot}.
 {packages,[]}.
 {modules,[eliot,eliot_api,eliot_app,eliot_dispatcher,eliot_export,
-          eliot_forwarder,eliot_parser,eliot_ping,eliot_simulator,eliot_sup,
-          utils]}.
+          eliot_forwarder,eliot_gpio,eliot_mac,eliot_parser,eliot_ping,
+          eliot_rssi,eliot_simulator,eliot_sup,utils]}.

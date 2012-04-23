@@ -1,7 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Utility functions.
 -module(utils).
--export([format/2, get_host_ip/0, consistency/3, echo/0, get_bcast_addr/0, to_int/1, get_host_mac/0]).
+-export([format/2, get_host_ip/0, consistency/3, echo/0, get_bcast_addr/0, to_int/1, get_host_mac/0, split_name/1, join_name/2]).
 -include("eliot.hrl").
 
 % Public API
@@ -69,9 +69,17 @@ get_host_mac() ->
         {ok, IfList} ->
             {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
             {hwaddr, Address} = lists:keyfind(hwaddr, 1, IfOpts),
-            StringAddress = lists:map(fun(X) -> format("~2.16.0b", X) end, Address),
+            StringAddress = lists:map(fun(X) -> format("~2.16.0b", [X]) end, Address),
             string:join(StringAddress, ":")
     end.
+
+split_name(Node) ->
+    NodeString = erlang:atom_to_list(Node),
+    [NodeName, NodeAddress] = string:tokens(NodeString, "@"),
+    {NodeName, NodeAddress}.
+
+join_name(NodeName, NodeAddress) ->
+    erlang:list_to_atom(NodeName ++ "@" ++ NodeAddress).
 
 to_int(String) ->
     {Res, _} = string:to_integer(String),
