@@ -1,0 +1,18 @@
+{ok, Opts} = file:consult(filename:join(filename:dirname(SCRIPT), "rebar.config")).
+Opts1 = case os:getenv("ELIOT_MODE") of
+    false ->
+        Opts;
+    "deploy" ->
+        Opts;
+    "simulation" ->
+        TmpOpts = lists:keystore(out_dir, 1, Opts, {out_dir, "simbin"}),
+        case lists:keyfind(erl_opts, 1, Opts) of
+            false ->
+                lists:keystore(erl_opts, 1, TmpOpts, {erl_opts, [{d, simulation}]});
+            {erl_opts, ErlOpts} ->
+                lists:keystore(erl_opts, 1, TmpOpts, {erl_opts, ErlOpts ++ [{d, simulation}]})
+            end;
+    _Other ->
+        Opts
+end.
+Opts1.
