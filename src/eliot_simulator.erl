@@ -106,9 +106,10 @@ read_net(Device, Nodes, Gains) ->
 gateway() ->
     receive
         Msg ->
-            Processes = registered(),
+            Processes = eliot_export:get_exported_simulated(),
             {registered_name, OwnName} = process_info(self(), registered_name),
-            List = lists:filter(fun(X) -> lists:prefix(OwnName, X) end, Processes),
+            io:format(standard_error, "~p ~p ~p~n", [Msg, Processes, OwnName]),
+            List = lists:filter(fun(X) -> lists:prefix(erlang:atom_to_list(OwnName), erlang:atom_to_list(X)) end, Processes),
             lists:foreach(fun(X) -> X ! Msg end, List),
             gateway()
     end.

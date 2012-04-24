@@ -54,7 +54,7 @@ create_port() ->
     ok.
 -else.
 create_port() ->
-    open_port({spawn, filename:join([filename:absname(""), "priv", "eliot-gpio"])}, [binary, {packet, 4}, exit_status]).
+    open_port({spawn, filename:join([filename:absname(""), "deps", "eliot", "priv", "eliot-gpio"])}, [binary, {packet, 4}, exit_status]).
 -endif.
 
 -ifdef(simulation).

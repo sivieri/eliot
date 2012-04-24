@@ -46,7 +46,7 @@ code_change(_OldVsn, State, _Extra) ->
 
 create_port() ->
     io:format(standard_error, "~p~n", [filename:absname("")]),
-    open_port({spawn, filename:join([filename:absname(""), "priv", "eliot-rssi"])}, [binary, {packet, 4}, exit_status]).
+    open_port({spawn, filename:join([filename:absname(""),"deps", "eliot", "priv", "eliot-rssi"])}, [binary, {packet, 4}, exit_status]).
 
 send_int(Port, Msg) ->
     erlang:port_command(Port, term_to_binary(Msg)),
