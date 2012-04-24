@@ -14,7 +14,7 @@ start_link() ->
 loop() ->
 	receive
 		{connect, all, {{_Name, Ip}, _PLoad} = Msg} ->
-			lists:foreach(fun(Subject) -> Subject ! {eliot_rssi:rssi(?INTERFACE, eliot_mac:get(Ip)), Msg} end, eliot_export:get_exported()),
+			lists:foreach(fun(Subject) -> Subject ! {eliot_rssi:rssi(?INTERFACE, eliot_mac:get(Ip)), Msg} end, eliot_export:get_exported_real()),
             loop();
 		{connect, Subject, {{_Name, Ip}, _PLoad} = Msg} ->
 			case eliot_export:is_exported(Subject) of
@@ -25,7 +25,7 @@ loop() ->
 			end,
 			loop();
         {simulation, all, Msg = {{SenderName, _SenderNode}, _Msg}} ->
-            lists:foreach(fun(Subject) -> send_msg(SenderName, Subject, Msg) end, eliot_export:get_exported()),
+            lists:foreach(fun(Subject) -> send_msg(SenderName, Subject, Msg) end, eliot_export:get_exported_simulated()),
             loop();
         {simulation, {Subject, Node}, Msg = {{SenderName, _SenderNode}, _Msg}} ->
             QName = eliot_simulator:get_simname(Subject, Node),
@@ -37,7 +37,7 @@ loop() ->
             end,
             loop();
         {simulation, Subject, Msg = {{SenderName, _SenderNode}, _Msg}} ->
-            lists:foreach(fun(Elem) -> send_msg(SenderName, Elem, Msg) end, eliot_export:get_exported(Subject)),
+            lists:foreach(fun(Elem) -> send_msg(SenderName, Elem, Msg) end, eliot_export:get_exported_simulated(Subject)),
             loop();
 		Any ->
 			io:format("eliot dispatcher: unable to parse ~p~n", [Any]),

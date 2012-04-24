@@ -9,3 +9,6 @@ simulation:
 clean:
 	ELIOT_MODE=deploy ./rebar clean
 	ELIOT_MODE=simulation ./rebar clean
+
+doc:
+	./rebar doc

@@ -66,10 +66,10 @@ nodeid(NodeAddr) ->
 export(Subject) when is_atom(Subject) ->
 	eliot_simulator:export(Subject);
 export(Subject) ->
-    eliot_export:export(Subject).
+    eliot_export:export_real(Subject).
 -else.
 export(Subject) ->
-    eliot_export:export(Subject).
+    eliot_export:export_real(Subject).
 -endif.
 
 -spec(unexport(atom() | pid()) -> ok).

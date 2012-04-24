@@ -29,6 +29,17 @@ send_after(Time, Dest, Msg) ->
 register(Name, Pid) ->
     erlang:register(get_simname(Name), Pid).
 
+export(Name) ->
+    eliot_export:export_simulated(get_simname(Name)), % Export the real processes...
+    case lists:member(Name, registered()) of  % ... then export a fake process to receive messages from the external world
+        true ->
+            ok;
+        false ->
+            Pid = erlang:spawn(fun() -> gateway() end),
+            erlang:register(Name, Pid),
+            eliot_export:export_real(Name)
+    end.
+
 spawn(Fun) ->
     Name = eliot_api:get_node_name(),
     erlang:spawn(fun() -> spawn_helper(Name, Fun) end).
@@ -61,18 +72,8 @@ get_name(Name) ->
     PrevIdx = string:rchr(NameString, $_),
     SubStr = string:sub_string(NameString, 1, PrevIdx - 1),
     SecondIdx = string:rchr(SubStr, $_),
-    FinalString = string:sub_string(NameString, SecondIdx + 1, string:len(NameString) - SecondIdx),
+    FinalString = string:sub_string(NameString, SecondIdx + 1, string:len(NameString)),
     list_to_atom(FinalString).
-
-export(Name) ->
-    case lists:member(Name, registered()) of
-        true ->
-            ok;
-        false ->
-            Pid = erlang:spawn(fun() -> gateway() end),
-            erlang:register(Name, Pid),
-            eliot_export:export(Name)
-    end.
 
 % Private API
 
