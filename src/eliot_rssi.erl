@@ -44,24 +44,10 @@ code_change(_OldVsn, State, _Extra) ->
 
 % Private API
 
--ifdef(simulation).
 create_port() ->
-    ok.
--else.
-create_port() ->
-    case code:priv_dir(eliot) of
-        {error, _} ->
-            io:format("~w priv directory not found!", [eliot]),
-            exit(error);
-        PrivDir ->
-            open_port({spawn, filename:join([PrivDir, "eliot-rssi"])}, [binary, {packet, 4}, exit_status])
-    end.
--endif.
+    io:format(standard_error, "~p~n", [filename:absname("")]),
+    open_port({spawn, filename:join([filename:absname(""), "priv", "eliot-rssi"])}, [binary, {packet, 4}, exit_status]).
 
--ifdef(simulation).
-send_int(_Port, _Msg) ->
-    ok. % This should never be invoked: the simulation module gets the correct values
--else.
 send_int(Port, Msg) ->
     erlang:port_command(Port, term_to_binary(Msg)),
     receive
@@ -75,4 +61,3 @@ send_int(Port, Msg) ->
             end,
             Res
     end.
--endif.

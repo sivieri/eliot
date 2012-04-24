@@ -54,13 +54,7 @@ create_port() ->
     ok.
 -else.
 create_port() ->
-    case code:priv_dir(eliot) of
-        {error, _} ->
-            io:format("~w priv directory not found!", [eliot]),
-            exit(error);
-        PrivDir ->
-            open_port({spawn, filename:join([PrivDir, "eliot-gpio"])}, [binary, {packet, 4}, exit_status])
-    end.
+    open_port({spawn, filename:join([filename:absname(""), "priv", "eliot-gpio"])}, [binary, {packet, 4}, exit_status]).
 -endif.
 
 -ifdef(simulation).
