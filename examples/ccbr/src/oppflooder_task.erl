@@ -1,7 +1,7 @@
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 -module(oppflooder_task).
--export([start_link/0, oppflooder/0, send/1]).
+-export([start_link/0, oppflooder/0, send/2]).
 -define(MAX_WAITING_OF_MSG, 3).
 -define(MAX_RECEIVED_MSG, 30).
 -define(SRCADDR, 16/unsigned-little-integer).
@@ -14,14 +14,15 @@
 start_link() ->
     Pid = spawn_link(?MODULE, oppflooder, []),
     register(oppflooder, Pid),
-    eliot_export:export(oppflooder),
+    eliot_api:export(oppflooder),
     {ok, Pid}.
 
 %% @doc Send a message from the given node.
-%% @spec send(any()) -> ok
--spec(send(any()) -> ok).
-send(Payload) ->
-    eliot_api:send(oppflooder, node(), {send, Payload}),
+%% @spec send(atom(), any()) -> ok
+-spec(send(atom(), any()) -> ok).
+send(DestId, Payload) ->
+    {_NodeName, NodeAddress} = utils:split_name(node()),
+    eliot_api:send_test(oppflooder, {DestId, NodeAddress}, {send, Payload}),
     ok.
 
 %% @doc The flood implementation for the single node.
@@ -43,31 +44,31 @@ oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
         eliot_api:bcast_send(oppflooder, Msg),
         oppflooder(record_received({Id, NextMsgNum}, ReceivedMsgs), WaitingMsgs, (NextMsgNum + 1) rem 256);
     {RSSI, {SourceId,  <<Src:?SRCADDR, Seq:?SEQNUM, TTL:?TTL, Payload/binary>>}} when TTL > 1 ->
-        io:format("~p: Received message from ~p with RSSI=~p~n", [get(myid), SourceId, RSSI]),
+        io:format("~p: Received message from ~p with RSSI=~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
         case find_waiting(Src, Seq, WaitingMsgs) of
             error ->
                case already_received({Src, Seq}, ReceivedMsgs) of
                   true ->
-                      io:format("~p: Already received this msg~n", [get(myid)]),
+                      io:format("~p: Already received this msg~n", [eliot_api:get_node_name()]),
                       oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum);
                   false ->
                       Delay = 1000 + RSSI * 10 + random:uniform(100),
-                      io:format("~p: forwarding msg in ~p ms~n", [get(myid), Delay]),
+                      io:format("~p: forwarding msg in ~p ms~n", [eliot_api:get_node_name(), Delay]),
                       TRef = erlang:send_after(Delay, self(), {Src, Seq}),
                       NewTTL = TTL + 1,
                       NewMsg = <<Src:?SRCADDR, Seq:?SEQNUM, NewTTL:?TTL, Payload/binary>>,
                       oppflooder(record_received({Src, Seq}, ReceivedMsgs), add_waiting(NewMsg, TRef, WaitingMsgs, dict:size(WaitingMsgs)), NextMsgNum)
                end;
             TRef ->
-                io:format("~p: Message (~p, ~p) already in queue, canceling timer~n", [get(myid), Src, Seq]),
+                io:format("~p: Message (~p, ~p) already in queue, canceling timer~n", [eliot_api:get_node_name(), Src, Seq]),
                 erlang:cancel_timer(TRef),
                 oppflooder(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum)
         end;
     {RSSI, {SourceId, <<_Src:?SRCADDR, _Seq:?SEQNUM, _TTL:?TTL, _Payload/binary>>}} -> % TTL finished
-        io:format("~p: Received message from ~p with RSSI=~p~n", [get(myid), SourceId, RSSI]),
+        io:format("~p: Received message from ~p with RSSI=~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
         oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum);
     {Src, Seq} ->
-        io:format("~p: Timer expired for message (~p, ~p) sending it~n", [get(myid), Src, Seq]),
+        io:format("~p: Timer expired for message (~p, ~p) sending it~n", [eliot_api:get_node_name(), Src, Seq]),
         Msg = get_waiting(Src, Seq, WaitingMsgs),
         eliot_api:bcast_send(oppflooder, Msg),
         oppflooder(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum)
