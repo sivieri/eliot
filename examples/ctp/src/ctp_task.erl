@@ -1,6 +1,6 @@
 -module(ctp_task).
 -include("ctp.hrl").
--export([start_link/0, ctp/0, collect/1]).
+-export([start_link/0, ctp/0, collect/2]).
 -define(TAU_MAX, 600000).
 -define(TAU_MIN, 64).
 
@@ -9,7 +9,7 @@
 start_link() ->
     Pid = spawn_link(?MODULE, ctp, []),
     register(ctp, Pid),
-    eliot_export:export(ctp),
+    eliot_api:export(ctp),
     {ok, Pid}.
 
 %% @doc Implementation of the algorithm for each node.
@@ -27,9 +27,10 @@ ctp() ->
 %% @doc Send a data from the specified node; this data should be
 %% routed to a collector.
 %% @spec collect(atom(), any()) -> ok
--spec(collect(any()) -> ok).
-collect(Data) ->
-    eliot_api:send(ctp, node(), {collect, Data}),
+-spec(collect(atom(), any()) -> ok).
+collect(DestId, Data) ->
+    {_NodeName, NodeAddress} = utils:split_name(node()),
+    eliot_api:send_test(ctp, {DestId, NodeAddress}, {collect, Data}),
     ok.
 
 % Private API
@@ -38,22 +39,22 @@ collect(Data) ->
 -spec(ctp(pid(), pid(), pid()) -> none()).
 ctp(RoutingPid, LinkPid, FwdPid) ->
     receive
-        {SourceId, RSSI, Msg} when is_record(Msg, ack)  ->
+        {RSSI, {SourceId, Msg}} when is_record(Msg, ack)  ->
             io:format("~p: Received ack from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
             FwdPid ! {SourceId, RSSI, Msg},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {SourceId, RSSI, Msg} when is_record(Msg, routing) ->
+        {RSSI, {SourceId, Msg}} when is_record(Msg, routing) ->
             %io:format("~p: Received msg ~p from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), Msg, SourceId, RSSI]),
             LinkPid ! {SourceId, RSSI, Msg},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {SourceId, RSSI, Msg} when is_record(Msg, data) ->
+        {RSSI, {SourceId, Msg}} when is_record(Msg, data) ->
             io:format("~p: Received msg ~p from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), Msg, SourceId, RSSI]),
             FwdPid ! {SourceId, RSSI, Msg},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {_SourceId, _RSSI, {collect, Data}} ->
+        {_RSSI, {_SourceId, {collect, Data}}} ->
             FwdPid ! {collect, Data},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {_SourceId, _RSSI, {collect, Data, Timeout}} ->
+        {_RSSI, {_SourceId, {collect, Data, Timeout}}} ->
             FwdPid ! {collect, Data, Timeout},
             ctp(RoutingPid, LinkPid, FwdPid);
         Any ->
