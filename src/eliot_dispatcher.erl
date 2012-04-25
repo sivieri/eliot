@@ -46,6 +46,8 @@ loop() ->
 
 % Private API
 
+send_msg(Node1, Node2, Msg) when Node1 == test ->
+    Node2 ! {0, Msg};
 send_msg(Node1, Node2, Msg) ->
     case eliot_forwarder:get_gain(Node1, eliot_simulator:get_name(Node2)) of
         inf ->

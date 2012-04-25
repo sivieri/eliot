@@ -3,7 +3,7 @@
 -module(eliot_api).
 -include("eliot.hrl").
 -export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0]).
--export([send/3, bcast_send/1, bcast_send/2, spawn/2, spawn/4, bcast_spawn/1, bcast_spawn/3, export/1, unexport/1]).
+-export([send/3, send_test/3, bcast_send/1, bcast_send/2, spawn/2, spawn/4, bcast_spawn/1, bcast_spawn/3, export/1, unexport/1]).
 
 % Public API
 
@@ -90,7 +90,7 @@ send(Name, {NodeName, NodeAddr}, Msg) ->
         true ->
             eliot_dispatcher ! {simulation, {Name, NodeName}, msg(Msg)}; % Send to simulated nodes if receiver is the same node...
         false ->
-            {eliot_dispatcher, utils:join_name(NodeName, NodeAddr)} ! {connect, Name, msg(Msg)} % ... or send to all if receiver is different
+            {eliot_dispatcher, utils:join_name(?NODENAME, NodeAddr)} ! {connect, Name, msg(Msg)} % ... or send to all if receiver is different
     end,
     ok.
 -else.
@@ -98,6 +98,16 @@ send(Name, {_NodeName, NodeAddr}, Msg) ->
 	{eliot_dispatcher, NodeAddr} ! {connect, Name, msg(Msg)},
 	ok.
 -endif.
+
+%% This send function overrides the standard send function by automatically adding
+%% a standard string as the name of the node sending the message.
+%% The standard function requires the node name to be registered in the process
+%% dictionary, while usually an external observer wants to inject messages to
+%% a node of the network; this function allows this action to be performed correctly
+%% according to the framework specifications.
+-spec(send_test(atom() | pid(), {atom(), node()}, any()) -> ok).
+send_test(Name, {NodeName, _NodeAddr}, Msg) ->
+    eliot_dispatcher ! {simulation, {Name, NodeName}, msg_test(Msg)}.
 
 -spec(bcast_send(any()) -> ok).
 -ifdef(simulation).
@@ -145,3 +155,6 @@ bcast_spawn(Module, Function, Args) ->
 
 msg(Msg) ->
     {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}.
+
+msg_test(Msg) ->
+    {{test, utils:get_host_ip()}, Msg}.

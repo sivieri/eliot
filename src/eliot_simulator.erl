@@ -61,11 +61,19 @@ read_net(Filename) ->
     {ok, Device} = file:open(Filename, [read]),
     read_net(Device, sets:new(), dict:new()).
 
+get_simname(Name) when is_atom(Name) ->
+    list_to_atom(atom_to_list(Name) ++ "_" ++ atom_to_list(eliot_api:get_node_name()));
 get_simname(Name) ->
-    list_to_atom(atom_to_list(Name) ++ "_" ++ atom_to_list(eliot_api:get_node_name())).
+    list_to_atom(Name ++ "_" ++ atom_to_list(eliot_api:get_node_name())).
 
-get_simname(Name, NodeName) ->
-    list_to_atom(atom_to_list(Name) ++ "_" ++ atom_to_list(NodeName)).
+get_simname(Name, NodeName) when is_atom(Name) andalso is_atom(NodeName) ->
+    list_to_atom(atom_to_list(Name) ++ "_" ++ atom_to_list(NodeName));
+get_simname(Name, NodeName) when is_atom(Name) ->
+    list_to_atom(atom_to_list(Name) ++ "_" ++ NodeName);
+get_simname(Name, NodeName) when is_atom(NodeName) ->
+    list_to_atom(Name ++ "_" ++ atom_to_list(NodeName));
+get_simname(Name, NodeName) when is_atom(Name) ->
+    list_to_atom(Name ++ "_" ++ NodeName).
 
 get_name(Name) ->
     NameString = atom_to_list(Name),
@@ -108,7 +116,6 @@ gateway() ->
         Msg ->
             Processes = eliot_export:get_exported_simulated(),
             {registered_name, OwnName} = process_info(self(), registered_name),
-            io:format(standard_error, "~p ~p ~p~n", [Msg, Processes, OwnName]),
             List = lists:filter(fun(X) -> lists:prefix(erlang:atom_to_list(OwnName), erlang:atom_to_list(X)) end, Processes),
             lists:foreach(fun(X) -> X ! Msg end, List),
             gateway()

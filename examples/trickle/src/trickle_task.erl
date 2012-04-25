@@ -35,7 +35,9 @@ update_version(DestId, Version, Payload) ->
     Id = eliot_api:nodeid(DestId),
     PayloadB = term_to_binary(Payload),
     Msg = <<Id:?SRCADDR, Version:?VERSION, PayloadB/binary>>,
-    eliot_api:send(trickle, utils:split_name(node()), {version, Msg}),
+    io:format(standard_error, "~p~n", [utils:split_name(node())]),
+    {_NodeName, NodeAddress} = utils:split_name(node()),
+    eliot_api:send_test(trickle, {DestId, NodeAddress}, {version, Msg}),
     ok.
 
 % Private API

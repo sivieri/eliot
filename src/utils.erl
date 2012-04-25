@@ -55,8 +55,11 @@ get_host_ip() ->
             Address;
         {ok, IfList} ->
             {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
-            {addr, Address} = lists:keyfind(addr, 1, IfOpts),
-            Address
+            Addresses = proplists:lookup_all(addr, IfOpts),
+            Ip4Addresses = lists:filter(fun({addr, Addr}) when tuple_size(Addr) == 4 -> true;
+                                                           ({addr, _Addr}) -> false end, Addresses),
+            {addr, Address} = hd(Ip4Addresses),
+            inet_parse:ntoa(Address)
     end.
 
 get_host_mac() ->
