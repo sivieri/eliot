@@ -39,6 +39,28 @@ loop() ->
         {simulation, Subject, Msg = {{SenderName, _SenderNode}, _Msg}} ->
             lists:foreach(fun(Elem) -> send_msg(SenderName, Elem, Msg) end, eliot_export:get_exported_simulated(Subject)),
             loop();
+        {spawn, Fun} ->
+            erlang:spawn(fun() -> Fun() end),
+            loop();
+        {spawn, Fun, Condition} ->
+            case Condition() of
+                true ->
+                    erlang:spawn(fun() -> Fun() end);
+                _ ->
+                    ok
+            end,
+            loop();
+        {spawn, Module, Function, Args} ->
+            erlang:spawn(Module, Function, Args),
+            loop();
+        {spawn, Module, Function, Args, Condition} ->
+            case Condition() of
+                true ->
+                    erlang:spawn(Module, Function, Args);
+                _ ->
+                    ok
+            end,
+            loop();
 		Any ->
 			io:format("eliot dispatcher: unable to parse ~p~n", [Any]),
 			loop()

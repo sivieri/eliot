@@ -2,8 +2,9 @@
 %% @doc Framework.
 -module(eliot_api).
 -include("eliot.hrl").
--export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0]).
--export([send/3, send_test/3, bcast_send/1, bcast_send/2, spawn/2, spawn/4, bcast_spawn/1, bcast_spawn/3, export/1, unexport/1]).
+-export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0, export/1, unexport/1, put_data/2, get_data/1]).
+-export([send/3, send_test/3, bcast_send/1, bcast_send/2]).
+-export([spawn/2, spawn/3, spawn/4, spawn/5, bcast_spawn/1, bcast_spawn/2, bcast_spawn/3, bcast_spawn/4]).
 
 % Public API
 
@@ -64,6 +65,50 @@ nodeaddr(NodeId) ->
 -spec(nodeid(atom()) -> integer()).
 nodeid(NodeAddr) ->
     list_to_integer(string:substr(atom_to_list(NodeAddr), 6)).
+
+%% Put some data associated to this node.
+-spec(put_data(any(), any()) -> true).
+-ifdef(simulation).
+put_data(Key, Value) ->
+    DataRef = case get(datatableref) of
+        undefined ->
+            ets:new(datatable, [set, public]);
+        Ref ->
+            Ref
+    end,
+    put(datatableref, DataRef),
+    ets:insert(datatable, {Key, Value}).
+-else.
+put_data(Key, Value) ->
+    DataRef = case application:get_env(eliot, datatableref) of
+        undefined ->
+            ets:new(datatable, [set, public]);
+        Ref ->
+            Ref
+    end,
+    application:set_env(eliot, datatableref, DataRef),
+    ets:insert(datatable, {Key, Value}).
+-endif.
+
+%% Get some data previously saved in this node.
+-spec(get_data(any()) -> list()).
+-ifdef(simulation).
+get_data(Key) ->
+    case get(datatableref) of
+        undefined ->
+            [];
+        Ref ->
+            ets:lookup(Ref, Key)
+    end.
+-else.
+get_data(Key) ->
+    case application:get_env(eliot, datatableref) of
+        undefined ->
+            [];
+        Ref ->
+            ets:lookup(Ref, Key)
+    end.
+-endif.
 
 %% Export a process (indicated by its name or PID), so that it can be
 %% reached by the external world.
@@ -151,26 +196,52 @@ bcast_send(Name, Msg) ->
 %% Spawn a process executing the given function on the given node.
 -spec(spawn(node(), fun()) -> ok).
 spawn(NodeAddr, Fun) ->
-	_Pid = erlang:spawn(NodeAddr, Fun),
+    {eliot_dispatcher, NodeAddr} ! {spawn, Fun},
 	ok.
 
 %% Spawn a process executing the given function on the given node.
 -spec(spawn(node(), atom(), atom(), list()) -> ok).
 spawn(NodeAddr, Module, Function, Args) ->
-	_Pid = erlang:spawn(NodeAddr, Module, Function, Args),
+    {eliot_dispatcher, NodeAddr} ! {spawn, Module, Function, Args},
 	ok.
+
+%% Spawn a process executing the given function on the given node,
+%% if the condition evaluates to true in the node itself.
+-spec(spawn(node(), fun(), fun()) -> ok).
+spawn(NodeAddr, Fun, Condition) ->
+    {eliot_dispatcher, NodeAddr} ! {spawn, Fun, Condition},
+    ok.
+
+%% Spawn a process executing the given function on the given node,
+%% if the condition evaluates to true in the node itself.
+-spec(spawn(node(), atom(), atom(), list(), fun()) -> ok).
+spawn(NodeAddr, Module, Function, Args, Condition) ->
+    {eliot_dispatcher, NodeAddr} ! {spawn, Module, Function, Args, Condition},
+    ok.
 
 %% Spawn a process executing the given function on all the nodes
 %% reachable from the current one.
 -spec(bcast_spawn(fun()) -> ok).
 bcast_spawn(Fun) ->
-	lists:foreach(fun(Node) -> eliot_api:spawn(Node, Fun) end, nodes()).
+    rpc:abcast(nodes(), eliot_dispatcher, {spawn, Fun}).
 
 %% Spawn a process executing the given function on all the nodes
 %% reachable from the current one.
 -spec(bcast_spawn(atom(), atom(), list()) -> ok).
 bcast_spawn(Module, Function, Args) ->
-	lists:foreach(fun(Node) -> eliot_api:spawn(Node, Module, Function, Args) end, nodes()).
+    rpc:abcast(nodes(), eliot_dispatcher, {spawn, Module, Function, Args}).
+
+%% Spawn a process executing the given function on all the nodes
+%% reachable from the current one, if the condition evaluates to true in the nodes themselves.
+-spec(bcast_spawn(fun(), fun()) -> ok).
+bcast_spawn(Fun, Condition) ->
+    rpc:abcast(nodes(), eliot_dispatcher, {spawn, Fun, Condition}).
+
+%% Spawn a process executing the given function on all the nodes
+%% reachable from the current one, if the condition evaluates to true in the nodes themselves.
+-spec(bcast_spawn(atom(), atom(), list(), fun()) -> ok).
+bcast_spawn(Module, Function, Args, Condition) ->
+    rpc:abcast(nodes(), eliot_dispatcher, {spawn, Module, Function, Args, Condition}).
 
 % Private API
 
