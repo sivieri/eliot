@@ -7,6 +7,7 @@
 
 % Public API
 
+%% Set the name of this node.
 -spec(set_node_name(atom()) -> ok).
 -ifdef(simulation).
 set_node_name(NodeId) ->
@@ -18,6 +19,7 @@ set_node_name(NodeId) ->
     application:set_env(eliot, name, Name).
 -endif.
 
+%% Get the name of this node.
 -spec(get_node_name() -> atom() | error).
 -ifdef(simulation).
 get_node_name() ->
@@ -37,6 +39,7 @@ get_node_name() ->
     end.
 -endif.
 
+%% Get the node address given its unique ID (i.e. from "1" to "node_1").
 -spec(nodeaddr(atom() | [atom()] | integer()) -> atom()).
 nodeaddr(NodeId) when is_integer(NodeId) ->
     list_to_atom("node_" ++ utils:format("~p", [NodeId]));
@@ -57,10 +60,13 @@ nodeaddr(NodeId) ->
             list_to_atom(NodeId)
     end.
 
+%% Get the node unique ID given its address (i.e. from "node_1" to "1").
 -spec(nodeid(atom()) -> integer()).
 nodeid(NodeAddr) ->
     list_to_integer(string:substr(atom_to_list(NodeAddr), 6)).
 
+%% Export a process (indicated by its name or PID), so that it can be
+%% reached by the external world.
 -spec(export(atom() | pid()) -> ok).
 -ifdef(simulation).
 export(Subject) when is_atom(Subject) ->
@@ -72,6 +78,9 @@ export(Subject) ->
     eliot_export:export_real(Subject).
 -endif.
 
+%% Remove the given process from the list of exported processes;
+%% from now on this process will not be reached from the external
+%% world.
 -spec(unexport(atom() | pid()) -> ok).
 -ifdef(simulation).
 unexport(Subject) when is_atom(Subject) ->
@@ -83,6 +92,8 @@ unexport(Subject) ->
     eliot_export:unexport(Subject).
 -endif.
 
+%% Send a message to a specific process on the given node; the
+%% process must have been exported in the receiving node.
 -spec(send(atom() | pid(), {atom(), node()}, any()) -> ok).
 -ifdef(simulation).
 send(Name, {NodeName, NodeAddr}, Msg) ->
@@ -109,6 +120,8 @@ send(Name, {_NodeName, NodeAddr}, Msg) ->
 send_test(Name, {NodeName, _NodeAddr}, Msg) ->
     eliot_dispatcher ! {simulation, {Name, NodeName}, msg_test(Msg)}.
 
+%% Send a message to all the exported processes on all the nodes reachable from the
+%% current one.
 -spec(bcast_send(any()) -> ok).
 -ifdef(simulation).
 bcast_send(Msg) ->
@@ -121,6 +134,8 @@ bcast_send(Msg) ->
     ok.
 -endif.
 
+%% Send a message to a specific process on all the nodes reachable from the
+%% current one; the process must have been exported in the receiving nodes.
 -spec(bcast_send(atom() | pid(), any()) -> ok).
 -ifdef(simulation).
 bcast_send(Name, Msg) ->
@@ -133,20 +148,26 @@ bcast_send(Name, Msg) ->
     ok.
 -endif.
 
+%% Spawn a process executing the given function on the given node.
 -spec(spawn(node(), fun()) -> ok).
 spawn(NodeAddr, Fun) ->
 	_Pid = erlang:spawn(NodeAddr, Fun),
 	ok.
 
+%% Spawn a process executing the given function on the given node.
 -spec(spawn(node(), atom(), atom(), list()) -> ok).
 spawn(NodeAddr, Module, Function, Args) ->
 	_Pid = erlang:spawn(NodeAddr, Module, Function, Args),
 	ok.
 
+%% Spawn a process executing the given function on all the nodes
+%% reachable from the current one.
 -spec(bcast_spawn(fun()) -> ok).
 bcast_spawn(Fun) ->
 	lists:foreach(fun(Node) -> eliot_api:spawn(Node, Fun) end, nodes()).
 
+%% Spawn a process executing the given function on all the nodes
+%% reachable from the current one.
 -spec(bcast_spawn(atom(), atom(), list()) -> ok).
 bcast_spawn(Module, Function, Args) ->
 	lists:foreach(fun(Node) -> eliot_api:spawn(Node, Module, Function, Args) end, nodes()).
