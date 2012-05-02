@@ -19,7 +19,7 @@ start_task(NodeAddr, Module, Function) ->
 send({Name, all}, Msg) ->
     bcast_send(Name, Msg);
 send({Name, Node}, Msg) ->
-    send(Name, utils:split_name(Node), Msg);
+    send(get_simname(Name), utils:split_name(Node), Msg);
 send(all, Msg) ->
     bcast_send(Msg);
 send(Dest, Msg) when is_atom(Dest) ->
@@ -94,19 +94,19 @@ get_name(Name) ->
 send(Name, {NodeName, NodeAddr}, Msg) ->
     case utils:get_host_ip() == NodeAddr of
         true ->
-            dispatcher ! {simulation, {Name, NodeName}, eliot_api:msg(Msg)}; % Send to simulated nodes if receiver is the same node...
+            dispatcher ! {simulation, {Name, NodeName}, Msg}; % Send to simulated nodes if receiver is the same node...
         false ->
-            {dispatcher, utils:join_name(?NODENAME, NodeAddr)} ! {connect, Name, eliot_api:msg(Msg)} % ... or send to all if receiver is different
+            {dispatcher, utils:join_name(?NODENAME, NodeAddr)} ! {connect, Name, Msg} % ... or send to all if receiver is different
     end,
     ok.
 
 bcast_send(Msg) ->
-    dispatcher ! {simulation, all, eliot_api:msg(Msg)}, % Send to simulated nodes...
+    dispatcher ! {simulation, all, Msg}, % Send to simulated nodes...
     all ! eliot_api:msg(Msg), % ... and to real ones, in case we are in mixed simulation.
     ok.
 
 bcast_send(Name, Msg) ->
-    dispatcher ! {simulation, Name, eliot_api:msg(Msg)},
+    dispatcher ! {simulation, Name, Msg},
     {Name, all} ! eliot_api:msg(Msg),
     ok.
 

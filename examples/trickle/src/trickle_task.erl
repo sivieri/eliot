@@ -48,7 +48,7 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
     receive
         transmit when Counter < ?K ->
             Id = eliot_api:nodeid(eliot_api:get_node_name()),
-            eliot_api:bcast_send(trickle, {version, <<Id:?SRCADDR, Version:?VERSION, Payload/binary>>}),
+            {trickle, all} ! eliot_api:msg({version, <<Id:?SRCADDR, Version:?VERSION, Payload/binary>>}),
             io:format("~p: Sending code ~p~n", [eliot_api:get_node_name(), Version]),
             trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>);
         transmit ->
@@ -70,6 +70,9 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
             trickle(NewTau, {NewTauRef, NewTRef}, 0, <<NewSrc:?SRCADDR, NewVersion:?VERSION, NewPayload/binary>>);
         {_RSSI, {_SourceId, {version, <<_NewSrc:?SRCADDR, _NewVersion:?VERSION, _NewPayload/binary>>}}} ->
             %io:format("~p: Received code ~p from ~p (same or older)~n", [eliot_api:get_node_name(), NewVersion, SourceId]),
+            trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>);
+        Any ->
+            io:format("~p: Cannot parse ~p~n", [eliot_api:get_node_name(), Any]),
             trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>)
     end.
 

@@ -15,6 +15,8 @@ start_link() ->
 set_gains(Gains) ->
     gen_server:cast(?MODULE, {gains, Gains}).
 
+get_gain(Node1, Node2) when Node1 == Node2 ->
+    0;
 get_gain(Node1, Node2) ->
     gen_server:call(?MODULE, {gain, Node1, Node2}).
 
