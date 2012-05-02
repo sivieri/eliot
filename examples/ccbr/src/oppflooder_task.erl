@@ -41,7 +41,7 @@ oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
         PayloadB = term_to_binary(Payload),
         Id = eliot_api:nodeid(eliot_api:get_node_name()),
         Msg = <<Id:?SRCADDR, NextMsgNum:?SEQNUM, ?INITIAL_OF_TTL:?TTL, PayloadB/binary>>,
-        eliot_api:bcast_send(oppflooder, Msg),
+        {oppflooder, all} ! eliot_api:msg(Msg),
         oppflooder(record_received({Id, NextMsgNum}, ReceivedMsgs), WaitingMsgs, (NextMsgNum + 1) rem 256);
     {RSSI, {SourceId,  <<Src:?SRCADDR, Seq:?SEQNUM, TTL:?TTL, Payload/binary>>}} when TTL > 1 ->
         io:format("~p: Received message from ~p with RSSI=~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
@@ -70,7 +70,7 @@ oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
     {Src, Seq} ->
         io:format("~p: Timer expired for message (~p, ~p) sending it~n", [eliot_api:get_node_name(), Src, Seq]),
         Msg = get_waiting(Src, Seq, WaitingMsgs),
-        eliot_api:bcast_send(oppflooder, Msg),
+        {oppflooder, all} ! eliot_api:msg(Msg),
         oppflooder(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum)
     end.
 

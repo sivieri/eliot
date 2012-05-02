@@ -20,7 +20,7 @@ link_engine({NodeId, Collector}, {RoutingEngine, Counter}) ->
     if
         Counter == 1 ->
             Msg = #routing{pull = true},
-            eliot_api:bcast_send(ctp, Msg);
+            {ctp, all} ! eliot_api:msg(Msg);
         true ->
             ok
     end,
@@ -47,11 +47,11 @@ link_engine(Tau, TRef, BeaconCounter) ->
                             ok;
                         {Parent, Etx} ->
                             NewMsg = #routing{parent = Parent, etx = Etx, seqno = BeaconCounter},
-                            eliot_api:bcast_send(ctp, NewMsg)
+                            {ctp, all} ! eliot_api:msg(NewMsg)
                     end;
                 true ->
                     NewMsg = #routing{seqno = BeaconCounter},
-                    eliot_api:bcast_send(ctp, NewMsg)
+                    {ctp, all} ! eliot_api:msg(NewMsg)
             end,
             link_engine(Tau, TRef, BeaconCounter + 1);
          {transmit, cancel} ->

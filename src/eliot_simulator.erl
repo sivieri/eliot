@@ -19,7 +19,7 @@ start_task(NodeAddr, Module, Function) ->
 send({Name, all}, Msg) ->
     bcast_send(Name, Msg);
 send({Name, Node}, Msg) ->
-    send(get_simname(Name), utils:split_name(Node), Msg);
+    send(get_simname(Name), Node, Msg);
 send(all, Msg) ->
     bcast_send(Msg);
 send(Dest, Msg) when is_atom(Dest) ->

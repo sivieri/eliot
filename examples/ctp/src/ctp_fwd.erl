@@ -50,7 +50,7 @@ fwd_engine(DataCounter, FwdList, SentList) ->
             RoutingPid = get(routing),
             LinkPid = get(link),
             AckMsg = #ack{id = Msg#data.seqno},
-            eliot_api:send(ctp, SourceId, AckMsg),
+            {ctp, SourceId} ! eliot_api:msg(AckMsg),
             % Check ETX
             {_, Etx} = lpc(RoutingPid, lower),
             if
@@ -100,7 +100,7 @@ fwd_engine(DataCounter, FwdList, SentList) ->
                         {Parent, Etx} ->
                             Msg = #data{etx = Etx, payload = Data, seqno = DataCounter},
                             io:format("~p: Routing data to ~p~n", [get(myid), Parent]),
-                            eliot_api:send(ctp, Parent, Msg),
+                            {ctp, Parent} ! eliot_api:msg(Msg),
                             Block = #cache{msg = Msg, timeout = NewTimeout},
                             erlang:send_after(NewTimeout, self(), {resend, Parent, Block}),
                             fwd_engine(DataCounter + 1, FwdList, [Block|SentList])
