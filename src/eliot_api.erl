@@ -3,7 +3,7 @@
 -module(eliot_api).
 -include("eliot.hrl").
 -export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0, export/1, unexport/1, put_data/2, get_data/1]).
--export([send/3, send_test/3, bcast_send/1, bcast_send/2]).
+-export([send_test/3, msg/1]).
 -export([spawn/2, spawn/3, spawn/4, spawn/5, bcast_spawn/1, bcast_spawn/2, bcast_spawn/3, bcast_spawn/4]).
 
 % Public API
@@ -137,24 +137,6 @@ unexport(Subject) ->
     eliot_export:unexport(Subject).
 -endif.
 
-%% Send a message to a specific process on the given node; the
-%% process must have been exported in the receiving node.
--spec(send(atom() | pid(), {atom(), node()}, any()) -> ok).
--ifdef(simulation).
-send(Name, {NodeName, NodeAddr}, Msg) ->
-    case utils:get_host_ip() == NodeAddr of
-        true ->
-            eliot_dispatcher ! {simulation, {Name, NodeName}, msg(Msg)}; % Send to simulated nodes if receiver is the same node...
-        false ->
-            {eliot_dispatcher, utils:join_name(?NODENAME, NodeAddr)} ! {connect, Name, msg(Msg)} % ... or send to all if receiver is different
-    end,
-    ok.
--else.
-send(Name, {_NodeName, NodeAddr}, Msg) ->
-	{eliot_dispatcher, NodeAddr} ! {connect, Name, msg(Msg)},
-	ok.
--endif.
-
 %% This send function overrides the standard send function by automatically adding
 %% a standard string as the name of the node sending the message.
 %% The standard function requires the node name to be registered in the process
@@ -163,90 +145,64 @@ send(Name, {_NodeName, NodeAddr}, Msg) ->
 %% according to the framework specifications.
 -spec(send_test(atom() | pid(), {atom(), node()}, any()) -> ok).
 send_test(Name, {NodeName, _NodeAddr}, Msg) ->
-    eliot_dispatcher ! {simulation, {Name, NodeName}, msg_test(Msg)}.
-
-%% Send a message to all the exported processes on all the nodes reachable from the
-%% current one.
--spec(bcast_send(any()) -> ok).
--ifdef(simulation).
-bcast_send(Msg) ->
-    eliot_dispatcher ! {simulation, all, msg(Msg)}, % Send to simulated nodes...
-    rpc:abcast(nodes(), eliot_dispatcher, {connect, all, msg(Msg)}), % ... and to real ones, in case we are in mixed simulation.
-    ok.
--else.
-bcast_send(Msg) ->
-	rpc:abcast(nodes(), eliot_dispatcher, {connect, all, msg(Msg)}),
-    ok.
--endif.
-
-%% Send a message to a specific process on all the nodes reachable from the
-%% current one; the process must have been exported in the receiving nodes.
--spec(bcast_send(atom() | pid(), any()) -> ok).
--ifdef(simulation).
-bcast_send(Name, Msg) ->
-    eliot_dispatcher ! {simulation, Name, msg(Msg)},
-    rpc:abcast(nodes(), eliot_dispatcher, {connect, Name, msg(Msg)}),
-    ok.
--else.
-bcast_send(Name, Msg) ->
-	rpc:abcast(nodes(), eliot_dispatcher, {connect, Name, msg(Msg)}),
-    ok.
--endif.
+    dispatcher ! {simulation, {Name, NodeName}, msg_test(Msg)}.
 
 %% Spawn a process executing the given function on the given node.
 -spec(spawn(node(), fun()) -> ok).
 spawn(NodeAddr, Fun) ->
-    {eliot_dispatcher, NodeAddr} ! {spawn, Fun},
+    {dispatcher, NodeAddr} ! {spawn, Fun},
 	ok.
 
 %% Spawn a process executing the given function on the given node.
 -spec(spawn(node(), atom(), atom(), list()) -> ok).
 spawn(NodeAddr, Module, Function, Args) ->
-    {eliot_dispatcher, NodeAddr} ! {spawn, Module, Function, Args},
+    {dispatcher, NodeAddr} ! {spawn, Module, Function, Args},
 	ok.
 
 %% Spawn a process executing the given function on the given node,
 %% if the condition evaluates to true in the node itself.
 -spec(spawn(node(), fun(), fun()) -> ok).
 spawn(NodeAddr, Fun, Condition) ->
-    {eliot_dispatcher, NodeAddr} ! {spawn, Fun, Condition},
+    {dispatcher, NodeAddr} ! {spawn, Fun, Condition},
     ok.
 
 %% Spawn a process executing the given function on the given node,
 %% if the condition evaluates to true in the node itself.
 -spec(spawn(node(), atom(), atom(), list(), fun()) -> ok).
 spawn(NodeAddr, Module, Function, Args, Condition) ->
-    {eliot_dispatcher, NodeAddr} ! {spawn, Module, Function, Args, Condition},
+    {dispatcher, NodeAddr} ! {spawn, Module, Function, Args, Condition},
     ok.
 
 %% Spawn a process executing the given function on all the nodes
 %% reachable from the current one.
 -spec(bcast_spawn(fun()) -> ok).
 bcast_spawn(Fun) ->
-    rpc:abcast(nodes(), eliot_dispatcher, {spawn, Fun}).
+    all ! {spawn, Fun}.
 
 %% Spawn a process executing the given function on all the nodes
 %% reachable from the current one.
 -spec(bcast_spawn(atom(), atom(), list()) -> ok).
 bcast_spawn(Module, Function, Args) ->
-    rpc:abcast(nodes(), eliot_dispatcher, {spawn, Module, Function, Args}).
+    all ! {spawn, Module, Function, Args}.
 
 %% Spawn a process executing the given function on all the nodes
 %% reachable from the current one, if the condition evaluates to true in the nodes themselves.
 -spec(bcast_spawn(fun(), fun()) -> ok).
 bcast_spawn(Fun, Condition) ->
-    rpc:abcast(nodes(), eliot_dispatcher, {spawn, Fun, Condition}).
+    all ! {spawn, Fun, Condition}.
 
 %% Spawn a process executing the given function on all the nodes
 %% reachable from the current one, if the condition evaluates to true in the nodes themselves.
 -spec(bcast_spawn(atom(), atom(), list(), fun()) -> ok).
 bcast_spawn(Module, Function, Args, Condition) ->
-    rpc:abcast(nodes(), eliot_dispatcher, {spawn, Module, Function, Args, Condition}).
+    all ! {spawn, Module, Function, Args, Condition}.
 
-% Private API
-
+%% Set accompanying fields to a message.
+-spec(msg(any()) -> {{atom(), string()}, any()}).
 msg(Msg) ->
     {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}.
+
+% Private API
 
 msg_test(Msg) ->
     {{test, utils:get_host_ip()}, Msg}.

@@ -8,7 +8,7 @@
 
 start_link() ->
 	Pid = spawn_link(?MODULE, loop, []),
-	register(eliot_dispatcher, Pid),
+	register(dispatcher, Pid),
 	{ok, Pid}.
 
 loop() ->
