@@ -5,3 +5,4 @@ ebin
 priv/eliot-*
 simbin
 erl_crash.dump
+.DS_Store

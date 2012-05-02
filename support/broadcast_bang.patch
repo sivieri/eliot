@@ -1,0 +1,301 @@
+From b53a481ed3d6117a8cd4d2bdf529e4b2805b5dc6 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Sun, 29 Apr 2012 12:16:06 +0200
+Subject: [PATCH 1/3] Broadcast operation integrated into the bang operator.
+
+---
+ erts/emulator/beam/bif.c |  120 +++++++++++++++++++++++++---------------------
+ 1 files changed, 66 insertions(+), 54 deletions(-)
+
+diff --git a/erts/emulator/beam/bif.c b/erts/emulator/beam/bif.c
+index 55f4798..37801b2 100644
+--- a/erts/emulator/beam/bif.c
++++ b/erts/emulator/beam/bif.c
+@@ -1973,66 +1973,78 @@ do_send(Process *p, Eterm to, Eterm msg, int suspend) {
+ 	return 0;
+     } else if (is_tuple(to)) { /* Remote send */
+ 	int ret;
++	Eterm nodesInput, comparison;
+ 	tp = tuple_val(to);
+ 	if (*tp != make_arityval(2))
+ 	    return SEND_BADARG;
+ 	if (is_not_atom(tp[1]) || is_not_atom(tp[2]))
+ 	    return SEND_BADARG;
+ 	
+-	/* sysname_to_connected_dist_entry will return NULL if there
+-	   is no dist_entry or the dist_entry has no port,
+-	   but remote_send() will handle that. */
+-
+-	dep = erts_sysname_to_connected_dist_entry(tp[2]);
+-
+-	if (dep == erts_this_dist_entry) {
+-	    erts_deref_dist_entry(dep);
+-	    if (IS_TRACED(p))
+-		trace_send(p, to, msg);
+-	    if (ERTS_PROC_GET_SAVED_CALLS_BUF(p))
+-		save_calls(p, &exp_send);
+-	    
+-	    /* Need to virtual schedule out sending process
+-	     * because of lock wait. This is only necessary
+-	     * for internal port calling but the lock is bundled.
+-	     */
+-	    
+-	    if (IS_TRACED_FL(p, F_TRACE_SCHED_PROCS)) {
+-	    	trace_virtual_sched(p, am_out);
+-	    }
+-	    if (erts_system_profile_flags.runnable_procs && erts_system_profile_flags.exclusive) {
+-	    	profile_runnable_proc(p, am_inactive);
+-	    }
+-
+-	    erts_whereis_name(p, ERTS_PROC_LOCK_MAIN,
+-			      tp[1],
+-			      &rp, 0, ERTS_P2P_FLG_SMP_INC_REFC,
+-			      &pt);
+-	    if (pt) {
+-		portid = pt->id;
+-		goto port_common;
+-	    }
+-	    /* Port lookup failed, virtually schedule the process
+-	     * back in.
+-	     */
+-
+-	    if (IS_TRACED_FL(p, F_TRACE_SCHED_PROCS)) {
+-	    	trace_virtual_sched(p, am_in);
+-	    }
+-	    if (erts_system_profile_flags.runnable_procs && erts_system_profile_flags.exclusive) {
+-	    	profile_runnable_proc(p, am_active);
+-	    }
+-
+-	    if (!rp) {
+-		return 0;
+-	    }
+-	    goto send_message;
+-	}
+-
+-	ret = remote_send(p, dep, tp[1], to, msg, suspend);
+-	if (dep)
+-	    erts_deref_dist_entry(dep);
+-	return ret;
++	nodesInput = am_atom_put("visible", sys_strlen("visible"));
++	comparison = am_atom_put("all", sys_strlen("all"));
++	
++    if (comparison != tp[2]) { /* Send to a single node (default mode) */
++        
++        /* sysname_to_connected_dist_entry will return NULL if there
++           is no dist_entry or the dist_entry has no port,
++           but remote_send() will handle that. */
++        dep = erts_sysname_to_connected_dist_entry(tp[2]);
++        if (dep == erts_this_dist_entry) {
++            erts_deref_dist_entry(dep);
++            if (IS_TRACED(p))
++            trace_send(p, to, msg);
++            if (ERTS_PROC_GET_SAVED_CALLS_BUF(p))
++            save_calls(p, &exp_send);
++            /* Need to virtual schedule out sending process
++             * because of lock wait. This is only necessary
++             * for internal port calling but the lock is bundled.
++             */
++            
++            if (IS_TRACED_FL(p, F_TRACE_SCHED_PROCS)) {
++                trace_virtual_sched(p, am_out);
++            }
++            if (erts_system_profile_flags.runnable_procs && erts_system_profile_flags.exclusive) {
++                profile_runnable_proc(p, am_inactive);
++            }
++            erts_whereis_name(p, ERTS_PROC_LOCK_MAIN,
++                      tp[1],
++                      &rp, 0, ERTS_P2P_FLG_SMP_INC_REFC,
++                      &pt);
++            if (pt) {
++            portid = pt->id;
++            goto port_common;
++            }
++            /* Port lookup failed, virtually schedule the process
++             * back in.
++             */
++            if (IS_TRACED_FL(p, F_TRACE_SCHED_PROCS)) {
++                trace_virtual_sched(p, am_in);
++            }
++            if (erts_system_profile_flags.runnable_procs && erts_system_profile_flags.exclusive) {
++                profile_runnable_proc(p, am_active);
++            }
++            if (!rp) {
++            return 0;
++            }
++            goto send_message;
++        }
++    
++        ret = remote_send(p, dep, tp[1], to, msg, suspend);
++        if (dep)
++            erts_deref_dist_entry(dep);
++        return ret;
++    }
++    else { /* Broadcast to all nodes */
++        Eterm nodesOutput = nodes_1(p, &nodesInput);
++        ret = 0;
++        while (is_list(nodesOutput)) {
++            Eterm* hp = HAlloc(p, 3);
++            Eterm arg = TUPLE2(hp, tp[1], CAR(list_val(nodesOutput)));
++            ret = erl_send(p, arg, msg) || ret;
++            nodesOutput = CDR(list_val(nodesOutput));
++        }
++        return ret;
++    }
+     } else {
+ 	if (IS_TRACED(p)) /* XXX Is this really neccessary ??? */
+ 	    trace_send(p, to, msg);
+-- 
+1.7.7.5 (Apple Git-26)
+
+
+From b271e9ad5f8abdbe5de6f9431ed26ffbcfda2986 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Sun, 29 Apr 2012 12:16:25 +0200
+Subject: [PATCH 2/3] Added project file.
+
+---
+ .project |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+ create mode 100644 .project
+
+diff --git a/.project b/.project
+new file mode 100644
+index 0000000..52d5dc2
+--- /dev/null
++++ b/.project
+@@ -0,0 +1,11 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>erlang</name>
++	<comment></comment>
++	<projects>
++	</projects>
++	<buildSpec>
++	</buildSpec>
++	<natures>
++	</natures>
++</projectDescription>
+-- 
+1.7.7.5 (Apple Git-26)
+
+
+From 2d5e7ec75998ed3180a497b55d55a63481ea0912 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Tue, 1 May 2012 18:59:41 +0200
+Subject: [PATCH 3/3] Broadcast messages, part II.
+
+---
+ erts/emulator/beam/bif.c |   96 ++++++++++++++++++++++++++++------------------
+ 1 files changed, 58 insertions(+), 38 deletions(-)
+
+diff --git a/erts/emulator/beam/bif.c b/erts/emulator/beam/bif.c
+index 37801b2..39b2371 100644
+--- a/erts/emulator/beam/bif.c
++++ b/erts/emulator/beam/bif.c
+@@ -1843,45 +1843,65 @@ do_send(Process *p, Eterm to, Eterm msg, int suspend) {
+ 	}
+ 	return remote_send(p, dep, to, to, msg, suspend);
+     } else if (is_atom(to)) {
++        int ret;
++        Eterm nodesInput, comparison, receiver;
++        
++        nodesInput = am_atom_put("visible", sys_strlen("visible"));
++        comparison = am_atom_put("all", sys_strlen("all"));
++        receiver = am_atom_put("eliot_dispatcher", sys_strlen("eliot_dispatcher"));
++        
++        if (comparison != to) { /* Standard send invocation */
+ 	
+-	/* Need to virtual schedule out sending process
+-	 * because of lock wait. This is only necessary
+-	 * for internal port calling but the lock is bundled
+-	 * with name lookup.
+-	 */
+-	    
+-	if (IS_TRACED_FL(p, F_TRACE_SCHED_PROCS)) {
+-	    trace_virtual_sched(p, am_out);
+-	}
+-	if (erts_system_profile_flags.runnable_procs && erts_system_profile_flags.exclusive) {
+-	    profile_runnable_proc(p, am_inactive);
+-	}
+-	erts_whereis_name(p, ERTS_PROC_LOCK_MAIN,
+-			  to,
+-			  &rp, 0, ERTS_P2P_FLG_SMP_INC_REFC,
+-			  &pt);
+-
+-	if (pt) {
+-	    portid = pt->id;
+-	    goto port_common;
+-	}
+-	
+-	/* Not a port virtually schedule the process back in */
+-	if (IS_TRACED_FL(p, F_TRACE_SCHED_PROCS)) {
+-	    trace_virtual_sched(p, am_in);
+-	}
+-	if (erts_system_profile_flags.runnable_procs && erts_system_profile_flags.exclusive) {
+-	    profile_runnable_proc(p, am_active);
+-	}
+-
+-	if (IS_TRACED(p))
+-	    trace_send(p, to, msg);
+-	if (ERTS_PROC_GET_SAVED_CALLS_BUF(p))
+-	    save_calls(p, &exp_send);
+-	
+-	if (!rp) {
+-	    return SEND_BADARG;
+-	}
++            /* Need to virtual schedule out sending process
++             * because of lock wait. This is only necessary
++             * for internal port calling but the lock is bundled
++             * with name lookup.
++             */
++                
++            if (IS_TRACED_FL(p, F_TRACE_SCHED_PROCS)) {
++                trace_virtual_sched(p, am_out);
++            }
++            if (erts_system_profile_flags.runnable_procs && erts_system_profile_flags.exclusive) {
++                profile_runnable_proc(p, am_inactive);
++            }
++            erts_whereis_name(p, ERTS_PROC_LOCK_MAIN,
++                      to,
++                      &rp, 0, ERTS_P2P_FLG_SMP_INC_REFC,
++                      &pt);
++        
++            if (pt) {
++                portid = pt->id;
++                goto port_common;
++            }
++            
++            /* Not a port virtually schedule the process back in */
++            if (IS_TRACED_FL(p, F_TRACE_SCHED_PROCS)) {
++                trace_virtual_sched(p, am_in);
++            }
++            if (erts_system_profile_flags.runnable_procs && erts_system_profile_flags.exclusive) {
++                profile_runnable_proc(p, am_active);
++            }
++        
++            if (IS_TRACED(p))
++                trace_send(p, to, msg);
++            if (ERTS_PROC_GET_SAVED_CALLS_BUF(p))
++                save_calls(p, &exp_send);
++            
++            if (!rp) {
++                return SEND_BADARG;
++            }
++        }
++        else { /* Broadcast to all nodes */
++            Eterm nodesOutput = nodes_1(p, &nodesInput);
++            ret = 0;
++            while (is_list(nodesOutput)) {
++                Eterm* hp = HAlloc(p, 3);
++                Eterm arg = TUPLE2(hp, receiver, CAR(list_val(nodesOutput)));
++                ret = erl_send(p, arg, msg) || ret;
++                nodesOutput = CDR(list_val(nodesOutput));
++            }
++            return ret;
++        }
+     } else if (is_external_port(to)
+ 	       && (external_port_dist_entry(to)
+ 		   == erts_this_dist_entry)) {
+-- 
+1.7.7.5 (Apple Git-26)
+
