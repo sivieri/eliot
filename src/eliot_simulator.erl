@@ -18,8 +18,8 @@ start_task(NodeAddr, Module, Function) ->
 
 send({Name, all}, Msg) ->
     bcast_send(Name, Msg);
-send({Name, Node}, Msg) ->
-    send(get_simname(Name), Node, Msg);
+send({Name, {NodeName, NodeAddr}}, Msg) ->
+    send(Name, {get_simname(Name, NodeName), NodeAddr}, Msg);
 send(all, Msg) ->
     bcast_send(Msg);
 send(Dest, Msg) when is_atom(Dest) ->
@@ -94,7 +94,7 @@ get_name(Name) ->
 send(Name, {NodeName, NodeAddr}, Msg) ->
     case utils:get_host_ip() == NodeAddr of
         true ->
-            dispatcher ! {simulation, {Name, NodeName}, Msg}; % Send to simulated nodes if receiver is the same node...
+            dispatcher ! {simulation, {NodeName, NodeName}, Msg}; % Send to simulated nodes if receiver is the same node...
         false ->
             {dispatcher, utils:join_name(?NODENAME, NodeAddr)} ! {connect, Name, Msg} % ... or send to all if receiver is different
     end,

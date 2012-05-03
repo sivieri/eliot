@@ -71,7 +71,10 @@ oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
         io:format("~p: Timer expired for message (~p, ~p) sending it~n", [eliot_api:get_node_name(), Src, Seq]),
         Msg = get_waiting(Src, Seq, WaitingMsgs),
         {oppflooder, all} ! eliot_api:msg(Msg),
-        oppflooder(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum)
+        oppflooder(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum);
+    Any ->
+            io:format("~p: Cannot parse ~p~n", [eliot_api:get_node_name(), Any]),
+            oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum)
     end.
 
 %% @private

@@ -27,11 +27,10 @@ loop() ->
         {simulation, all, Msg = {{SenderName, _SenderNode}, _Msg}} ->
             lists:foreach(fun(Subject) -> send_msg(SenderName, Subject, Msg) end, eliot_export:get_exported_simulated()),
             loop();
-        {simulation, {Subject, Node}, Msg = {{SenderName, _SenderNode}, _Msg}} ->
-            QName = eliot_simulator:get_simname(Subject, Node),
-            case eliot_export:is_exported(QName) of
+        {simulation, {Subject, _Node}, Msg = {{SenderName, _SenderNode}, _Msg}} ->
+            case eliot_export:is_exported(Subject) of
                 true ->
-                    send_msg(SenderName, QName, Msg);
+                    send_msg(SenderName, Subject, Msg);
                 false ->
                     ok
             end,

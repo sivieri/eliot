@@ -51,10 +51,12 @@ ctp(RoutingPid, LinkPid, FwdPid) ->
             io:format("~p: Received msg ~p from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), Msg, SourceId, RSSI]),
             FwdPid ! {SourceId, RSSI, Msg},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {_RSSI, {_SourceId, {collect, Data}}} ->
+        {RSSI, {SourceId, {collect, Data}}} ->
+            io:format("~p: Data to be collected from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
             FwdPid ! {collect, Data},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {_RSSI, {_SourceId, {collect, Data, Timeout}}} ->
+        {RSSI, {SourceId, {collect, Data, Timeout}}} ->
+            io:format("~p: Data to be collected in a while from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
             FwdPid ! {collect, Data, Timeout},
             ctp(RoutingPid, LinkPid, FwdPid);
         Any ->

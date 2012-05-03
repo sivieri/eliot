@@ -145,7 +145,7 @@ unexport(Subject) ->
 %% according to the framework specifications.
 -spec(send_test(atom() | pid(), {atom(), node()}, any()) -> ok).
 send_test(Name, {NodeName, _NodeAddr}, Msg) ->
-    dispatcher ! {simulation, {Name, NodeName}, msg_test(Msg)}.
+    dispatcher ! {simulation, {eliot_simulator:get_simname(Name, NodeName), NodeName}, msg_test(Msg)}.
 
 %% Spawn a process executing the given function on the given node.
 -spec(spawn(node(), fun()) -> ok).

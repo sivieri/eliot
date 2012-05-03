@@ -1,7 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @doc Utility functions.
 -module(utils).
--export([format/2, get_host_ip/0, consistency/3, echo/0, get_bcast_addr/0, to_int/1, get_host_mac/0, split_name/1, join_name/2]).
+-export([format/2, get_host_ip/0, consistency/3, echo/0, get_bcast_addr/0, to_int/1, get_host_mac/0, split_name/1, join_name/2, print_dict/1]).
 -include("eliot.hrl").
 
 % Public API
@@ -87,5 +87,11 @@ join_name(NodeName, NodeAddress) ->
 to_int(String) ->
     {Res, _} = string:to_integer(String),
     Res.
+
+print_dict(Dict) ->
+    io:format("[~n"),
+    Keys = dict:fetch_keys(Dict),
+    lists:foreach(fun(Key) -> io:format("{~p, ~p}~n", [Key, dict:fetch(Key, Dict)]) end, Keys),
+    io:format("]~n~n").
 
 % Private API
