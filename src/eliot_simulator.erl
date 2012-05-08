@@ -2,7 +2,7 @@
 %% @doc Simulator.
 -module(eliot_simulator).
 -include("eliot.hrl").
--export([start/2, send/2, send_after/3, register/2, spawn/1, spawn/3, spawn_link/1, spawn_link/3, read_net/1, get_simname/1, get_simname/2, get_name/1, export/1]).
+-export([start/2, send/2, send_after/3, register/2, spawn/1, spawn/3, spawn_link/1, spawn_link/3, read_net/1, get_simname/1, get_simname/2, get_name/1, export/1, unexport/1]).
 
 % Public API
 
@@ -35,16 +35,33 @@ send_after(Time, Dest, Msg) ->
 register(Name, Pid) ->
     erlang:register(get_simname(Name), Pid).
 
-export(Name) ->
-    eliot_export:export_simulated(get_simname(Name)), % Export the real processes...
+export(Name) when is_atom(Name)->
+    erlang:export(get_simname(Name)), % Export the real processes...
     case lists:member(Name, registered()) of  % ... then export a fake process to receive messages from the external world
         true ->
             ok;
         false ->
             Pid = erlang:spawn(fun() -> gateway() end),
             erlang:register(Name, Pid),
-            eliot_export:export_real(Name)
-    end.
+            erlang:export(Name)
+    end;
+export(Name) ->
+    erlang:export(Name).
+
+unexport(Name) when is_atom(Name) ->
+    erlang:unexport(get_simname(Name)),
+    StillExported = lists:filter(fun(Element) when is_atom(Element) -> StringElement = erlang:atom_to_list(Element),
+                                                                                                           Word = string:sub_word(StringElement, 1, $_),
+                                                                                                           Word == Name andalso length(StringElement) > length(Name);
+                                                 (_Element) -> false end, erlang:exported()),
+    case length(StillExported) of
+        0 ->
+            Name ! stop; % No need to still have the gateway running, if there are no other subprocesses around...
+        _ ->
+            ok
+    end;
+unexport(Name) ->
+    erlang:unexport(Name).
 
 spawn(Fun) ->
     Name = eliot_api:get_node_name(),
@@ -138,8 +155,10 @@ read_net(Device, Nodes, Gains) ->
 
 gateway() ->
     receive
+        stop ->
+            ok;
         Msg ->
-            Processes = eliot_export:get_exported_simulated(),
+            Processes = erlang:exported(),
             {registered_name, OwnName} = process_info(self(), registered_name),
             List = lists:filter(fun(X) -> lists:prefix(erlang:atom_to_list(OwnName), erlang:atom_to_list(X)) end, Processes),
             lists:foreach(fun(X) -> X ! Msg end, List),

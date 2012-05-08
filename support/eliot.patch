@@ -1,7 +1,7 @@
 From b53a481ed3d6117a8cd4d2bdf529e4b2805b5dc6 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 29 Apr 2012 12:16:06 +0200
-Subject: [PATCH 01/10] Broadcast operation integrated into the bang operator.
+Subject: [PATCH 01/12] Broadcast operation integrated into the bang operator.
 
 ---
  erts/emulator/beam/bif.c |  120 +++++++++++++++++++++++++---------------------
@@ -151,7 +151,7 @@ index 55f4798..37801b2 100644
 From b271e9ad5f8abdbe5de6f9431ed26ffbcfda2986 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 29 Apr 2012 12:16:25 +0200
-Subject: [PATCH 02/10] Added project file.
+Subject: [PATCH 02/12] Added project file.
 
 ---
  .project |   11 +++++++++++
@@ -182,7 +182,7 @@ index 0000000..52d5dc2
 From 2d5e7ec75998ed3180a497b55d55a63481ea0912 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Tue, 1 May 2012 18:59:41 +0200
-Subject: [PATCH 03/10] Broadcast messages, part II.
+Subject: [PATCH 03/12] Broadcast messages, part II.
 
 ---
  erts/emulator/beam/bif.c |   96 ++++++++++++++++++++++++++++------------------
@@ -303,7 +303,7 @@ index 37801b2..39b2371 100644
 From 6adb3a74a12214137037c0fc15b7d3b16b68e0cb Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Thu, 3 May 2012 11:16:25 +0200
-Subject: [PATCH 04/10] Changes in semantics.
+Subject: [PATCH 04/12] Changes in semantics.
 
 ---
  erts/emulator/beam/bif.c |   11 ++++++++---
@@ -349,7 +349,7 @@ index 39b2371..2cc2da2 100644
 From 8715f1458731dafe64f6f502d2e125c53101fdce Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 4 May 2012 16:45:02 +0200
-Subject: [PATCH 05/10] Porting export table down below.
+Subject: [PATCH 05/12] Porting export table down below.
 
 ---
  erts/emulator/beam/bif.c     |   33 +
@@ -5394,7 +5394,7 @@ index 0000000..817c064
 From bc3d95fd077a1cb309428905497b7438c6f5c0c9 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 6 May 2012 18:39:55 +0200
-Subject: [PATCH 06/10] First draft of export module done.
+Subject: [PATCH 06/12] First draft of export module done.
 
 ---
  erts/emulator/beam/bif.c         |   12 +-
@@ -6051,7 +6051,7 @@ index 817c064..e90c9de 100644
 From 2e53ad7eacd4a01af9585a2bb03f85e46eb4cbdf Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 6 May 2012 18:49:58 +0200
-Subject: [PATCH 07/10] First draft of export module done/2.
+Subject: [PATCH 07/12] First draft of export module done/2.
 
 ---
  erts/emulator/beam/bif.c |   23 ++++++++++++++++++++++-
@@ -6107,7 +6107,7 @@ index a862f12..62f664e 100644
 From 625332450fe3a8d67d655c78406824a1a70d0034 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 7 May 2012 17:59:52 +0200
-Subject: [PATCH 08/10] Simplified version of export now working.
+Subject: [PATCH 08/12] Simplified version of export now working.
 
 ---
  erts/emulator/Makefile.in     |    3 +-
@@ -6571,7 +6571,7 @@ index e90c9de..087595c 100644
 From 220f287bb35bf98905bc285fb3905ed264e466ec Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 7 May 2012 18:30:10 +0200
-Subject: [PATCH 09/10] Erlang export functions integrated in kernel global
+Subject: [PATCH 09/12] Erlang export functions integrated in kernel global
  module.
 
 ---
@@ -6853,7 +6853,7 @@ index fa97614..ae71802 100644
 From b4bb0c49e12054b25390fada17e6078f0c115c4d Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 7 May 2012 19:40:30 +0200
-Subject: [PATCH 10/10] Working on integration with dist.
+Subject: [PATCH 10/12] Working on integration with dist.
 
 ---
  erts/emulator/beam/bif.c  |   30 ++++++-------------
@@ -7015,6 +7015,215 @@ index d0ecb88..10a4e37 100644
                  erts_printf("DEBUG: Message received from %T, to exported process %T\n", from, to);
                  rp = erts_whereis_process(NULL, 0, to, 0, ERTS_P2P_FLG_SMP_INC_REFC);
                  if (rp) {
+-- 
+1.7.7.5 (Apple Git-26)
+
+
+From ba33b71a618ca4ab782d95819269d68eb8bf4edb Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Tue, 8 May 2012 12:27:13 +0200
+Subject: [PATCH 11/12] It's working.
+
+---
+ erts/emulator/beam/dist.c        |    6 +++++-
+ erts/emulator/beam/erl_process.c |    9 +++++++--
+ erts/emulator/beam/erl_process.h |    1 -
+ erts/emulator/beam/pexport.c     |   28 ++++++++++++++++++++++++++++
+ erts/emulator/beam/pexport.h     |    1 +
+ lib/kernel/src/global.erl        |   16 ++++------------
+ lib/kernel/src/kernel.erl        |    4 ++--
+ 7 files changed, 47 insertions(+), 18 deletions(-)
+
+diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
+index 10a4e37..5ccc18d 100644
+--- a/erts/emulator/beam/dist.c
++++ b/erts/emulator/beam/dist.c
+@@ -1216,8 +1216,12 @@ int erts_net_message(Port *prt,
+             }
+             if (to == am_all) {
+                 Eterm procList, current;
++                Uint dimension = process_exp_size() * 2;
++                DeclareTmpHeapNoproc(buf, dimension);
++                Eterm* buf2 = buf;
++                UseTmpHeapNoproc(dimension);
+                 erts_printf("DEBUG: Message received from %T, to all exported processes\n", from, to);
+-                procList = exported_0(NULL, NULL);
++                procList = exported_noproc(buf2);
+                 while (is_list(procList)) {
+                     current = CAR(list_val(procList));
+                     if (is_atom(current)) {
+diff --git a/erts/emulator/beam/erl_process.c b/erts/emulator/beam/erl_process.c
+index b8c6b64..c0747dd 100644
+--- a/erts/emulator/beam/erl_process.c
++++ b/erts/emulator/beam/erl_process.c
+@@ -42,6 +42,7 @@
+ #include "erl_thr_progress.h"
+ #include "erl_thr_queue.h"
+ #include "erl_async.h"
++#include "pexport.h"
+ 
+ #define ERTS_RUNQ_CHECK_BALANCE_REDS_PER_SCHED (2000*CONTEXT_REDS)
+ #define ERTS_RUNQ_CALL_CHECK_BALANCE_REDS \
+@@ -8187,8 +8188,12 @@ continue_exit_process(Process *p
+      * cleanup.
+      */
+     if (p->reg) {
+-	(void) erts_unregister_name(p, ERTS_PROC_LOCK_MAIN, NULL, THE_NON_VALUE);
+-	ASSERT(!p->reg);
++        (void) erts_unexport_process_by_name(p, ERTS_PROC_LOCK_MAIN, NULL, p->reg->name);
++        (void) erts_unregister_name(p, ERTS_PROC_LOCK_MAIN, NULL, THE_NON_VALUE);
++        ASSERT(!p->reg);
++    }
++    else {
++        (void) erts_unexport_process_by_pid(p, ERTS_PROC_LOCK_MAIN, NULL, p->id);
+     }
+ 
+     erts_smp_proc_lock(p, ERTS_PROC_LOCKS_ALL_MINOR);
+diff --git a/erts/emulator/beam/erl_process.h b/erts/emulator/beam/erl_process.h
+index 7e4ae31..a51b380 100644
+--- a/erts/emulator/beam/erl_process.h
++++ b/erts/emulator/beam/erl_process.h
+@@ -650,7 +650,6 @@ struct process {
+     Process *prev;		/* Pointer to prev process in run queue */
+ 
+     struct reg_proc *reg;	/* NULL iff not registered */
+-    struct exp_proc *exp; /* NULL iff not exported */
+     ErtsLink *nlinks;
+     ErtsMonitor *monitors;      /* The process monitors, both ends */
+ 
+diff --git a/erts/emulator/beam/pexport.c b/erts/emulator/beam/pexport.c
+index 134d1f4..6c0aea8 100644
+--- a/erts/emulator/beam/pexport.c
++++ b/erts/emulator/beam/pexport.c
+@@ -289,6 +289,34 @@ int erts_is_exported_by_pid(Process *c_p, Eterm id)
+     return res;
+ }
+ 
++Eterm exported_noproc(Eterm* buf) {
++    int i;
++    Eterm res;
++    HashBucket **bucket;
++
++    bucket = process_exp.bucket;
++
++     /* scan through again and make the list */ 
++    res = NIL;
++
++    for (i = 0; i < process_exp.size; i++) {
++    HashBucket *b = bucket[i];
++    while (b != NULL) {
++        ExpProc *exp = (ExpProc *) b;
++        if (exp->name == am_undefined)
++            res = CONS(buf, exp->pid, res);
++        else
++            res = CONS(buf, exp->name, res);
++        buf += 2;
++        b = b->next;
++    }
++    }
++
++    exp_read_unlock();
++
++    return res;
++}
++
+ /**********************************************************************/
+ 
+ #include "bif.h"
+diff --git a/erts/emulator/beam/pexport.h b/erts/emulator/beam/pexport.h
+index e372d69..8372c75 100644
+--- a/erts/emulator/beam/pexport.h
++++ b/erts/emulator/beam/pexport.h
+@@ -51,5 +51,6 @@ int erts_unexport_process_by_name(Process *, ErtsProcLocks, struct port *, Eterm
+ int erts_unexport_process_by_pid(Process *, ErtsProcLocks, struct port *, Eterm);
+ int erts_is_exported_by_name(Process *, Eterm);
+ int erts_is_exported_by_pid(Process *, Eterm);
++Eterm exported_noproc(Eterm*);
+ 
+ #endif
+diff --git a/lib/kernel/src/global.erl b/lib/kernel/src/global.erl
+index ae71802..fa97614 100644
+--- a/lib/kernel/src/global.erl
++++ b/lib/kernel/src/global.erl
+@@ -158,14 +158,10 @@
+ %%% R14A (OTP-8527): The deleter process has been removed.
+ 
+ start() -> 
+-    Ans = gen_server:start({local, global_name_server}, ?MODULE, [], []),
+-    erlang:export(global_name_server),
+-    Ans.
++    gen_server:start({local, global_name_server}, ?MODULE, [], []).
+ 
+ start_link() -> 
+-    Ans = gen_server:start_link({local, global_name_server}, ?MODULE, [], []),
+-    erlang:export(global_name_server),
+-    Ans.
++    gen_server:start_link({local, global_name_server}, ?MODULE, [], []).
+ 
+ stop() -> 
+     gen_server:call(global_name_server, stop, infinity).
+@@ -1515,9 +1511,7 @@ delete_global_name(_Name, _Pid) ->
+ -record(him, {node, locker, vsn, my_tag}).
+ 
+ start_the_locker(DoTrace) ->
+-    Pid = spawn_link(fun() -> init_the_locker(DoTrace) end),
+-    erlang:export(Pid),
+-    Pid.
++    spawn_link(fun() -> init_the_locker(DoTrace) end).
+ 
+ init_the_locker(DoTrace) ->
+     process_flag(trap_exit, true),    % needed?
+@@ -2180,9 +2174,7 @@ get_own_nodes() ->
+ %% global_name_server.
+ 
+ start_the_registrar() ->
+-    Pid = spawn_link(fun() -> loop_the_registrar() end),
+-    erlang:export(Pid),
+-    Pid.
++    spawn_link(fun() -> loop_the_registrar() end).
+                        
+ loop_the_registrar() ->
+     receive 
+diff --git a/lib/kernel/src/kernel.erl b/lib/kernel/src/kernel.erl
+index 1e07620..5e978d5 100644
+--- a/lib/kernel/src/kernel.erl
++++ b/lib/kernel/src/kernel.erl
+@@ -134,8 +134,8 @@ init([]) ->
+ 			       [{local, kernel_safe_sup}, ?MODULE, safe]},
+ 			      permanent, infinity, supervisor, [?MODULE]},
+ 	    {ok, {SupFlags,
+-		  [Rpc, Global, InetDb | DistAC] ++ 
+-		  [NetSup, Glo_grp, File, Code, 
++		  [InetDb | DistAC] ++ 
++		  [NetSup, File, Code, 
+ 		   StdError, User, Config, SafeSupervisor] ++ Timer}}
+     end;
+ init(safe) ->
+-- 
+1.7.7.5 (Apple Git-26)
+
+
+From b72f8ef64cc95e5fb6a182b34f70a646da32b303 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Tue, 8 May 2012 14:30:08 +0200
+Subject: [PATCH 12/12] Un-use the tmp heap.
+
+---
+ erts/emulator/beam/dist.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
+index 5ccc18d..a9bf6ee 100644
+--- a/erts/emulator/beam/dist.c
++++ b/erts/emulator/beam/dist.c
+@@ -1284,6 +1284,7 @@ int erts_net_message(Port *prt,
+                     }
+                     procList = CDR(list_val(procList));
+                 }
++                UnUseTmpHeapNoproc(dimension);
+             }
+             else if (erts_is_exported_by_name(NULL, to)) {
+                 erts_printf("DEBUG: Message received from %T, to exported process %T\n", from, to);
 -- 
 1.7.7.5 (Apple Git-26)
 

@@ -9,7 +9,7 @@
 start_link() ->
     Pid = spawn_link(?MODULE, ctp, []),
     register(ctp, Pid),
-    eliot_api:export(ctp),
+    erlang:export(ctp),
     {ok, Pid}.
 
 %% @doc Implementation of the algorithm for each node.

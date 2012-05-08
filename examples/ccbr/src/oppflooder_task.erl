@@ -14,7 +14,7 @@
 start_link() ->
     Pid = spawn_link(?MODULE, oppflooder, []),
     register(oppflooder, Pid),
-    eliot_api:export(oppflooder),
+    erlang:export(oppflooder),
     {ok, Pid}.
 
 %% @doc Send a message from the given node.

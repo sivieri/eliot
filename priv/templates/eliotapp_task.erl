@@ -6,7 +6,7 @@
 start_link() ->
     Pid = spawn_link(?MODULE, {{appid}}, []),
     register({{appid}}, Pid),
-    eliot_export:export({{appid}}),
+    erlang:export({{appid}}),
     {ok, Pid}.
 
 {{appid}}() ->

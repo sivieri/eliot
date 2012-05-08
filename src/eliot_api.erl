@@ -2,7 +2,7 @@
 %% @doc Framework.
 -module(eliot_api).
 -include("eliot.hrl").
--export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0, export/1, unexport/1, put_data/2, get_data/1]).
+-export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0, put_data/2, get_data/1]).
 -export([send_test/3, msg/1]).
 -export([spawn/2, spawn/3, spawn/4, spawn/5, bcast_spawn/1, bcast_spawn/2, bcast_spawn/3, bcast_spawn/4]).
 
@@ -110,33 +110,6 @@ get_data(Key) ->
     end.
 -endif.
 
-%% Export a process (indicated by its name or PID), so that it can be
-%% reached by the external world.
--spec(export(atom() | pid()) -> ok).
--ifdef(simulation).
-export(Subject) when is_atom(Subject) ->
-	eliot_simulator:export(Subject);
-export(Subject) ->
-    eliot_export:export_real(Subject).
--else.
-export(Subject) ->
-    eliot_export:export_real(Subject).
--endif.
-
-%% Remove the given process from the list of exported processes;
-%% from now on this process will not be reached from the external
-%% world.
--spec(unexport(atom() | pid()) -> ok).
--ifdef(simulation).
-unexport(Subject) when is_atom(Subject) ->
-	eliot_export:unexport(eliot_simulator:get_simname(Subject));
-unexport(Subject) ->
-    eliot_export:unexport(Subject).
--else.
-unexport(Subject) ->
-    eliot_export:unexport(Subject).
--endif.
-
 %% This send function overrides the standard send function by automatically adding
 %% a standard string as the name of the node sending the message.
 %% The standard function requires the node name to be registered in the process
@@ -200,7 +173,7 @@ bcast_spawn(Module, Function, Args, Condition) ->
 %% Set accompanying fields to a message.
 -spec(msg(any()) -> {{atom(), string()}, any()}).
 msg(Msg) ->
-    {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}.
+    {0, {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}}.
 
 % Private API
 

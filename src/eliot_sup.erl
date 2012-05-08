@@ -11,8 +11,7 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(eliot_export, worker),
-								              ?CHILD(eliot_dispatcher, worker),
+    {ok, { {one_for_one, 5, 10}, [?CHILD(eliot_dispatcher, worker),
                                                ?CHILD(eliot_ping, worker),
                                                ?CHILD(eliot_gpio, worker),
                                                ?CHILD(eliot_rssi, worker),

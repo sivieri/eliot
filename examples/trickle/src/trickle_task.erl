@@ -13,7 +13,7 @@
 start_link() ->
     Pid = spawn_link(?MODULE, trickle, []),
     register(trickle, Pid),
-    eliot_api:export(trickle),
+    erlang:export(trickle),
     {ok, Pid}.
 
 %% @doc Implementation of the algorithm for each node.

@@ -13,22 +13,11 @@ start_link() ->
 
 loop() ->
 	receive
-		{connect, all, {{_Name, Ip}, _PLoad} = Msg} ->
-			lists:foreach(fun(Subject) -> Subject ! {eliot_rssi:rssi(?INTERFACE, eliot_mac:get(Ip)), Msg} end, eliot_export:get_exported_real()),
-            loop();
-		{connect, Subject, {{_Name, Ip}, _PLoad} = Msg} ->
-			case eliot_export:is_exported(Subject) of
-				true ->
-					Subject ! {eliot_rssi:rssi(?INTERFACE, eliot_mac:get(Ip)), Msg};
-				false ->
-					ok
-			end,
-			loop();
         {simulation, all, Msg = {{SenderName, _SenderNode}, _Msg}} ->
-            lists:foreach(fun(Subject) -> send_msg(SenderName, Subject, Msg) end, eliot_export:get_exported_simulated()),
+            lists:foreach(fun(Subject) -> send_msg(SenderName, Subject, Msg) end, erlang:exported()), % TODO probably duplicated messages
             loop();
         {simulation, {Subject, _Node}, Msg = {{SenderName, _SenderNode}, _Msg}} ->
-            case eliot_export:is_exported(Subject) of
+            case lists:member(Subject, erlang:exported()) of
                 true ->
                     send_msg(SenderName, Subject, Msg);
                 false ->
@@ -36,7 +25,9 @@ loop() ->
             end,
             loop();
         {simulation, Subject, Msg = {{SenderName, _SenderNode}, _Msg}} ->
-            lists:foreach(fun(Elem) -> send_msg(SenderName, Elem, Msg) end, eliot_export:get_exported_simulated(Subject)),
+            ProcessList = lists:filter(fun(Element) when is_atom(Element) -> lists:prefix(Subject, erlang:atom_to_list(Element));
+                                                       (_Element) -> false end, erlang:exported()),
+            lists:foreach(fun(Elem) -> send_msg(SenderName, Elem, Msg) end, ProcessList),
             loop();
         {spawn, Fun} ->
             erlang:spawn(fun() -> Fun() end),
