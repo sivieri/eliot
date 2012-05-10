@@ -172,8 +172,13 @@ bcast_spawn(Module, Function, Args, Condition) ->
 
 %% Set accompanying fields to a message.
 -spec(msg(any()) -> {{atom(), string()}, any()}).
+-ifdef(simulation).
+msg(Msg) ->
+    {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}.
+-else.
 msg(Msg) ->
     {0, {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}}.
+-endif.
 
 % Private API
 

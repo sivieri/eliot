@@ -25,7 +25,8 @@ loop() ->
             end,
             loop();
         {simulation, Subject, Msg = {{SenderName, _SenderNode}, _Msg}} ->
-            ProcessList = lists:filter(fun(Element) when is_atom(Element) -> lists:prefix(Subject, erlang:atom_to_list(Element));
+            ProcessList = lists:filter(fun(Element) when is_atom(Element) -> lists:prefix(erlang:atom_to_list(Subject), erlang:atom_to_list(Element))
+                                                                                                                andalso length(erlang:atom_to_list(Element)) > length(erlang:atom_to_list(Subject));
                                                        (_Element) -> false end, erlang:exported()),
             lists:foreach(fun(Elem) -> send_msg(SenderName, Elem, Msg) end, ProcessList),
             loop();
