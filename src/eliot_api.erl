@@ -35,7 +35,7 @@ get_node_name() ->
     case application:get_env(eliot, name) of
         undefined ->
             error;
-        Name ->
+        {ok, Name} ->
             Name
     end.
 -endif.
