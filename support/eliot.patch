@@ -1,7 +1,7 @@
 From b53a481ed3d6117a8cd4d2bdf529e4b2805b5dc6 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 29 Apr 2012 12:16:06 +0200
-Subject: [PATCH 01/12] Broadcast operation integrated into the bang operator.
+Subject: [PATCH 01/46] Broadcast operation integrated into the bang operator.
 
 ---
  erts/emulator/beam/bif.c |  120 +++++++++++++++++++++++++---------------------
@@ -145,13 +145,13 @@ index 55f4798..37801b2 100644
  	if (IS_TRACED(p)) /* XXX Is this really neccessary ??? */
  	    trace_send(p, to, msg);
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
 
 
 From b271e9ad5f8abdbe5de6f9431ed26ffbcfda2986 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 29 Apr 2012 12:16:25 +0200
-Subject: [PATCH 02/12] Added project file.
+Subject: [PATCH 02/46] Added project file.
 
 ---
  .project |   11 +++++++++++
@@ -176,13 +176,13 @@ index 0000000..52d5dc2
 +	</natures>
 +</projectDescription>
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
 
 
 From 2d5e7ec75998ed3180a497b55d55a63481ea0912 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Tue, 1 May 2012 18:59:41 +0200
-Subject: [PATCH 03/12] Broadcast messages, part II.
+Subject: [PATCH 03/46] Broadcast messages, part II.
 
 ---
  erts/emulator/beam/bif.c |   96 ++++++++++++++++++++++++++++------------------
@@ -297,13 +297,13 @@ index 37801b2..39b2371 100644
  	       && (external_port_dist_entry(to)
  		   == erts_this_dist_entry)) {
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
 
 
 From 6adb3a74a12214137037c0fc15b7d3b16b68e0cb Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Thu, 3 May 2012 11:16:25 +0200
-Subject: [PATCH 04/12] Changes in semantics.
+Subject: [PATCH 04/46] Changes in semantics.
 
 ---
  erts/emulator/beam/bif.c |   11 ++++++++---
@@ -343,13 +343,13 @@ index 39b2371..2cc2da2 100644
          }
          return ret;
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
 
 
 From 8715f1458731dafe64f6f502d2e125c53101fdce Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 4 May 2012 16:45:02 +0200
-Subject: [PATCH 05/12] Porting export table down below.
+Subject: [PATCH 05/46] Porting export table down below.
 
 ---
  erts/emulator/beam/bif.c     |   33 +
@@ -5388,13 +5388,13 @@ index 0000000..817c064
 +
 +#endif
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
 
 
 From bc3d95fd077a1cb309428905497b7438c6f5c0c9 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 6 May 2012 18:39:55 +0200
-Subject: [PATCH 06/12] First draft of export module done.
+Subject: [PATCH 06/46] First draft of export module done.
 
 ---
  erts/emulator/beam/bif.c         |   12 +-
@@ -6045,13 +6045,13 @@ index 817c064..e90c9de 100644
  
  #endif
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
 
 
 From 2e53ad7eacd4a01af9585a2bb03f85e46eb4cbdf Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 6 May 2012 18:49:58 +0200
-Subject: [PATCH 07/12] First draft of export module done/2.
+Subject: [PATCH 07/46] First draft of export module done/2.
 
 ---
  erts/emulator/beam/bif.c |   23 ++++++++++++++++++++++-
@@ -6101,13 +6101,13 @@ index a862f12..62f664e 100644
  }
  
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
 
 
 From 625332450fe3a8d67d655c78406824a1a70d0034 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 7 May 2012 17:59:52 +0200
-Subject: [PATCH 08/12] Simplified version of export now working.
+Subject: [PATCH 08/46] Simplified version of export now working.
 
 ---
  erts/emulator/Makefile.in     |    3 +-
@@ -6565,13 +6565,13 @@ index e90c9de..087595c 100644
  int erts_export_process_by_pid(Process *, Eterm);
  int erts_unexport_process_by_name(Process *, ErtsProcLocks, struct port *, Eterm);
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
 
 
 From 220f287bb35bf98905bc285fb3905ed264e466ec Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 7 May 2012 18:30:10 +0200
-Subject: [PATCH 09/12] Erlang export functions integrated in kernel global
+Subject: [PATCH 09/46] Erlang export functions integrated in kernel global
  module.
 
 ---
@@ -6847,13 +6847,13 @@ index fa97614..ae71802 100644
  loop_the_registrar() ->
      receive 
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
 
 
 From b4bb0c49e12054b25390fada17e6078f0c115c4d Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 7 May 2012 19:40:30 +0200
-Subject: [PATCH 10/12] Working on integration with dist.
+Subject: [PATCH 10/46] Working on integration with dist.
 
 ---
  erts/emulator/beam/bif.c  |   30 ++++++-------------
@@ -7016,13 +7016,13 @@ index d0ecb88..10a4e37 100644
                  rp = erts_whereis_process(NULL, 0, to, 0, ERTS_P2P_FLG_SMP_INC_REFC);
                  if (rp) {
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
 
 
 From ba33b71a618ca4ab782d95819269d68eb8bf4edb Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Tue, 8 May 2012 12:27:13 +0200
-Subject: [PATCH 11/12] It's working.
+Subject: [PATCH 11/46] It's working.
 
 ---
  erts/emulator/beam/dist.c        |    6 +++++-
@@ -7200,13 +7200,13 @@ index 1e07620..5e978d5 100644
      end;
  init(safe) ->
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
 
 
 From b72f8ef64cc95e5fb6a182b34f70a646da32b303 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Tue, 8 May 2012 14:30:08 +0200
-Subject: [PATCH 12/12] Un-use the tmp heap.
+Subject: [PATCH 12/46] Un-use the tmp heap.
 
 ---
  erts/emulator/beam/dist.c |    1 +
@@ -7225,5 +7225,2925 @@ index 5ccc18d..a9bf6ee 100644
              else if (erts_is_exported_by_name(NULL, to)) {
                  erts_printf("DEBUG: Message received from %T, to exported process %T\n", from, to);
 -- 
-1.7.7.5 (Apple Git-26)
+1.7.9.1
+
+
+From 2ed19b102f486bde03f365278982b741040dbf39 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Mon, 14 May 2012 12:50:01 +0200
+Subject: [PATCH 13/46] Got the global module back.
+
+---
+ lib/kernel/src/global.erl |   16 ++++++++++++----
+ lib/kernel/src/kernel.erl |    2 +-
+ 2 files changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/lib/kernel/src/global.erl b/lib/kernel/src/global.erl
+index fa97614..705d84a 100644
+--- a/lib/kernel/src/global.erl
++++ b/lib/kernel/src/global.erl
+@@ -158,10 +158,14 @@
+ %%% R14A (OTP-8527): The deleter process has been removed.
+ 
+ start() -> 
+-    gen_server:start({local, global_name_server}, ?MODULE, [], []).
++    Res = gen_server:start({local, global_name_server}, ?MODULE, [], []),
++    erlang:export(global_name_server),
++    Res.
+ 
+ start_link() -> 
+-    gen_server:start_link({local, global_name_server}, ?MODULE, [], []).
++    Res = gen_server:start_link({local, global_name_server}, ?MODULE, [], []),
++    erlang:export(global_name_server),
++    Res.
+ 
+ stop() -> 
+     gen_server:call(global_name_server, stop, infinity).
+@@ -1511,7 +1515,9 @@ delete_global_name(_Name, _Pid) ->
+ -record(him, {node, locker, vsn, my_tag}).
+ 
+ start_the_locker(DoTrace) ->
+-    spawn_link(fun() -> init_the_locker(DoTrace) end).
++    Pid = spawn_link(fun() -> init_the_locker(DoTrace) end),
++    erlang:export(Pid),
++    Pid.
+ 
+ init_the_locker(DoTrace) ->
+     process_flag(trap_exit, true),    % needed?
+@@ -2174,7 +2180,9 @@ get_own_nodes() ->
+ %% global_name_server.
+ 
+ start_the_registrar() ->
+-    spawn_link(fun() -> loop_the_registrar() end).
++    Pid = spawn_link(fun() -> loop_the_registrar() end),
++    erlang:export(Pid),
++    Pid.
+                        
+ loop_the_registrar() ->
+     receive 
+diff --git a/lib/kernel/src/kernel.erl b/lib/kernel/src/kernel.erl
+index 5e978d5..c60db1b 100644
+--- a/lib/kernel/src/kernel.erl
++++ b/lib/kernel/src/kernel.erl
+@@ -135,7 +135,7 @@ init([]) ->
+ 			      permanent, infinity, supervisor, [?MODULE]},
+ 	    {ok, {SupFlags,
+ 		  [InetDb | DistAC] ++ 
+-		  [NetSup, File, Code, 
++		  [Global, NetSup, File, Code, 
+ 		   StdError, User, Config, SafeSupervisor] ++ Timer}}
+     end;
+ init(safe) ->
+-- 
+1.7.9.1
+
+
+From 7ba725cd6df6007d4b5fad8d9e2f0b0205000487 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Thu, 31 May 2012 18:21:47 +0200
+Subject: [PATCH 14/46] Added print infoz.
+
+---
+ erts/emulator/beam/io.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
+index 49cd0e5..c290ca5 100644
+--- a/erts/emulator/beam/io.c
++++ b/erts/emulator/beam/io.c
+@@ -3292,6 +3292,7 @@ int driver_output2(ErlDrvPort ix, char* hbuf, ErlDrvSizeT hlen,
+     
+     prt->bytes_in += (hlen + len);
+     erts_smp_atomic_add_nob(&erts_bytes_in, (erts_aint_t) (hlen + len));
++    erts_fprintf(stderr, "DEBUG: status %d and length %d - %d\n", prt->status & ERTS_PORT_SFLG_DISTRIBUTION, hlen, len);
+     if (prt->status & ERTS_PORT_SFLG_DISTRIBUTION) {
+ 	if (len == 0)
+ 	    return erts_net_message(prt,
+-- 
+1.7.9.1
+
+
+From 89bf792c2f2c4672d56db1085ef7dde7e2b86648 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 6 Jun 2012 17:52:53 +0200
+Subject: [PATCH 15/46] Print moved.
+
+---
+ erts/emulator/beam/io.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
+index c290ca5..5ee42ef 100644
+--- a/erts/emulator/beam/io.c
++++ b/erts/emulator/beam/io.c
+@@ -3292,8 +3292,8 @@ int driver_output2(ErlDrvPort ix, char* hbuf, ErlDrvSizeT hlen,
+     
+     prt->bytes_in += (hlen + len);
+     erts_smp_atomic_add_nob(&erts_bytes_in, (erts_aint_t) (hlen + len));
+-    erts_fprintf(stderr, "DEBUG: status %d and length %d - %d\n", prt->status & ERTS_PORT_SFLG_DISTRIBUTION, hlen, len);
+     if (prt->status & ERTS_PORT_SFLG_DISTRIBUTION) {
++        erts_fprintf(stderr, "DEBUG: status %d and length %d - %d\n", prt->status & ERTS_PORT_SFLG_DISTRIBUTION, hlen, len);
+ 	if (len == 0)
+ 	    return erts_net_message(prt,
+ 				    prt->dist_entry,
+-- 
+1.7.9.1
+
+
+From 4ad9c180c6916897d4f60e1af7275939d70c3f77 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 6 Jun 2012 18:03:31 +0200
+Subject: [PATCH 16/46] Bug hunt.
+
+---
+ erts/emulator/beam/io.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
+index 5ee42ef..9ac39fb 100644
+--- a/erts/emulator/beam/io.c
++++ b/erts/emulator/beam/io.c
+@@ -3293,7 +3293,7 @@ int driver_output2(ErlDrvPort ix, char* hbuf, ErlDrvSizeT hlen,
+     prt->bytes_in += (hlen + len);
+     erts_smp_atomic_add_nob(&erts_bytes_in, (erts_aint_t) (hlen + len));
+     if (prt->status & ERTS_PORT_SFLG_DISTRIBUTION) {
+-        erts_fprintf(stderr, "DEBUG: status %d and length %d - %d\n", prt->status & ERTS_PORT_SFLG_DISTRIBUTION, hlen, len);
++        erts_fprintf(stderr, "DEBUG: status %d and lengths %d - %d, on port connected to %T\n", prt->status & ERTS_PORT_SFLG_DISTRIBUTION, hlen, len, prt->connected);
+ 	if (len == 0)
+ 	    return erts_net_message(prt,
+ 				    prt->dist_entry,
+-- 
+1.7.9.1
+
+
+From 06ef78a4d08e4833c5103290cd1a9aa545e76900 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Thu, 7 Jun 2012 18:17:16 +0200
+Subject: [PATCH 17/46] More prints.
+
+---
+ erts/emulator/beam/io.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
+index 9ac39fb..7862a7a 100644
+--- a/erts/emulator/beam/io.c
++++ b/erts/emulator/beam/io.c
+@@ -3292,6 +3292,7 @@ int driver_output2(ErlDrvPort ix, char* hbuf, ErlDrvSizeT hlen,
+     
+     prt->bytes_in += (hlen + len);
+     erts_smp_atomic_add_nob(&erts_bytes_in, (erts_aint_t) (hlen + len));
++    if (len > 20 || hlen > 20) erts_fprintf(stderr, "DEBUG: %T\n", prt->connected);
+     if (prt->status & ERTS_PORT_SFLG_DISTRIBUTION) {
+         erts_fprintf(stderr, "DEBUG: status %d and lengths %d - %d, on port connected to %T\n", prt->status & ERTS_PORT_SFLG_DISTRIBUTION, hlen, len, prt->connected);
+ 	if (len == 0)
+-- 
+1.7.9.1
+
+
+From 6d3b295b93726104b471bba69db2d98295ad0ff2 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 8 Jun 2012 11:43:47 +0200
+Subject: [PATCH 18/46] More prints.
+
+---
+ lib/kernel/src/net_kernel.erl |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 9e3d730..7ca2bff 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -1352,6 +1352,7 @@ start_protos(_,[], _Node, Ls) ->
+ set_node(Node, Creation) when node() =:= nonode@nohost ->
+     case catch erlang:setnode(Node, Creation) of
+ 	true ->
++        io:format(standard_error, "DEBUG: Node set correctly~n"),
+ 	    ok;
+ 	{'EXIT',Reason} ->
+ 	    {error,Reason}
+-- 
+1.7.9.1
+
+
+From 8d7ecdd3afc954e190598b3fa18559c4f0068580 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 8 Jun 2012 11:44:50 +0200
+Subject: [PATCH 19/46] More prints.
+
+---
+ erts/emulator/beam/io.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
+index 7862a7a..9ac39fb 100644
+--- a/erts/emulator/beam/io.c
++++ b/erts/emulator/beam/io.c
+@@ -3292,7 +3292,6 @@ int driver_output2(ErlDrvPort ix, char* hbuf, ErlDrvSizeT hlen,
+     
+     prt->bytes_in += (hlen + len);
+     erts_smp_atomic_add_nob(&erts_bytes_in, (erts_aint_t) (hlen + len));
+-    if (len > 20 || hlen > 20) erts_fprintf(stderr, "DEBUG: %T\n", prt->connected);
+     if (prt->status & ERTS_PORT_SFLG_DISTRIBUTION) {
+         erts_fprintf(stderr, "DEBUG: status %d and lengths %d - %d, on port connected to %T\n", prt->status & ERTS_PORT_SFLG_DISTRIBUTION, hlen, len, prt->connected);
+ 	if (len == 0)
+-- 
+1.7.9.1
+
+
+From 670f943c90a522bc4964be9b386611c513324b94 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 8 Jun 2012 11:50:44 +0200
+Subject: [PATCH 20/46] More prints.
+
+---
+ lib/kernel/src/net_kernel.erl |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 7ca2bff..4cf062d 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -1350,14 +1350,15 @@ start_protos(_,[], _Node, Ls) ->
+     Ls.
+ 
+ set_node(Node, Creation) when node() =:= nonode@nohost ->
++    io:format(standard_error, "DEBUG: Node set correctly~n"),
+     case catch erlang:setnode(Node, Creation) of
+ 	true ->
+-        io:format(standard_error, "DEBUG: Node set correctly~n"),
+ 	    ok;
+ 	{'EXIT',Reason} ->
+ 	    {error,Reason}
+     end;
+ set_node(Node, _Creation) when node() =:= Node ->
++    io:format(standard_error, "DEBUG: Node not set correctly~n"),
+     ok.
+ 
+ connecttime() ->
+-- 
+1.7.9.1
+
+
+From 5506a9710b76acfac50e5c2c3d2457ffd1d96cd7 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 8 Jun 2012 11:51:43 +0200
+Subject: [PATCH 21/46] More prints.
+
+---
+ lib/kernel/src/net_kernel.erl |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 4cf062d..9d3533c 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -1350,7 +1350,7 @@ start_protos(_,[], _Node, Ls) ->
+     Ls.
+ 
+ set_node(Node, Creation) when node() =:= nonode@nohost ->
+-    io:format(standard_error, "DEBUG: Node set correctly~n"),
++    io:format(standard_error, "DEBUG: Node set correctly~n", []),
+     case catch erlang:setnode(Node, Creation) of
+ 	true ->
+ 	    ok;
+@@ -1358,7 +1358,7 @@ set_node(Node, Creation) when node() =:= nonode@nohost ->
+ 	    {error,Reason}
+     end;
+ set_node(Node, _Creation) when node() =:= Node ->
+-    io:format(standard_error, "DEBUG: Node not set correctly~n"),
++    io:format(standard_error, "DEBUG: Node not set correctly~n", []),
+     ok.
+ 
+ connecttime() ->
+-- 
+1.7.9.1
+
+
+From 8e62dd0bd5bd370cac4de9c9239c0ac09a6ffbb1 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 8 Jun 2012 11:58:56 +0200
+Subject: [PATCH 22/46] More prints.
+
+---
+ erts/emulator/beam/dist.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
+index a9bf6ee..911759c 100644
+--- a/erts/emulator/beam/dist.c
++++ b/erts/emulator/beam/dist.c
+@@ -2540,6 +2540,8 @@ BIF_RETTYPE setnode_3(BIF_ALIST_3)
+         goto badarg;
+ 
+     erts_port_status_bor_set(pp, ERTS_PORT_SFLG_DISTRIBUTION);
++    
++    erts_printf(stderr, "DEBUG: Setting stuff: %d\n", pp->status & ERTS_PORT_SFLG_DISTRIBUTION);
+ 
+     pp->dist_entry = dep;
+ 
+-- 
+1.7.9.1
+
+
+From 676b1f0c098b9f7cf089216f84e7449a05580947 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 8 Jun 2012 12:00:10 +0200
+Subject: [PATCH 23/46] More prints.
+
+---
+ erts/emulator/beam/dist.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
+index 911759c..56f6bff 100644
+--- a/erts/emulator/beam/dist.c
++++ b/erts/emulator/beam/dist.c
+@@ -2541,7 +2541,7 @@ BIF_RETTYPE setnode_3(BIF_ALIST_3)
+ 
+     erts_port_status_bor_set(pp, ERTS_PORT_SFLG_DISTRIBUTION);
+     
+-    erts_printf(stderr, "DEBUG: Setting stuff: %d\n", pp->status & ERTS_PORT_SFLG_DISTRIBUTION);
++    erts_fprintf(stderr, "DEBUG: Setting stuff: %d\n", pp->status & ERTS_PORT_SFLG_DISTRIBUTION);
+ 
+     pp->dist_entry = dep;
+ 
+-- 
+1.7.9.1
+
+
+From 472f5de724cf23e43509fcca754f13f657e650f1 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 8 Jun 2012 12:10:00 +0200
+Subject: [PATCH 24/46] More prints.
+
+---
+ lib/kernel/src/net_kernel.erl |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 9d3533c..b6a23ad 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -1350,7 +1350,7 @@ start_protos(_,[], _Node, Ls) ->
+     Ls.
+ 
+ set_node(Node, Creation) when node() =:= nonode@nohost ->
+-    io:format(standard_error, "DEBUG: Node set correctly~n", []),
++    io:format("DEBUG: Node set correctly~n"),
+     case catch erlang:setnode(Node, Creation) of
+ 	true ->
+ 	    ok;
+@@ -1358,7 +1358,7 @@ set_node(Node, Creation) when node() =:= nonode@nohost ->
+ 	    {error,Reason}
+     end;
+ set_node(Node, _Creation) when node() =:= Node ->
+-    io:format(standard_error, "DEBUG: Node not set correctly~n", []),
++    io:format("DEBUG: Node not set correctly~n"),
+     ok.
+ 
+ connecttime() ->
+-- 
+1.7.9.1
+
+
+From ecc723ea8a0dad1b330fe21e6dc5ee1e25f5fac2 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 8 Jun 2012 12:16:00 +0200
+Subject: [PATCH 25/46] More prints.
+
+---
+ lib/kernel/src/net_kernel.erl |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index b6a23ad..9e3d730 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -1350,7 +1350,6 @@ start_protos(_,[], _Node, Ls) ->
+     Ls.
+ 
+ set_node(Node, Creation) when node() =:= nonode@nohost ->
+-    io:format("DEBUG: Node set correctly~n"),
+     case catch erlang:setnode(Node, Creation) of
+ 	true ->
+ 	    ok;
+@@ -1358,7 +1357,6 @@ set_node(Node, Creation) when node() =:= nonode@nohost ->
+ 	    {error,Reason}
+     end;
+ set_node(Node, _Creation) when node() =:= Node ->
+-    io:format("DEBUG: Node not set correctly~n"),
+     ok.
+ 
+ connecttime() ->
+-- 
+1.7.9.1
+
+
+From eed1c98fbfef79bd5917e1ff614c120acd05049c Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 15 Jun 2012 15:38:00 +0200
+Subject: [PATCH 26/46] Trace.
+
+---
+ lib/kernel/include/dist_util.hrl |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/kernel/include/dist_util.hrl b/lib/kernel/include/dist_util.hrl
+index c3a7f97..fde102a 100644
+--- a/lib/kernel/include/dist_util.hrl
++++ b/lib/kernel/include/dist_util.hrl
+@@ -17,8 +17,8 @@
+ %% %CopyrightEnd%
+ %%
+ %% uncomment this if tracing of handshake etc is wanted
+-%%-define(dist_trace, true). 
+-%%-define(dist_debug, true).
++-define(dist_trace, true). 
++-define(dist_debug, true).
+ 
+ 
+ -ifdef(dist_debug).
+-- 
+1.7.9.1
+
+
+From 22e222be8332b062b3a681f89be7995a3a577ebc Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 15 Jun 2012 16:02:18 +0200
+Subject: [PATCH 27/46] Trace.
+
+---
+ lib/kernel/src/dist_util.erl |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index f0d54a2..b54c23b 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -414,8 +414,10 @@ do_setnode(#hs_data{other_node = Node, socket = Socket,
+ 			      [Node]),
+ 		    ?shutdown(Node);
+ 		{'EXIT', Other} ->
++            ?trace("DEBUG: Error ~p~n", [Other]),
+ 		    exit(Other);
+ 		_Else ->
++            ?trace("DEBUG: Ok~n", []),
+ 		    ok
+ 	    end;
+ 	_ ->
+-- 
+1.7.9.1
+
+
+From 36af9f21810b2928a414612eaea8bccfc81b95f0 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 15 Jun 2012 16:12:02 +0200
+Subject: [PATCH 28/46] Trace.
+
+---
+ erts/emulator/beam/dist.c |   38 +++++++++++++++++++++++++++++---------
+ 1 files changed, 29 insertions(+), 9 deletions(-)
+
+diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
+index 56f6bff..0b00aa6 100644
+--- a/erts/emulator/beam/dist.c
++++ b/erts/emulator/beam/dist.c
+@@ -2464,23 +2464,34 @@ BIF_RETTYPE setnode_3(BIF_ALIST_3)
+     if (!is_node_name_atom(BIF_ARG_1) ||
+             is_not_internal_port(BIF_ARG_2) ||
+             (erts_this_node->sysname == am_Noname)) {
++        erts_fprintf(stderr, "1\n");
+         goto badarg;
+     }
+ 
+-    if (!is_tuple(BIF_ARG_3))
++    if (!is_tuple(BIF_ARG_3)) {
++        erts_fprintf(stderr, "2\n");
+         goto badarg;
++    }
+     tp = tuple_val(BIF_ARG_3);
+-    if (*tp++ != make_arityval(4))
++    if (*tp++ != make_arityval(4)) {
++        erts_fprintf(stderr, "3\n");
+         goto badarg;
+-    if (!is_small(*tp))
++    }
++    if (!is_small(*tp)) {
++        erts_fprintf(stderr, "4\n");
+         goto badarg;
++    }
+     flags = unsigned_val(*tp++);
+-    if (!is_small(*tp) || (version = unsigned_val(*tp)) == 0)
++    if (!is_small(*tp) || (version = unsigned_val(*tp)) == 0) {
++        erts_fprintf(stderr, "5\n");
+         goto badarg;
++    }
+     ic = *(++tp);
+     oc = *(++tp);
+-    if (!is_atom(ic) || !is_atom(oc))
++    if (!is_atom(ic) || !is_atom(oc)) {
++        erts_fprintf(stderr, "6\n");
+         goto badarg;
++    }
+ 
+     /* DFLAG_EXTENDED_REFERENCES is compulsory from R9 and forward */
+     if (!(DFLAG_EXTENDED_REFERENCES & flags)) {
+@@ -2493,6 +2504,7 @@ BIF_RETTYPE setnode_3(BIF_ALIST_3)
+                 "which is not able to handle extended references.\n",
+                 BIF_ARG_1);
+         erts_send_error_to_logger(BIF_P->group_leader, dsbufp);
++        erts_fprintf(stderr, "7\n");
+         goto badarg;
+     }
+ 
+@@ -2502,19 +2514,25 @@ BIF_RETTYPE setnode_3(BIF_ALIST_3)
+ 
+     /* get dist_entry */
+     dep = erts_find_or_insert_dist_entry(BIF_ARG_1);
+-    if (dep == erts_this_dist_entry)
++    if (dep == erts_this_dist_entry) {
++        erts_fprintf(stderr, "8\n");
+         goto badarg;
++    }
+     else if (!dep)
+         goto system_limit; /* Should never happen!!! */
+ 
+     pp = erts_id2port(BIF_ARG_2, BIF_P, ERTS_PROC_LOCK_MAIN);
+     erts_smp_de_rwlock(dep);
+ 
+-    if (!pp || (pp->status & ERTS_PORT_SFLG_EXITING))
++    if (!pp || (pp->status & ERTS_PORT_SFLG_EXITING)) {
++        erts_fprintf(stderr, "9\n");
+         goto badarg;
++    }
+ 
+-    if ((pp->drv_ptr->flags & ERL_DRV_FLAG_SOFT_BUSY) == 0)
++    if ((pp->drv_ptr->flags & ERL_DRV_FLAG_SOFT_BUSY) == 0) {
++        erts_fprintf(stderr, "10\n");
+         goto badarg;
++    }
+ 
+     if (dep->cid == BIF_ARG_2 && pp->dist_entry == dep)
+         goto done; /* Already set */
+@@ -2536,8 +2554,10 @@ BIF_RETTYPE setnode_3(BIF_ALIST_3)
+ 
+     ASSERT(!(dep->status & ERTS_DE_SFLG_EXITING));
+ 
+-    if (pp->dist_entry || is_not_nil(dep->cid))
++    if (pp->dist_entry || is_not_nil(dep->cid)) {
++        erts_fprintf(stderr, "11\n");
+         goto badarg;
++    }
+ 
+     erts_port_status_bor_set(pp, ERTS_PORT_SFLG_DISTRIBUTION);
+     
+-- 
+1.7.9.1
+
+
+From 6575d5c4aac4bebf55a70dc2912fcf155a5d513d Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 15 Jun 2012 16:47:29 +0200
+Subject: [PATCH 29/46] Trace.
+
+---
+ lib/kernel/src/dist_util.erl |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index b54c23b..11dae5e 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -343,9 +343,12 @@ connection(#hs_data{other_node = Node,
+ 	ok -> 
+ 	    do_setnode(HSData), % Succeeds or exits the process.
+ 	    Address = FAddress(Socket,Node),
++        ?trace("DEBUG: Got address~n", []),
+ 	    mark_nodeup(HSData,Address),
++        ?trace("DEBUG: Node marked as up~n", []),
+ 	    case FPostNodeup(Socket) of
+ 		ok ->
++            ?trace("DEBUG: Node postup~n", []),
+ 		    con_loop(HSData#hs_data.kernel_pid, 
+ 			     Node, 
+ 			     Socket, 
+-- 
+1.7.9.1
+
+
+From 48d05ab54acfdcd4a8c7a122dd85ff0ad22f4358 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 15 Jun 2012 16:57:38 +0200
+Subject: [PATCH 30/46] Trace.
+
+---
+ lib/kernel/src/dist_util.erl |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index 11dae5e..824f04b 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -457,10 +457,13 @@ con_loop(Kernel, Node, Socket, TcpAddress,
+ 	 MyNode, Type, Tick, MFTick, MFGetstat) ->
+     receive
+ 	{tcp_closed, Socket} ->
++        ?trace("DEBUG: Tcp closed~n"),
+ 	    ?shutdown2(Node, connection_closed);
+ 	{Kernel, disconnect} ->
++        ?trace("DEBUG: Kernel disconnect~n"),
+ 	    ?shutdown2(Node, disconnected);
+ 	{Kernel, aux_tick} ->
++        ?trace("DEBUG: Kernel aux tick~n"),
+ 	    case MFGetstat(Socket) of
+ 		{ok, _, _, PendWrite} ->
+ 		    send_tick(Socket, PendWrite, MFTick);
+@@ -470,6 +473,7 @@ con_loop(Kernel, Node, Socket, TcpAddress,
+ 	    con_loop(Kernel, Node, Socket, TcpAddress, MyNode, Type,
+ 		     Tick, MFTick, MFGetstat);
+ 	{Kernel, tick} ->
++        ?trace("DEBUG: Kernel tick~n"),
+ 	    case send_tick(Socket, Tick, Type, 
+ 			   MFTick, MFGetstat) of
+ 		{ok, NewTick} ->
+@@ -485,6 +489,7 @@ con_loop(Kernel, Node, Socket, TcpAddress,
+ 		    ?shutdown2(Node, send_net_tick_failed)
+ 	    end;
+ 	{From, get_status} ->
++        ?trace("DEBUG: Get status~n"),
+ 	    case MFGetstat(Socket) of
+ 		{ok, Read, Write, _} ->
+ 		    From ! {self(), get_status, {ok, Read, Write}},
+-- 
+1.7.9.1
+
+
+From 93be32a35590cc099777b7e92543891983688d3b Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 15 Jun 2012 16:58:19 +0200
+Subject: [PATCH 31/46] Trace.
+
+---
+ lib/kernel/src/dist_util.erl |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index 824f04b..de54b34 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -457,13 +457,13 @@ con_loop(Kernel, Node, Socket, TcpAddress,
+ 	 MyNode, Type, Tick, MFTick, MFGetstat) ->
+     receive
+ 	{tcp_closed, Socket} ->
+-        ?trace("DEBUG: Tcp closed~n"),
++        ?trace("DEBUG: Tcp closed~n", []),
+ 	    ?shutdown2(Node, connection_closed);
+ 	{Kernel, disconnect} ->
+-        ?trace("DEBUG: Kernel disconnect~n"),
++        ?trace("DEBUG: Kernel disconnect~n", []),
+ 	    ?shutdown2(Node, disconnected);
+ 	{Kernel, aux_tick} ->
+-        ?trace("DEBUG: Kernel aux tick~n"),
++        ?trace("DEBUG: Kernel aux tick~n", []),
+ 	    case MFGetstat(Socket) of
+ 		{ok, _, _, PendWrite} ->
+ 		    send_tick(Socket, PendWrite, MFTick);
+@@ -473,7 +473,7 @@ con_loop(Kernel, Node, Socket, TcpAddress,
+ 	    con_loop(Kernel, Node, Socket, TcpAddress, MyNode, Type,
+ 		     Tick, MFTick, MFGetstat);
+ 	{Kernel, tick} ->
+-        ?trace("DEBUG: Kernel tick~n"),
++        ?trace("DEBUG: Kernel tick~n", []),
+ 	    case send_tick(Socket, Tick, Type, 
+ 			   MFTick, MFGetstat) of
+ 		{ok, NewTick} ->
+@@ -489,7 +489,7 @@ con_loop(Kernel, Node, Socket, TcpAddress,
+ 		    ?shutdown2(Node, send_net_tick_failed)
+ 	    end;
+ 	{From, get_status} ->
+-        ?trace("DEBUG: Get status~n"),
++        ?trace("DEBUG: Get status~n", []),
+ 	    case MFGetstat(Socket) of
+ 		{ok, Read, Write, _} ->
+ 		    From ! {self(), get_status, {ok, Read, Write}},
+-- 
+1.7.9.1
+
+
+From ce7df637df2897621c059497f6eb284864f1a55b Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 15 Jun 2012 18:02:43 +0200
+Subject: [PATCH 32/46] Trace--.
+
+---
+ lib/kernel/include/dist_util.hrl |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/kernel/include/dist_util.hrl b/lib/kernel/include/dist_util.hrl
+index fde102a..c3a7f97 100644
+--- a/lib/kernel/include/dist_util.hrl
++++ b/lib/kernel/include/dist_util.hrl
+@@ -17,8 +17,8 @@
+ %% %CopyrightEnd%
+ %%
+ %% uncomment this if tracing of handshake etc is wanted
+--define(dist_trace, true). 
+--define(dist_debug, true).
++%%-define(dist_trace, true). 
++%%-define(dist_debug, true).
+ 
+ 
+ -ifdef(dist_debug).
+-- 
+1.7.9.1
+
+
+From ce24603cea224b9f219795a7c5a367e3bdfc9c17 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 15 Jun 2012 18:04:38 +0200
+Subject: [PATCH 33/46] Trace.
+
+---
+ lib/kernel/include/dist_util.hrl |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/kernel/include/dist_util.hrl b/lib/kernel/include/dist_util.hrl
+index c3a7f97..fde102a 100644
+--- a/lib/kernel/include/dist_util.hrl
++++ b/lib/kernel/include/dist_util.hrl
+@@ -17,8 +17,8 @@
+ %% %CopyrightEnd%
+ %%
+ %% uncomment this if tracing of handshake etc is wanted
+-%%-define(dist_trace, true). 
+-%%-define(dist_debug, true).
++-define(dist_trace, true). 
++-define(dist_debug, true).
+ 
+ 
+ -ifdef(dist_debug).
+-- 
+1.7.9.1
+
+
+From 5da35626da3805f0997e60ef83a7fc5a64b1122c Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 15 Jun 2012 18:37:17 +0200
+Subject: [PATCH 34/46] Trace.
+
+---
+ erts/emulator/beam/external.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/erts/emulator/beam/external.c b/erts/emulator/beam/external.c
+index 152dbcf..7f41932 100644
+--- a/erts/emulator/beam/external.c
++++ b/erts/emulator/beam/external.c
+@@ -565,8 +565,9 @@ erts_prepare_dist_ext(ErtsDistExternal *edep,
+ 	if (dep)
+ 	    erts_dsprintf(dsbufp,
+ 			  "** Got message from incompatible erlang on "
+-			  "channel %d\n",
+-			  dist_entry_channel_no(dep));
++			  "channel %d: version %d\n",
++			  dist_entry_channel_no(dep),
++			  (unsigned short) ep[0]);
+ 	else
+ 	    erts_dsprintf(dsbufp,
+ 			  "** Attempt to convert old incompatible "
+-- 
+1.7.9.1
+
+
+From a79b4bd78ac2a969975bb7b9321729d1ab4c6c1e Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Mon, 18 Jun 2012 17:05:21 +0200
+Subject: [PATCH 35/46] Trace.
+
+---
+ lib/kernel/src/dist_util.erl |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index de54b34..6ff0391 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -709,6 +709,7 @@ send_tick(Socket, Tick, Type, MFTick, MFGetstat) ->
+ 	  read = Read,
+ 	  write = Write,
+ 	  ticked = Ticked} = Tick,
++    io:format(standard_error, "TICK: ~p, ~p, ~p, ~p~n", [T0, Read, Write, Ticked]),
+     T = T0 + 1,
+     T1 = T rem 4,
+     case MFGetstat(Socket) of
+-- 
+1.7.9.1
+
+
+From 0b3407e6338a851fd063c5885b79ff4336ff472e Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Mon, 18 Jun 2012 17:43:59 +0200
+Subject: [PATCH 36/46] Trace--.
+
+---
+ lib/kernel/examples/uds_dist/c_src/uds_drv.c | 1167 +++++++++++++-------------
+ lib/kernel/include/dist_util.hrl             |    4 +-
+ 2 files changed, 564 insertions(+), 607 deletions(-)
+
+diff --git a/lib/kernel/examples/uds_dist/c_src/uds_drv.c b/lib/kernel/examples/uds_dist/c_src/uds_drv.c
+index 9327ab1..e588681 100644
+--- a/lib/kernel/examples/uds_dist/c_src/uds_drv.c
++++ b/lib/kernel/examples/uds_dist/c_src/uds_drv.c
+@@ -37,8 +37,8 @@
+ #define DEBUG
+ /*#define HARDDEBUG 1*/
+ /*
+-** Some constants/macros
+-*/
++ ** Some constants/macros
++ */
+ 
+ #ifdef HARDDEBUG
+ #define DEBUGF(P) debugf P
+@@ -59,7 +59,6 @@ static void debugf(char *str, ...)
+ #define DEBUGF(P)
+ #endif
+ 
+-
+ #ifdef DEBUG
+ #define ASSERT(X) 							\
+ do {									\
+@@ -75,8 +74,6 @@ do {									\
+ #define ASSERT_NONBLOCK(FD)
+ #endif
+ 
+-    
+-
+ #define SET_NONBLOCKING(FD)			\
+      fcntl((FD), F_SETFL, 			\
+ 	   fcntl((FD), F_GETFL, 0) | O_NONBLOCK)
+@@ -90,9 +87,9 @@ do {									\
+ #define DIST_MAGIC_RECV_TAG 100
+ 
+ /*
+-** The max length of an I/O vector seams to be impossible to find
+-** out (?), so this is just a value known to work on solaris.
+-*/ 
++ ** The max length of an I/O vector seams to be impossible to find
++ ** out (?), so this is just a value known to work on solaris.
++ */
+ #define IO_VECTOR_MAX 16
+ 
+ #define SOCKET_PATH "/tmp/erlang"
+@@ -103,76 +100,77 @@ do {									\
+ #define EOF_READ_FAILURE    -3
+ 
+ /*
+-** Internal structures
+-*/
++ ** Internal structures
++ */
+ 
+ #define HEADER_LENGTH 4
+ 
+-typedef enum { 
+-    portTypeUnknown,      /* An uninitialized port */
+-    portTypeListener,     /* A listening port/socket */
+-    portTypeAcceptor,     /* An intermediate stage when accepting
+-			     on a listen port */
+-    portTypeConnector,    /* An intermediate stage when connecting */
+-    portTypeCommand,      /* A connected open port in command mode */
++typedef enum
++{
++    portTypeUnknown, /* An uninitialized port */
++    portTypeListener, /* A listening port/socket */
++    portTypeAcceptor, /* An intermediate stage when accepting
++     on a listen port */
++    portTypeConnector, /* An intermediate stage when connecting */
++    portTypeCommand, /* A connected open port in command mode */
+     portTypeIntermediate, /* A connected open port in special half 
+-			     active mode */
+-    portTypeData          /* A connectec open port in data mode */ 
++     active mode */
++    portTypeData /* A connectec open port in data mode */
+ } PortType;
+ 
+ typedef unsigned char Byte;
+ typedef unsigned int Word;
+ 
+-typedef struct uds_data {
+-    int fd;                   /* File descriptor */
+-    ErlDrvPort port;          /* The port identifier */
+-    int lockfd;               /* The file descriptor for a lock file in 
+-				 case of listen sockets */
+-    Byte creation;            /* The creation serial derived from the 
+-				 lockfile */
+-    PortType type;            /* Type of port */
+-    char *name;               /* Short name of socket for unlink */
+-    Word sent;                /* Messages sent */
+-    Word received;            /* Messages received */
++typedef struct uds_data
++{
++    int fd; /* File descriptor */
++    ErlDrvPort port; /* The port identifier */
++    int lockfd; /* The file descriptor for a lock file in 
++     case of listen sockets */
++    Byte creation; /* The creation serial derived from the 
++     lockfile */
++    PortType type; /* Type of port */
++    char *name; /* Short name of socket for unlink */
++    Word sent; /* Messages sent */
++    Word received; /* Messages received */
+     struct uds_data *partner; /* The partner in an accept/listen pair */
+-    struct uds_data *next;    /* Next structure in list */
++    struct uds_data *next; /* Next structure in list */
+ 
+     /* The input buffer and it's data */
+-    int buffer_size;          /* The allocated size of the input buffer */
+-    int buffer_pos;           /* Current position in input buffer */
+-    int header_pos;           /* Where the current header is in the 
+-				 input buffer */
+-    Byte *buffer;            /* The actual input buffer */
++    int buffer_size; /* The allocated size of the input buffer */
++    int buffer_pos; /* Current position in input buffer */
++    int header_pos; /* Where the current header is in the 
++     input buffer */
++    Byte *buffer; /* The actual input buffer */
+ } UdsData;
+ 
+ /*
+-** Interface routines
+-*/
++ ** Interface routines
++ */
+ static ErlDrvData uds_start(ErlDrvPort port, char *buff);
+ static void uds_stop(ErlDrvData handle);
+ static void uds_command(ErlDrvData handle, char *buff, int bufflen);
+ static void uds_input(ErlDrvData handle, ErlDrvEvent event);
+ static void uds_output(ErlDrvData handle, ErlDrvEvent event);
+ static void uds_finish(void);
+-static int uds_control(ErlDrvData handle, unsigned int command, 
+-		       char* buf, int count, char** res, int res_size);
++static int uds_control(ErlDrvData handle, unsigned int command, char* buf, int count, char** res,
++        int res_size);
+ static void uds_stop_select(ErlDrvEvent event, void*);
+ 
+ /* 
+-** Local helpers forward declarations
+-*/
++ ** Local helpers forward declarations
++ */
+ 
+ static void uds_command_listen(UdsData *ud, char *buff, int bufflen);
+-static void uds_command_accept(UdsData *ud, char *buff, int bufflen); 
+-static void uds_command_connect(UdsData *ud, char *buff, int bufflen); 
+- 
++static void uds_command_accept(UdsData *ud, char *buff, int bufflen);
++static void uds_command_connect(UdsData *ud, char *buff, int bufflen);
++
+ static void do_stop(UdsData *ud, int shutting_down);
+-static void do_send(UdsData *ud, char *buff, int bufflen); 
++static void do_send(UdsData *ud, char *buff, int bufflen);
+ static void do_recv(UdsData *ud);
+ 
+-static int report_control_error(char **buffer, int buff_len, 
+-				char *error_message);
+-static int  send_out_queue(UdsData *ud);
++static int report_control_error(char **buffer, int buff_len, char *error_message);
++static int send_out_queue(UdsData *ud);
+ static int buffered_read_package(UdsData *ud, char **result);
+ static int read_at_least(UdsData *ud, int num);
+ static int get_packet_length(char *b);
+@@ -184,64 +182,55 @@ static int ensure_dir(char *path);
+ static void do_unlink(char *name);
+ 
+ /*
+-** Global data
+-*/
++ ** Global data
++ */
+ 
+ /* The driver entry */
+-ErlDrvEntry uds_driver_entry = {
+-    NULL,		   /* init, N/A */
+-    uds_start,             /* start, called when port is opened */
+-    uds_stop,              /* stop, called when port is closed */
+-    uds_command,           /* output, called when erlang has sent */
+-    uds_input,             /* ready_input, called when input descriptor 
+-			      ready */
+-    uds_output,            /* ready_output, called when output 
+-			      descriptor ready */
+-    "uds_drv",             /* char *driver_name, the argument to open_port */
+-    uds_finish,            /* finish, called when unloaded */
+-    NULL,                  /* void * that is not used (BC) */
+-    uds_control,           /* control, port_control callback */
+-    NULL,                  /* timeout, called on timeouts */
+-    NULL,                  /* outputv, vector output interface */
+-    NULL,                  /* ready_async */
+-    NULL,                  /* flush */
+-    NULL,                  /* call */
+-    NULL,                  /* event */
+-    ERL_DRV_EXTENDED_MARKER,
+-    ERL_DRV_EXTENDED_MAJOR_VERSION,
+-    ERL_DRV_EXTENDED_MINOR_VERSION,
+-    0,	/* ERL_DRV_FLAGs */
+-    NULL,
+-    NULL,                  /* process_exit */
+-    uds_stop_select
+-};
++ErlDrvEntry uds_driver_entry = { NULL, /* init, N/A */
++uds_start, /* start, called when port is opened */
++uds_stop, /* stop, called when port is closed */
++uds_command, /* output, called when erlang has sent */
++uds_input, /* ready_input, called when input descriptor 
++ ready */
++uds_output, /* ready_output, called when output 
++ descriptor ready */
++"uds_drv", /* char *driver_name, the argument to open_port */
++uds_finish, /* finish, called when unloaded */
++NULL, /* void * that is not used (BC) */
++uds_control, /* control, port_control callback */
++NULL, /* timeout, called on timeouts */
++NULL, /* outputv, vector output interface */
++NULL, /* ready_async */
++NULL, /* flush */
++NULL, /* call */
++NULL, /* event */
++ERL_DRV_EXTENDED_MARKER, ERL_DRV_EXTENDED_MAJOR_VERSION, ERL_DRV_EXTENDED_MINOR_VERSION, 0, /* ERL_DRV_FLAGs */
++NULL, NULL, /* process_exit */
++uds_stop_select };
+ 
+ /* Beginning of linked list of ports */
+ static UdsData *first_data;
+ 
+ /*
+-**
+-** Driver interface routines
+-**
+-*/
++ **
++ ** Driver interface routines
++ **
++ */
+ 
+ /*
+-** Driver initialization routine
+-*/
+-DRIVER_INIT(uds_drv)
+-{
++ ** Driver initialization routine
++ */DRIVER_INIT(uds_drv) {
+     first_data = NULL;
+     return &uds_driver_entry;
+ }
+ 
+ /*
+-** A port is opened, we need no information whatsoever about the socket 
+-** at this stage.
+-*/
+-static ErlDrvData uds_start(ErlDrvPort port, char *buff)
+-{
++ ** A port is opened, we need no information whatsoever about the socket 
++ ** at this stage.
++ */
++static ErlDrvData uds_start(ErlDrvPort port, char *buff) {
+     UdsData *ud;
+-    
++
+     ud = ALLOC(sizeof(UdsData));
+     ud->fd = -1;
+     ud->lockfd = -1;
+@@ -258,162 +247,156 @@ static ErlDrvData uds_start(ErlDrvPort port, char *buff)
+     ud->partner = NULL;
+     ud->next = first_data;
+     first_data = ud;
+-    
+-    return((ErlDrvData) ud);
++
++    return ((ErlDrvData)ud);
+ }
+ 
+ /*
+-** Close the socket/port and free up
+-*/
+-static void uds_stop(ErlDrvData handle) 
+-{
+-    do_stop((UdsData *) handle, 0);
++ ** Close the socket/port and free up
++ */
++static void uds_stop(ErlDrvData handle) {
++    do_stop((UdsData *)handle, 0);
+ }
+ 
+ /*
+-** Command interface, operates in two modes, Command mode and data mode.
+-** Mode is shifted with the port_control function.
+-** Command mode protocol:
+-** 'L'<socketname>: Lock and listen on socket.
+-** 'A'<listennumber as 32 bit bigendian>: Accept from the port referenced by the 
+-**                                        "listennumber"
+-** 'C'<socketname>: Connect to the socket named <socketname>
+-** 'S'<data>: Send the data <data> 
+-** 'R': Receive one packet of data 
+-** Data mode protocol:
+-** Send anything that arrives (no opcodes/skip opcodes).
+-*/
+-
+-static void uds_command(ErlDrvData handle, char *buff, int bufflen)
+-{
+-    UdsData *ud = (UdsData *) handle;
++ ** Command interface, operates in two modes, Command mode and data mode.
++ ** Mode is shifted with the port_control function.
++ ** Command mode protocol:
++ ** 'L'<socketname>: Lock and listen on socket.
++ ** 'A'<listennumber as 32 bit bigendian>: Accept from the port referenced by the 
++ **                                        "listennumber"
++ ** 'C'<socketname>: Connect to the socket named <socketname>
++ ** 'S'<data>: Send the data <data> 
++ ** 'R': Receive one packet of data 
++ ** Data mode protocol:
++ ** Send anything that arrives (no opcodes/skip opcodes).
++ */
++
++static void uds_command(ErlDrvData handle, char *buff, int bufflen) {
++    UdsData *ud = (UdsData *)handle;
+ 
+     if (ud->type == portTypeData || ud->type == portTypeIntermediate) {
+-	DEBUGF(("Passive do_send %d",bufflen));
+-	do_send(ud, buff + 1, bufflen - 1); /* XXX */
+-	return;
+-    } 
++        DEBUGF(("Passive do_send %d",bufflen));
++        do_send(ud, buff + 1, bufflen - 1); /* XXX */
++        return;
++    }
+     if (bufflen == 0) {
+-	return;
++        return;
+     }
+     switch (*buff) {
+-    case 'L':
+-	if (ud->type != portTypeUnknown) {
+-	    driver_failure_posix(ud->port, ENOTSUP);
+-	    return;
+-	}
+-	uds_command_listen(ud,buff,bufflen);
+-	return;
+-    case 'A':
+-	if (ud->type != portTypeUnknown) {
+-	    driver_failure_posix(ud->port, ENOTSUP);
+-	    return;
+-	}
+-	uds_command_accept(ud,buff,bufflen);
+-	return;
+-    case 'C':
+-	if (ud->type != portTypeUnknown) {
+-	    driver_failure_posix(ud->port, ENOTSUP);
+-	    return;
+-	}
+-	uds_command_connect(ud,buff,bufflen);
+-	return;
+-    case 'S':
+-	if (ud->type != portTypeCommand) {
+-	    driver_failure_posix(ud->port, ENOTSUP);
+-	    return;
+-	}
+-	do_send(ud, buff + 1, bufflen - 1);
+-	return;
+-    case 'R':
+-	if (ud->type != portTypeCommand) {
+-	    driver_failure_posix(ud->port, ENOTSUP);
+-	    return;
+-	}
+-	do_recv(ud);
+-	return;
+-    default:
+-	ASSERT(0);
+-	return;
++        case 'L':
++            if (ud->type != portTypeUnknown) {
++                driver_failure_posix(ud->port, ENOTSUP);
++                return;
++            }
++            uds_command_listen(ud, buff, bufflen);
++            return;
++        case 'A':
++            if (ud->type != portTypeUnknown) {
++                driver_failure_posix(ud->port, ENOTSUP);
++                return;
++            }
++            uds_command_accept(ud, buff, bufflen);
++            return;
++        case 'C':
++            if (ud->type != portTypeUnknown) {
++                driver_failure_posix(ud->port, ENOTSUP);
++                return;
++            }
++            uds_command_connect(ud, buff, bufflen);
++            return;
++        case 'S':
++            if (ud->type != portTypeCommand) {
++                driver_failure_posix(ud->port, ENOTSUP);
++                return;
++            }
++            do_send(ud, buff + 1, bufflen - 1);
++            return;
++        case 'R':
++            if (ud->type != portTypeCommand) {
++                driver_failure_posix(ud->port, ENOTSUP);
++                return;
++            }
++            do_recv(ud);
++            return;
++        default:
++            ASSERT(0);
++            return;
+     }
+ }
+-	
+-static void uds_input(ErlDrvData handle, ErlDrvEvent event)
+-{
+-    UdsData *ud = (UdsData *) handle;
++
++static void uds_input(ErlDrvData handle, ErlDrvEvent event) {
++    UdsData *ud = (UdsData *)handle;
+ 
+     DEBUGF(("In uds_input type = %d",ud->type));
+     if (ud->type == portTypeListener) {
+-	UdsData *ad = ud->partner;
+-	struct sockaddr_un peer;
+-	int pl = sizeof(struct sockaddr_un);
+-	int fd;
+-
+-	ASSERT(ad != NULL);
+-	if ((fd = accept(ud->fd, (struct sockaddr *) &peer, &pl)) < 0) {
+-	    if (errno != EWOULDBLOCK) {
+-		DEBUGF(("Accept failed."));
+-		driver_failure_posix(ud->port, errno);
+-		return;
+-	    }
+-	    DEBUGF(("Accept would block."));
+-	    return;
+-	}
+-	SET_NONBLOCKING(fd);
+-	ad->fd = fd;
+-	ad->partner = NULL;
+-	ad->type = portTypeCommand;
+-	ud->partner = NULL;
+-	DEBUGF(("Accept successful."));
+-	driver_select(ud->port, (ErlDrvEvent) ud->fd, ERL_DRV_READ, 0);
+-	driver_output(ad->port, "Aok",3);
+-	return;
++        UdsData *ad = ud->partner;
++        struct sockaddr_un peer;
++        int pl = sizeof(struct sockaddr_un);
++        int fd;
++
++        ASSERT(ad != NULL);
++        if ((fd = accept(ud->fd, (struct sockaddr *)&peer, &pl)) < 0) {
++            if (errno != EWOULDBLOCK) {
++                DEBUGF(("Accept failed."));
++                driver_failure_posix(ud->port, errno);
++                return;
++            } DEBUGF(("Accept would block."));
++            return;
++        }
++        SET_NONBLOCKING(fd);
++        ad->fd = fd;
++        ad->partner = NULL;
++        ad->type = portTypeCommand;
++        ud->partner = NULL;
++        DEBUGF(("Accept successful."));
++        driver_select(ud->port, (ErlDrvEvent)ud->fd, ERL_DRV_READ, 0);
++        driver_output(ad->port, "Aok", 3);
++        return;
+     }
+     /* OK, normal data or command port */
+     ASSERT(ud->type >= portTypeCommand);
+ #ifdef HARDDEBUG
+     if (ud->type == portTypeData)
+-	DEBUGF(("Passive do_recv"));
++    DEBUGF(("Passive do_recv"));
+ #endif
+     do_recv(ud);
+ }
+ 
+-static void uds_output(ErlDrvData handle, ErlDrvEvent event)
+-{
+-   UdsData *ud = (UdsData *) handle;
+-   if (ud->type == portTypeConnector) {
+-       ud->type = portTypeCommand;
+-       driver_select(ud->port, (ErlDrvEvent) ud->fd, ERL_DRV_WRITE, 0);
+-       driver_output(ud->port, "Cok",3);
+-       return;
+-   }
+-   ASSERT(ud->type == portTypeCommand || ud->type == portTypeData);
+-   send_out_queue(ud);
++static void uds_output(ErlDrvData handle, ErlDrvEvent event) {
++    UdsData *ud = (UdsData *)handle;
++    if (ud->type == portTypeConnector) {
++        ud->type = portTypeCommand;
++        driver_select(ud->port, (ErlDrvEvent)ud->fd, ERL_DRV_WRITE, 0);
++        driver_output(ud->port, "Cok", 3);
++        return;
++    }
++    ASSERT(ud->type == portTypeCommand || ud->type == portTypeData);
++    send_out_queue(ud);
+ }
+ 
+-static void uds_finish(void) 
+-{
++static void uds_finish(void) {
+     while (first_data != NULL) {
+-	do_stop(first_data, 1);
++        do_stop(first_data, 1);
+     }
+ }
+ 
+ /*
+-** Protocol to control:
+-** 'C': Set port in command mode.
+-** 'I': Set port in intermediate mode
+-** 'D': Set port in data mode
+-** 'N': Get identification number for listen port
+-** 'S': Get statistics
+-** 'T': Send a tick message
+-** 'R': Get creation number of listen socket
+-** Answer is one byte status (0 == ok, Other is followed by error as string) 
+-** followed by data if applicable
+-*/
+-static int uds_control(ErlDrvData handle, unsigned int command, 
+-		       char* buf, int count, char** res, int res_size)
++ ** Protocol to control:
++ ** 'C': Set port in command mode.
++ ** 'I': Set port in intermediate mode
++ ** 'D': Set port in data mode
++ ** 'N': Get identification number for listen port
++ ** 'S': Get statistics
++ ** 'T': Send a tick message
++ ** 'R': Get creation number of listen socket
++ ** Answer is one byte status (0 == ok, Other is followed by error as string) 
++ ** followed by data if applicable
++ */
++static int uds_control(ErlDrvData handle, unsigned int command, char* buf, int count, char** res,
++        int res_size)
+ {
+-/* Local macro to ensure large enough buffer. */
++    /* Local macro to ensure large enough buffer. */
+ #define ENSURE(N) 				\
+    do {						\
+        if (res_size < N) {			\
+@@ -421,93 +404,90 @@ static int uds_control(ErlDrvData handle, unsigned int command,
+        }					\
+    } while(0)
+ 
+-   UdsData *ud = (UdsData *) handle;
+-
+-   DEBUGF(("Control, type = %d, fd = %d, command = %c", ud->type, ud->fd, 
+-	   (char) command));
+-   switch (command) {
+-   case 'S':
+-       {
+-	   ENSURE(13);
+-	   **res = 0;
+-	   put_packet_length((*res) + 1, ud->received);
+-	   put_packet_length((*res) + 5, ud->sent);
+-	   put_packet_length((*res) + 9, driver_sizeq(ud->port));
+-	   return 13;
+-       }
+-   case 'C':
+-       if (ud->type < portTypeCommand) {
+-	   return report_control_error(res, res_size, "einval");
+-       }
+-       ud->type = portTypeCommand;
+-       driver_select(ud->port, (ErlDrvEvent) ud->fd, ERL_DRV_READ, 0);
+-       ENSURE(1);
+-       **res = 0;
+-       return 1;
+-   case 'I':
+-       if (ud->type < portTypeCommand) {
+-	   return report_control_error(res, res_size, "einval");
+-       }
+-       ud->type = portTypeIntermediate;
+-       driver_select(ud->port, (ErlDrvEvent) ud->fd, ERL_DRV_READ, 0);
+-       ENSURE(1);
+-       **res = 0;
+-       return 1;
+-   case 'D':
+-       if (ud->type < portTypeCommand) {
+-	   return report_control_error(res, res_size, "einval");
+-       }
+-       ud->type = portTypeData;
+-       do_recv(ud);
+-       ENSURE(1);
+-       **res = 0;
+-       return 1;
+-   case 'N':
+-       if (ud->type != portTypeListener) {
+-	   return report_control_error(res, res_size, "einval");
+-       }
+-       ENSURE(5);
+-       (*res)[0] = 0;
+-       put_packet_length((*res) + 1, ud->fd);
+-       return 5;
+-   case 'T': /* tick */
+-       if (ud->type != portTypeData) {
+-	   return report_control_error(res, res_size, "einval");
+-       }
+-       do_send(ud,"",0);
+-       ENSURE(1);
+-       **res = 0;
+-       return 1;
+-   case 'R':
+-       if (ud->type != portTypeListener) {
+-	   return report_control_error(res, res_size, "einval");
+-       }
+-       ENSURE(2);
+-       (*res)[0] = 0;
+-       (*res)[1] = ud->creation;
+-       return 2;
+-   default:
+-       return report_control_error(res, res_size, "einval");
+-   }
++    UdsData *ud = (UdsData *)handle;
++
++    DEBUGF(("Control, type = %d, fd = %d, command = %c", ud->type, ud->fd,
++                    (char) command));
++    switch (command) {
++        case 'S': {
++            ENSURE(13);
++            **res = 0;
++            put_packet_length((*res) + 1, ud->received);
++            put_packet_length((*res) + 5, ud->sent);
++            put_packet_length((*res) + 9, driver_sizeq(ud->port));
++            return 13;
++        }
++        case 'C':
++            if (ud->type < portTypeCommand) {
++                return report_control_error(res, res_size, "einval");
++            }
++            ud->type = portTypeCommand;
++            driver_select(ud->port, (ErlDrvEvent)ud->fd, ERL_DRV_READ, 0);
++            ENSURE(1);
++            **res = 0;
++            return 1;
++        case 'I':
++            if (ud->type < portTypeCommand) {
++                return report_control_error(res, res_size, "einval");
++            }
++            ud->type = portTypeIntermediate;
++            driver_select(ud->port, (ErlDrvEvent)ud->fd, ERL_DRV_READ, 0);
++            ENSURE(1);
++            **res = 0;
++            return 1;
++        case 'D':
++            if (ud->type < portTypeCommand) {
++                return report_control_error(res, res_size, "einval");
++            }
++            ud->type = portTypeData;
++            do_recv(ud);
++            ENSURE(1);
++            **res = 0;
++            return 1;
++        case 'N':
++            if (ud->type != portTypeListener) {
++                return report_control_error(res, res_size, "einval");
++            }
++            ENSURE(5);
++            (*res)[0] = 0;
++            put_packet_length((*res) + 1, ud->fd);
++            return 5;
++        case 'T': /* tick */
++            if (ud->type != portTypeData) {
++                return report_control_error(res, res_size, "einval");
++            }
++            do_send(ud, "", 0);
++            ENSURE(1);
++            **res = 0;
++            return 1;
++        case 'R':
++            if (ud->type != portTypeListener) {
++                return report_control_error(res, res_size, "einval");
++            }
++            ENSURE(2);
++            (*res)[0] = 0;
++            (*res)[1] = ud->creation;
++            return 2;
++        default:
++            return report_control_error(res, res_size, "einval");
++    }
+ #undef ENSURE
+ }
+ 
+-static void uds_stop_select(ErlDrvEvent event, void* _)
+-{
++static void uds_stop_select(ErlDrvEvent event, void* _) {
+     close((int)(long)event);
+ }
+ 
+ /*
+-**
+-** Local helpers
+-**
+-*/
++ **
++ ** Local helpers
++ **
++ */
+ 
+ /*
+-** Command implementations 
+-*/
+-static void uds_command_connect(UdsData *ud, char *buff, int bufflen) 
+-{
++ ** Command implementations 
++ */
++static void uds_command_connect(UdsData *ud, char *buff, int bufflen) {
+     char *str;
+     int fd;
+     struct sockaddr_un s_un;
+@@ -515,8 +495,8 @@ static void uds_command_connect(UdsData *ud, char *buff, int bufflen)
+     int res;
+ 
+     str = ALLOC(25);
+-    sprintf(str, "erl%d", (int) getpid()); /* A temporary sufficiently 
+-					      unique name */
++    sprintf(str, "erl%d", (int)getpid()); /* A temporary sufficiently 
++     unique name */
+     do_unlink(str);
+     s_un.sun_family = AF_UNIX;
+     strcpy(s_un.sun_path, SOCKET_PATH "/");
+@@ -526,15 +506,15 @@ static void uds_command_connect(UdsData *ud, char *buff, int bufflen)
+     ud->name = str;
+     ud->type = portTypeCommand;
+     if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+-	DEBUGF(("socket call failed, errno = %d"));
+-	driver_failure_posix(ud->port, errno);
+-	return;
++        DEBUGF(("socket call failed, errno = %d"));
++        driver_failure_posix(ud->port, errno);
++        return;
+     }
+     ud->fd = fd;
+-    if ((res = bind(fd, (struct sockaddr *) &s_un, length)) < 0) {
+-	DEBUGF(("bind call failed, errno = %d",errno));
+-	driver_failure_posix(ud->port, errno);
+-	return;
++    if ((res = bind(fd, (struct sockaddr *)&s_un, length)) < 0) {
++        DEBUGF(("bind call failed, errno = %d",errno));
++        driver_failure_posix(ud->port, errno);
++        return;
+     }
+     str = ALLOC(bufflen);
+     memcpy(str, buff + 1, bufflen - 1);
+@@ -544,56 +524,55 @@ static void uds_command_connect(UdsData *ud, char *buff, int bufflen)
+     length = sizeof(s_un.sun_family) + strlen(s_un.sun_path);
+     DEBUGF(("Connect peer filename: %s", s_un.sun_path));
+     SET_NONBLOCKING(fd);
+-    if (connect(fd, (struct sockaddr *) &s_un, length) < 0) {
+-	if (errno != EINPROGRESS) {
+-	    driver_failure_posix(ud->port, errno);
+-	} else {
+-	    DEBUGF(("Connect pending"));
+-	    ud->type = portTypeConnector;
+-	    driver_select(ud->port, (ErlDrvEvent) ud->fd,
+-			  ERL_DRV_WRITE|ERL_DRV_USE, 1);
+-	} 
+-    } else {
+-	DEBUGF(("Connect done"));
+-	driver_output(ud->port, "Cok", 3);
++    if (connect(fd, (struct sockaddr *)&s_un, length) < 0) {
++        if (errno != EINPROGRESS) {
++            driver_failure_posix(ud->port, errno);
++        }
++        else {
++            DEBUGF(("Connect pending"));
++            ud->type = portTypeConnector;
++            driver_select(ud->port, (ErlDrvEvent)ud->fd, ERL_DRV_WRITE | ERL_DRV_USE, 1);
++        }
++    }
++    else {
++        DEBUGF(("Connect done"));
++        driver_output(ud->port, "Cok", 3);
+     }
+     FREE(str);
+ }
+ 
+-static void uds_command_accept(UdsData *ud, char *buff, int bufflen) 
+-{
++static void uds_command_accept(UdsData *ud, char *buff, int bufflen) {
+     int listen_no;
+     UdsData *lp;
+ 
+     if (bufflen < 5) {
+-	driver_failure_posix(ud->port, EINVAL);
+-	return;
++        driver_failure_posix(ud->port, EINVAL);
++        return;
+     }
+-    
++
+     listen_no = get_packet_length(buff + 1); /* Same format as 
+-						packet headers */
++     packet headers */
+     DEBUGF(("Accept listen_no = %d",listen_no));
+     for (lp = first_data; lp != NULL && lp->fd != listen_no; lp = lp->next)
+-	;
++        ;
+     if (lp == NULL) {
+-	DEBUGF(("Could not find listen port"));
+-	driver_failure_posix(ud->port, EINVAL);
+-	return;
++        DEBUGF(("Could not find listen port"));
++        driver_failure_posix(ud->port, EINVAL);
++        return;
+     }
+     if (lp->partner != NULL) {
+-	DEBUGF(("Listen port busy"));
+-	driver_failure_posix(ud->port, EADDRINUSE);
+-	return;
++        DEBUGF(("Listen port busy"));
++        driver_failure_posix(ud->port, EADDRINUSE);
++        return;
+     }
+     lp->partner = ud;
+     ud->partner = lp;
+     ud->type = portTypeAcceptor;
+-    driver_select(lp->port,(ErlDrvEvent) lp->fd, ERL_DRV_READ|ERL_DRV_USE, 1);
++    driver_select(lp->port, (ErlDrvEvent)lp->fd, ERL_DRV_READ | ERL_DRV_USE, 1);
+     /* Silent, answer will be sent in input routine */
+ }
+ 
+-static void uds_command_listen(UdsData *ud, char *buff, int bufflen)
+-{
++static void uds_command_listen(UdsData *ud, char *buff, int bufflen) {
+     char *str;
+     int fd;
+     struct sockaddr_un s_un;
+@@ -603,25 +582,25 @@ static void uds_command_listen(UdsData *ud, char *buff, int bufflen)
+     Byte creation;
+ 
+     str = ALLOC(bufflen);
+-    memcpy(str, buff + 1,bufflen - 1);
++    memcpy(str, buff + 1, bufflen - 1);
+     str[bufflen - 1] = '\0';
+ 
+     /*
+-    ** Before trying lockfiles etc, we need to assure that our own process is 
+-    ** not using the filename. Advisory locks can be recursive in one process.
+-    */
+-    for(tmp = first_data; tmp != NULL; tmp = tmp->next) {
+-	if (tmp->name != NULL && strcmp(str, tmp->name) == 0) {
+-	    driver_failure_posix(ud->port, EADDRINUSE);
+-	    FREE(str);
+-	    return;
+-	}
++     ** Before trying lockfiles etc, we need to assure that our own process is 
++     ** not using the filename. Advisory locks can be recursive in one process.
++     */
++    for (tmp = first_data; tmp != NULL; tmp = tmp->next) {
++        if (tmp->name != NULL && strcmp(str, tmp->name) == 0) {
++            driver_failure_posix(ud->port, EADDRINUSE);
++            FREE(str);
++            return;
++        }
+     }
+-	    
++
+     if ((fd = try_lock(str, &creation)) < 0) {
+-	driver_failure_posix(ud->port, EADDRINUSE);
+-	FREE(str);
+-	return;
++        driver_failure_posix(ud->port, EADDRINUSE);
++        FREE(str);
++        return;
+     }
+     s_un.sun_family = AF_UNIX;
+     strcpy(s_un.sun_path, SOCKET_PATH "/");
+@@ -632,90 +611,87 @@ static void uds_command_listen(UdsData *ud, char *buff, int bufflen)
+     ud->lockfd = fd;
+     ud->creation = creation;
+     if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+-	DEBUGF(("socket call failed, errno = %d"));
+-	driver_failure_posix(ud->port, errno);
+-	return;
++        DEBUGF(("socket call failed, errno = %d"));
++        driver_failure_posix(ud->port, errno);
++        return;
+     }
+     SET_NONBLOCKING(fd);
+     ud->fd = fd;
+     do_unlink(str);
+     DEBUGF(("Listen filename: %s", s_un.sun_path));
+-    if ((res = bind(fd, (struct sockaddr *) &s_un, length)) < 0) {
+-	DEBUGF(("bind call failed, errno = %d",errno));
+-	driver_failure_posix(ud->port, errno);
+-	return;
++    if ((res = bind(fd, (struct sockaddr *)&s_un, length)) < 0) {
++        DEBUGF(("bind call failed, errno = %d",errno));
++        driver_failure_posix(ud->port, errno);
++        return;
+     }
+ 
+     if ((res = listen(fd, 5)) < 0) {
+-	DEBUGF(("listen call failed, errno = %d"));
+-	driver_failure_posix(ud->port, errno);
+-	return;
++        DEBUGF(("listen call failed, errno = %d"));
++        driver_failure_posix(ud->port, errno);
++        return;
+     }
+     driver_output(ud->port, "Lok", 3);
+ }
+ 
+ /*
+-** Input/output/stop helpers
+-*/
+-static void do_stop(UdsData *ud, int shutting_down) 
+-{
++ ** Input/output/stop helpers
++ */
++static void do_stop(UdsData *ud, int shutting_down) {
+     UdsData **tmp;
+ 
+-    DEBUGF(("Cleaning up, type = %d, fd = %d, lockfd = %d", ud->type, 
+-	    ud->fd, ud->lockfd));
++    DEBUGF(("Cleaning up, type = %d, fd = %d, lockfd = %d", ud->type,
++                    ud->fd, ud->lockfd));
+     for (tmp = &first_data; *tmp != NULL && *tmp != ud; tmp = &((*tmp)->next))
+-	;
++        ;
+     ASSERT(*tmp != NULL);
+     *tmp = (*tmp)->next;
+     if (ud->buffer != NULL) {
+-	FREE(ud->buffer); 
++        FREE(ud->buffer);
+     }
+     if (ud->fd >= 0) {
+-	driver_select(ud->port, (ErlDrvEvent) ud->fd,
+-		      ERL_DRV_READ|ERL_DRV_WRITE|ERL_DRV_USE, 0);
++        driver_select(ud->port, (ErlDrvEvent)ud->fd, ERL_DRV_READ | ERL_DRV_WRITE | ERL_DRV_USE, 0);
+     }
+     if (ud->name) {
+-	do_unlink(ud->name);
+-	FREE(ud->name);
++        do_unlink(ud->name);
++        FREE(ud->name);
+     }
+     if (ud->lockfd >= 0) {
+-	ASSERT(ud->type == portTypeListener);
+-	close(ud->lockfd); /* the lock will be released */
+-	/* But leave the file there for the creation counter... */
++        ASSERT(ud->type == portTypeListener);
++        close(ud->lockfd); /* the lock will be released */
++        /* But leave the file there for the creation counter... */
+     }
+     if (!shutting_down) { /* Dont bother if the driver is shutting down. */
+-	if (ud->partner != NULL) {
+-	    if (ud->type == portTypeAcceptor) {
+-		UdsData *listener = ud->partner;
+-		listener->partner = NULL;
+-		driver_select(listener->port, (ErlDrvEvent) listener->fd,
+-			      ERL_DRV_READ, 0);
+-	    } else {
+-		UdsData *acceptor = ud->partner;
+-		ASSERT(ud->type == portTypeListener);
+-		acceptor->partner = NULL;
+-		driver_failure_eof(acceptor->port);
+-	    }
+-	}
++        if (ud->partner != NULL) {
++            if (ud->type == portTypeAcceptor) {
++                UdsData *listener = ud->partner;
++                listener->partner = NULL;
++                driver_select(listener->port, (ErlDrvEvent)listener->fd, ERL_DRV_READ, 0);
++            }
++            else {
++                UdsData *acceptor = ud->partner;
++                ASSERT(ud->type == portTypeListener);
++                acceptor->partner = NULL;
++                driver_failure_eof(acceptor->port);
++            }
++        }
+     }
+     FREE(ud);
+ }
+ 
+ /*
+-** Actually send the data
+-*/
+-static void do_send(UdsData *ud, char *buff, int bufflen) 
+-{
++ ** Actually send the data
++ */
++static void do_send(UdsData *ud, char *buff, int bufflen) {
+     char header[4];
+     int written;
+     SysIOVec iov[2];
+     ErlIOVec eio;
+-    ErlDrvBinary *binv[] = {NULL,NULL};
++    ErlDrvBinary *binv[] = { NULL, NULL };
+ 
+     put_packet_length(header, bufflen);
+     DEBUGF(("Write packet header %u,%u,%u,%u.", (Word) header[0],
+-	   (Word) header[1], (Word) header[2],(Word) header[3]));
+-    iov[0].iov_base = (char *) header;
++                    (Word) header[1], (Word) header[2],(Word) header[3]));
++    iov[0].iov_base = (char *)header;
+     iov[0].iov_len = 4;
+     iov[1].iov_base = buff;
+     iov[1].iov_len = bufflen;
+@@ -725,75 +701,73 @@ static void do_send(UdsData *ud, char *buff, int bufflen)
+     eio.size = bufflen + 4;
+     written = 0;
+     if (driver_sizeq(ud->port) == 0) {
+-	if ((written = writev(ud->fd, iov, 2)) == eio.size) {
+-	    ud->sent += written;
+-	    if (ud->type == portTypeCommand) {
+-		driver_output(ud->port, "Sok", 3);
+-	    }
+-	    DEBUGF(("Wrote all %d bytes immediately.",written));
+-	    return;
+-	} else if (written < 0) {
+-	    if (errno != EWOULDBLOCK) {
+-		driver_failure_eof(ud->port);
+-		return;
+-	    } else {
+-		written = 0;
+-	    }
+-	} else {
+-	    ud->sent += written;
+-	}
+-	DEBUGF(("Wrote %d bytes immediately.",written));
+-	/* Enqueue remaining */
++        if ((written = writev(ud->fd, iov, 2)) == eio.size) {
++            ud->sent += written;
++            if (ud->type == portTypeCommand) {
++                driver_output(ud->port, "Sok", 3);
++            } DEBUGF(("Wrote all %d bytes immediately.",written));
++            return;
++        }
++        else if (written < 0) {
++            if (errno != EWOULDBLOCK) {
++                driver_failure_eof(ud->port);
++                return;
++            }
++            else {
++                written = 0;
++            }
++        }
++        else {
++            ud->sent += written;
++        } DEBUGF(("Wrote %d bytes immediately.",written));
++        /* Enqueue remaining */
+     }
+     driver_enqv(ud->port, &eio, written);
+     DEBUGF(("Sending output queue."));
+     send_out_queue(ud);
+ }
+ 
+-static void do_recv(UdsData *ud)
+-{
++static void do_recv(UdsData *ud) {
+     int res;
+     char *ibuf;
+     ASSERT_NONBLOCK(ud->fd);
+     DEBUGF(("do_recv called, type = %d", ud->type));
+-    for(;;) {
+-	if ((res = buffered_read_package(ud,&ibuf)) < 0) {
+-	    if (res == NORMAL_READ_FAILURE) {
+-		DEBUGF(("do_recv normal read failed"));
+-		driver_select(ud->port, (ErlDrvEvent) ud->fd, ERL_DRV_READ|ERL_DRV_USE, 1);
+-	    } else {
+-		DEBUGF(("do_recv fatal read failed (%d) (%d)",errno, res));
+-		driver_failure_eof(ud->port);
+-	    }
+-	    return;
+-	}
+-	DEBUGF(("do_recv got package, port type = %d", ud->type));
+-	/* Got a package */
+-	if (ud->type == portTypeCommand) {
+-	    ibuf[-1] = 'R'; /* There is always room for a single byte opcode
+-			       before the actual buffer (where the packet
+-			       header was) */
+-	    driver_output(ud->port,ibuf - 1, res + 1);
+-	    driver_select(ud->port, (ErlDrvEvent) ud->fd, ERL_DRV_READ, 0);
+-	    return;
+-	} else {
+-	    ibuf[-1] = DIST_MAGIC_RECV_TAG; /* XXX */
+-	    driver_output(ud->port,ibuf - 1, res + 1);
+-	    driver_select(ud->port, (ErlDrvEvent) ud->fd, ERL_DRV_READ|ERL_DRV_USE, 1);
+-	}
++    for (;;) {
++        if ((res = buffered_read_package(ud, &ibuf)) < 0) {
++            if (res == NORMAL_READ_FAILURE) {
++                DEBUGF(("do_recv normal read failed"));
++                driver_select(ud->port, (ErlDrvEvent)ud->fd, ERL_DRV_READ | ERL_DRV_USE, 1);
++            }
++            else {
++                DEBUGF(("do_recv fatal read failed (%d) (%d)",errno, res));
++                driver_failure_eof(ud->port);
++            }
++            return;
++        } DEBUGF(("do_recv got package, port type = %d", ud->type));
++        /* Got a package */
++        if (ud->type == portTypeCommand) {
++            ibuf[-1] = 'R'; /* There is always room for a single byte opcode
++             before the actual buffer (where the packet
++             header was) */
++            driver_output(ud->port, ibuf - 1, res + 1);
++            driver_select(ud->port, (ErlDrvEvent)ud->fd, ERL_DRV_READ, 0);
++            return;
++        }
++        else {
++            ibuf[-1] = DIST_MAGIC_RECV_TAG; /* XXX */
++            driver_output(ud->port, ibuf - 1, res + 1);
++            driver_select(ud->port, (ErlDrvEvent)ud->fd, ERL_DRV_READ | ERL_DRV_USE, 1);
++        }
+     }
+ }
+ 
+-
+ /*
+-** Report control error, helper for error messages from control
+-*/
+-static int report_control_error(char **buffer, int buff_len, 
+-				char *error_message)
+-{
++ ** Report control error, helper for error messages from control
++ */
++static int report_control_error(char **buffer, int buff_len, char *error_message) {
+     int elen = strlen(error_message);
+     if (elen + 1 < buff_len) {
+-	*buffer = ALLOC(elen + 1);
++        *buffer = ALLOC(elen + 1);
+     }
+     **buffer = 1;
+     memcpy((*buffer) + 1, error_message, elen);
+@@ -801,153 +775,141 @@ static int report_control_error(char **buffer, int buff_len,
+ }
+ 
+ /*
+-** Lower level I/O helpers
+-*/
+-static int send_out_queue(UdsData *ud)
+-{
++ ** Lower level I/O helpers
++ */
++static int send_out_queue(UdsData *ud) {
+     ASSERT_NONBLOCK(ud->fd);
+-    for(;;) {
+-	int vlen;
+-	SysIOVec *tmp = driver_peekq(ud->port, &vlen);
+-	int wrote;
+-	if (tmp == NULL) {
+-	    DEBUGF(("Write queue empty."));
+-	    driver_select(ud->port, (ErlDrvEvent) ud->fd, ERL_DRV_WRITE, 0);
+-	    if (ud->type == portTypeCommand) {
+-		driver_output(ud->port, "Sok", 3);
+-	    }
+-	    return 0;
+-	}
+-	if (vlen > IO_VECTOR_MAX) {
+-	    vlen = IO_VECTOR_MAX;
+-	} 
+-	DEBUGF(("Trying to writev %d vectors", vlen));
++    for (;;) {
++        int vlen;
++        SysIOVec *tmp = driver_peekq(ud->port, &vlen);
++        int wrote;
++        if (tmp == NULL) {
++            DEBUGF(("Write queue empty."));
++            driver_select(ud->port, (ErlDrvEvent)ud->fd, ERL_DRV_WRITE, 0);
++            if (ud->type == portTypeCommand) {
++                driver_output(ud->port, "Sok", 3);
++            }
++            return 0;
++        }
++        if (vlen > IO_VECTOR_MAX) {
++            vlen = IO_VECTOR_MAX;
++        } DEBUGF(("Trying to writev %d vectors", vlen));
+ #ifdef HARDDEBUG
+-	{
+-	    int i;
+-	    for (i = 0; i < vlen; ++i) {
+-		DEBUGF(("Buffer %d: length %d", i, tmp[i].iov_len));
+-	    }
+-	}
++        {
++            int i;
++            for (i = 0; i < vlen; ++i) {
++                DEBUGF(("Buffer %d: length %d", i, tmp[i].iov_len));
++            }
++        }
+ #endif
+-	if ((wrote = writev(ud->fd, tmp, vlen)) < 0) {
+-	    if (errno == EWOULDBLOCK) {
+-		DEBUGF(("Write failed normal."));
+-		driver_select(ud->port, (ErlDrvEvent) ud->fd, ERL_DRV_WRITE|ERL_DRV_USE, 1);
+-		return 0;
+-	    } else {
+-		DEBUGF(("Write failed fatal (%d).", errno));
+-		driver_failure_eof(ud->port);
+-		return -1;
+-	    }
+-	}
+-	driver_deq(ud->port, wrote);
+-	ud->sent += wrote;
+-	DEBUGF(("Wrote %d bytes of data.",wrote));
++        if ((wrote = writev(ud->fd, tmp, vlen)) < 0) {
++            if (errno == EWOULDBLOCK) {
++                DEBUGF(("Write failed normal."));
++                driver_select(ud->port, (ErlDrvEvent)ud->fd, ERL_DRV_WRITE | ERL_DRV_USE, 1);
++                return 0;
++            }
++            else {
++                DEBUGF(("Write failed fatal (%d).", errno));
++                driver_failure_eof(ud->port);
++                return -1;
++            }
++        }
++        driver_deq(ud->port, wrote);
++        ud->sent += wrote;
++        DEBUGF(("Wrote %d bytes of data.",wrote));
+     }
+ }
+ 
+-static int buffered_read_package(UdsData *ud, char **result)
+-{
++static int buffered_read_package(UdsData *ud, char **result) {
+     int res;
+     int data_size;
+ 
+     if (ud->buffer_pos < ud->header_pos + HEADER_LENGTH) {
+-	/* The header is not read yet */
+-	DEBUGF(("Header not read yet"));
+-	if ((res = read_at_least(ud, ud->header_pos + HEADER_LENGTH - 
+-				 ud->buffer_pos)) < 0) {
+-	    DEBUGF(("Header read failed"));
+-	    return res;
+-	}
+-    } 
+-    DEBUGF(("Header is read"));
++        /* The header is not read yet */
++        DEBUGF(("Header not read yet"));
++        if ((res = read_at_least(ud, ud->header_pos + HEADER_LENGTH - ud->buffer_pos)) < 0) {
++            DEBUGF(("Header read failed"));
++            return res;
++        }
++    } DEBUGF(("Header is read"));
+     /* We have at least the header read */
+-    data_size = get_packet_length((char *) ud->buffer + ud->header_pos);
++    data_size = get_packet_length((char *)ud->buffer + ud->header_pos);
+     DEBUGF(("Input packet size = %d", data_size));
+     if (ud->buffer_pos < ud->header_pos + HEADER_LENGTH + data_size) {
+-	/* We need to read more */
+-	DEBUGF(("Need to read more (bufferpos %d, want %d)", ud->buffer_pos,
+-		ud->header_pos + HEADER_LENGTH + data_size));
+-	if ((res = read_at_least(ud, 
+-				 ud->header_pos + HEADER_LENGTH + 
+-				 data_size - ud->buffer_pos)) < 0) {
+-	    DEBUGF(("Data read failed"));
+-	    return res;
+-	}
+-    }
+-    DEBUGF(("Data is completely read"));
+-    *result = (char *) ud->buffer + ud->header_pos + HEADER_LENGTH;
++        /* We need to read more */
++        DEBUGF(("Need to read more (bufferpos %d, want %d)", ud->buffer_pos,
++                        ud->header_pos + HEADER_LENGTH + data_size));
++        if ((res = read_at_least(ud, ud->header_pos + HEADER_LENGTH + data_size - ud->buffer_pos))
++                < 0) {
++            DEBUGF(("Data read failed"));
++            return res;
++        }
++    } DEBUGF(("Data is completely read"));
++    *result = (char *)ud->buffer + ud->header_pos + HEADER_LENGTH;
+     ud->header_pos += HEADER_LENGTH + data_size;
+     return data_size;
+ }
+ 
+-static int read_at_least(UdsData *ud, int num)
+-{
++static int read_at_least(UdsData *ud, int num) {
+     int got;
+     if (ud->buffer_pos + num > ud->buffer_size) {
+-	/* No place in the buffer, try to pack it */
+-	if (ud->header_pos > 0) {
+-	    int offset = ud->header_pos;
+-	    DEBUGF(("Packing buffer, buffer_pos was %d, buffer_size was %d "
+-		    "offset %d num %d header_pos %d.", 
+-		    ud->buffer_pos, ud->buffer_size,
+-		    offset, num, ud->header_pos));
+-	    memmove(ud->buffer, ud->buffer + ud->header_pos, 
+-		    ud->buffer_pos - ud->header_pos);
+-	    ud->buffer_pos -= offset;
+-	    ud->header_pos -= offset;
+-	}
+-	/* The buffer is packed, look for space again and reallocate if 
+-	   needed */
+-	if (ud->buffer_pos + num > ud->buffer_size) {
+-	    /* Let's grow in chunks of 256 */
+-	    ud->buffer_size = (((ud->buffer_pos + num) / 
+-				  CHUNK_SIZE) + 1) * CHUNK_SIZE;
+-	    DEBUGF(("New buffer size %d.",ud->buffer_size)); 
+-	    /* We will always keep one extra byte before the buffer to
+-	       allow insertion of an opcode */
+-	    if (!ud->buffer) {
+-		ud->buffer = ALLOC(ud->buffer_size);
+-	    } else {
+-		ud->buffer = REALLOC(ud->buffer, ud->buffer_size);
+-	    }
+-	}
++        /* No place in the buffer, try to pack it */
++        if (ud->header_pos > 0) {
++            int offset = ud->header_pos;
++            DEBUGF(("Packing buffer, buffer_pos was %d, buffer_size was %d "
++                            "offset %d num %d header_pos %d.",
++                            ud->buffer_pos, ud->buffer_size,
++                            offset, num, ud->header_pos));
++            memmove(ud->buffer, ud->buffer + ud->header_pos, ud->buffer_pos - ud->header_pos);
++            ud->buffer_pos -= offset;
++            ud->header_pos -= offset;
++        }
++        /* The buffer is packed, look for space again and reallocate if 
++         needed */
++        if (ud->buffer_pos + num > ud->buffer_size) {
++            /* Let's grow in chunks of 256 */
++            ud->buffer_size = (((ud->buffer_pos + num) / CHUNK_SIZE) + 1) * CHUNK_SIZE;
++            DEBUGF(("New buffer size %d.",ud->buffer_size));
++            /* We will always keep one extra byte before the buffer to
++             allow insertion of an opcode */
++            if (!ud->buffer) {
++                ud->buffer = ALLOC(ud->buffer_size);
++            }
++            else {
++                ud->buffer = REALLOC(ud->buffer, ud->buffer_size);
++            }
++        }
+     }
+     /* OK, now we have a large enough buffer, try to read into it */
+-    if ((got = read(ud->fd, ud->buffer + ud->buffer_pos, 
+-		    ud->buffer_size - ud->buffer_pos)) < 0) {
+-	/* It failed, the question is why... */
+-	if (errno == EAGAIN) {
+-	    return NORMAL_READ_FAILURE;
+-	} 
+-	return SEVERE_READ_FAILURE;
+-    } else if (got == 0) {
+-	return EOF_READ_FAILURE;
+-    }
+-    DEBUGF(("Got %d bytes.", got));
++    if ((got = read(ud->fd, ud->buffer + ud->buffer_pos, ud->buffer_size - ud->buffer_pos)) < 0) {
++        /* It failed, the question is why... */
++        if (errno == EAGAIN) {
++            return NORMAL_READ_FAILURE;
++        }
++        return SEVERE_READ_FAILURE;
++    }
++    else if (got == 0) {
++        return EOF_READ_FAILURE;
++    } DEBUGF(("Got %d bytes.", got));
+     ud->received += got;
+     ud->buffer_pos += got;
+-   /* So, we got some bytes, but enough ? */
++    /* So, we got some bytes, but enough ? */
+     if (got < num) {
+-	return NORMAL_READ_FAILURE;
++        return NORMAL_READ_FAILURE;
+     }
+     return 0;
+ }
+-	
+-static int get_packet_length(char *b)
+-{
+-    Byte *u = (Byte *) b;
+-    int x = (((Word) u[0]) << 24) | (((Word) u[1]) << 16) | 
+-	(((Word) u[2]) << 8) | ((Word) u[3]);
++
++static int get_packet_length(char *b) {
++    Byte *u = (Byte *)b;
++    int x = (((Word)u[0]) << 24) | (((Word)u[1]) << 16) | (((Word)u[2]) << 8) | ((Word)u[3]);
+     DEBUGF(("Packet length %d.", x));
+     return x;
+ }
+ 
+-static void put_packet_length(char *b, int len)
+-{	   
+-    Byte *p = (Byte *) b;
+-    Word n = (Word) len;
++static void put_packet_length(char *b, int len) {
++    Byte *p = (Byte *)b;
++    Word n = (Word)len;
+     p[0] = (n >> 24) & 0xFF;
+     p[1] = (n >> 16) & 0xFF;
+     p[2] = (n >> 8) & 0xFF;
+@@ -955,90 +917,86 @@ static void put_packet_length(char *b, int len)
+ }
+ 
+ /*
+-** Malloc wrappers
+-** Note!
+-** The function erl_exit is actually not a pert of the 
+-** driver interface, but it is very nice to use if one wants to halt
+-** with a core and an erlang crash dump.
+-*/
+-static void *my_malloc(size_t size) 
+-{
++ ** Malloc wrappers
++ ** Note!
++ ** The function erl_exit is actually not a pert of the 
++ ** driver interface, but it is very nice to use if one wants to halt
++ ** with a core and an erlang crash dump.
++ */
++static void *my_malloc(size_t size) {
+     void erl_exit(int, char *, ...);
+     void *ptr;
+ 
+     if ((ptr = driver_alloc(size)) == NULL) {
+-	erl_exit(1,"Could not allocate %d bytes of memory",(int) size);
++        erl_exit(1, "Could not allocate %d bytes of memory", (int)size);
+     }
+     return ptr;
+ }
+ 
+-static void *my_realloc(void *ptr, size_t size)
+-{
++static void *my_realloc(void *ptr, size_t size) {
+     void erl_exit(int, char *, ...);
+     void *nptr;
+     if ((nptr = driver_realloc(ptr, size)) == NULL) {
+-	erl_exit(1,"Could not reallocate %d bytes of memory",(int) size);
++        erl_exit(1, "Could not reallocate %d bytes of memory", (int)size);
+     }
+     return nptr;
+ }
+-    
+ 
+ /*
+-** Socket file handling helpers
+-*/
++ ** Socket file handling helpers
++ */
+ 
+ /*
+-** Check that directory exists, create if not (only works for one level)
+-*/
+-static int ensure_dir(char *path)
+-{
+-    if (mkdir(path,0777) != 0 && errno != EEXIST) {
+-	return -1;
++ ** Check that directory exists, create if not (only works for one level)
++ */
++static int ensure_dir(char *path) {
++    if (mkdir(path, 0777) != 0 && errno != EEXIST) {
++        return -1;
+     }
+     return 0;
+ }
+ 
+ /*
+-** Try to open a lock file and lock the first byte write-only (advisory)
+-** return the file descriptor if successful, otherwise -1 (<0).
+-*/ 
+-static int try_lock(char *sockname, Byte *p_creation)
+-{
++ ** Try to open a lock file and lock the first byte write-only (advisory)
++ ** return the file descriptor if successful, otherwise -1 (<0).
++ */
++static int try_lock(char *sockname, Byte *p_creation) {
+     char *lockname;
+     int lockfd;
+     struct flock fl;
+     Byte creation;
+ 
+     lockname = ALLOC(strlen(SOCKET_PATH)+1+strlen(sockname)+
+-		     strlen(LOCK_SUFFIX)+1);
+-    sprintf(lockname,SOCKET_PATH "/%s" LOCK_SUFFIX, sockname);
++            strlen(LOCK_SUFFIX)+1);
++    sprintf(lockname, SOCKET_PATH "/%s" LOCK_SUFFIX, sockname);
+     DEBUGF(("lockname = %s", lockname));
+     if (ensure_dir(SOCKET_PATH) != 0) {
+-	DEBUGF(("ensure_dir failed, errno = %d", errno));
+-	FREE(lockname);
+-	return -1;
++        DEBUGF(("ensure_dir failed, errno = %d", errno));
++        FREE(lockname);
++        return -1;
+     }
+     if ((lockfd = open(lockname, O_RDWR | O_CREAT, 0666)) < 0) {
+-	DEBUGF(("open failed, errno = %d", errno));
+-	FREE(lockname);
+-	return -1;
++        DEBUGF(("open failed, errno = %d", errno));
++        FREE(lockname);
++        return -1;
+     }
+     FREE(lockname);
+-    memset(&fl,0,sizeof(fl));
++    memset(&fl, 0, sizeof(fl));
+     fl.l_type = F_WRLCK;
+     fl.l_whence = SEEK_SET;
+     fl.l_start = 0;
+     fl.l_len = 1;
+     if (fcntl(lockfd, F_SETLK, &fl) < 0) {
+-	DEBUGF(("fcntl failed, errno = %d", errno));
+-	close(lockfd);
+-	return -1;
++        DEBUGF(("fcntl failed, errno = %d", errno));
++        close(lockfd);
++        return -1;
+     }
+     /* OK, check for creation and update */
+     if (read(lockfd, &creation, 1) < 1) {
+-	creation = 0;
+-    } else {
+-	creation = (creation + 1) % 4;
++        creation = 0;
++    }
++    else {
++        creation = (creation + 1) % 4;
+     }
+     lseek(lockfd, 0, SEEK_SET);
+     write(lockfd, &creation, 1);
+@@ -1046,20 +1004,19 @@ static int try_lock(char *sockname, Byte *p_creation)
+     *p_creation = creation;
+     return lockfd;
+ }
+-    
+-static void do_unlink(char *name)
+-{
++
++static void do_unlink(char *name) {
+     char buff[100];
+     char *str = buff;
+     int len = strlen(SOCKET_PATH) + 1 + strlen(name) + 1;
+ 
+     if (len > 100) {
+-	str = ALLOC(len);
++        str = ALLOC(len);
+     }
+-    sprintf(str,SOCKET_PATH "/%s",name);
++    sprintf(str, SOCKET_PATH "/%s", name);
+     unlink(str);
+     if (str != buff) {
+-	FREE(str);
++        FREE(str);
+     }
+ }
+ 
+diff --git a/lib/kernel/include/dist_util.hrl b/lib/kernel/include/dist_util.hrl
+index fde102a..c3a7f97 100644
+--- a/lib/kernel/include/dist_util.hrl
++++ b/lib/kernel/include/dist_util.hrl
+@@ -17,8 +17,8 @@
+ %% %CopyrightEnd%
+ %%
+ %% uncomment this if tracing of handshake etc is wanted
+--define(dist_trace, true). 
+--define(dist_debug, true).
++%%-define(dist_trace, true). 
++%%-define(dist_debug, true).
+ 
+ 
+ -ifdef(dist_debug).
+-- 
+1.7.9.1
+
+
+From bb2420c0fc3604f5a6a6b235576a3e7bb40f67b9 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Mon, 18 Jun 2012 17:52:54 +0200
+Subject: [PATCH 37/46] Export net_kernel.
+
+---
+ lib/kernel/src/net_kernel.erl |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 9e3d730..d3127b9 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -342,6 +342,7 @@ start_link([Name, LongOrShortNames, Ticktime]) ->
+     case gen_server:start_link({local, net_kernel}, net_kernel,
+ 			       {Name, LongOrShortNames, Ticktime}, []) of
+ 	{ok, Pid} ->
++        erlang:export(net_kernel),
+ 	    {ok, Pid};
+ 	{error, {already_started, Pid}} ->
+ 	    {ok, Pid};
+-- 
+1.7.9.1
+
+
+From b42bb580d60200608186698d42f5af5c50b5bcf6 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Tue, 19 Jun 2012 12:24:04 +0200
+Subject: [PATCH 38/46] Introduced the new operator tilde, for now just
+ mimicking the bang operator.
+
+---
+ erts/emulator/beam/bif.c     |   11 +++++++++++
+ erts/emulator/beam/bif.tab   |    1 +
+ lib/stdlib/src/erl_parse.yrl |    4 +++-
+ 3 files changed, 15 insertions(+), 1 deletions(-)
+
+diff --git a/erts/emulator/beam/bif.c b/erts/emulator/beam/bif.c
+index f40bdb7..efbb7fe 100644
+--- a/erts/emulator/beam/bif.c
++++ b/erts/emulator/beam/bif.c
+@@ -1740,6 +1740,17 @@ ebif_bang_2(BIF_ALIST_2)
+ 
+ 
+ /*
++ * erlang:'~'/2
++ */
++
++BIF_RETTYPE
++ebif_tilde_2(BIF_ALIST_2)
++{
++    return erl_send(BIF_P, BIF_ARG_1, BIF_ARG_2);
++}
++
++
++/*
+  * Send a message to Process, Port or Registered Process.
+  * Returns non-negative reduction bump or negative result code.
+  */
+diff --git a/erts/emulator/beam/bif.tab b/erts/emulator/beam/bif.tab
+index 63b64be..be69419 100644
+--- a/erts/emulator/beam/bif.tab
++++ b/erts/emulator/beam/bif.tab
+@@ -826,3 +826,4 @@ bif erlang:exported/0
+ bif 'erl.lang.node':exported/0    ebif_exported_0
+ bif erlang:unexport/1
+ bif 'erl.lang.node':unexport/1    ebif_unexport_1
++bif erlang:'~'/2        ebif_tilde_2
+diff --git a/lib/stdlib/src/erl_parse.yrl b/lib/stdlib/src/erl_parse.yrl
+index 928c10f..c500f71 100644
+--- a/lib/stdlib/src/erl_parse.yrl
++++ b/lib/stdlib/src/erl_parse.yrl
+@@ -61,7 +61,7 @@ char integer float atom string var
+ '++' '--'
+ '==' '/=' '=<' '<' '>=' '>' '=:=' '=/=' '<='
+ '<<' '>>'
+-'!' '=' '::' '..' '...'
++'!' '~' '=' '::' '..' '...'
+ 'spec' 'callback' % helper
+ dot.
+ 
+@@ -221,6 +221,7 @@ expr -> expr_100 : '$1'.
+ 
+ expr_100 -> expr_150 '=' expr_100 : {match,?line('$2'),'$1','$3'}.
+ expr_100 -> expr_150 '!' expr_100 : ?mkop2('$1', '$2', '$3').
++expr_100 -> expr_150 '~' expr_100 : ?mkop2('$1', '$2', '$3').
+ expr_100 -> expr_150 : '$1'.
+ 
+ expr_150 -> expr_160 'orelse' expr_150 : ?mkop2('$1', '$2', '$3').
+@@ -1034,6 +1035,7 @@ tokens_tuple([], Line, More) ->
+ 
+ inop_prec('=') -> {150,100,100};
+ inop_prec('!') -> {150,100,100};
++inop_prec('~') -> {150,100,100};
+ inop_prec('orelse') -> {160,150,150};
+ inop_prec('andalso') -> {200,160,160};
+ inop_prec('==') -> {300,200,300};
+-- 
+1.7.9.1
+
+
+From 90c707b816b6c16312c02b5f12d16bce63cf11b7 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Thu, 21 Jun 2012 10:53:33 +0200
+Subject: [PATCH 39/46] Reliable...
+
+---
+ erts/emulator/beam/bif.c      |   29 ++++++++++++++++++++---------
+ erts/emulator/beam/dist.c     |   28 +++++++++++++++++++++++++---
+ erts/emulator/beam/dist.h     |    2 ++
+ erts/emulator/beam/external.c |    8 ++++++++
+ erts/emulator/beam/external.h |    1 +
+ erts/emulator/beam/global.h   |    1 +
+ 6 files changed, 57 insertions(+), 12 deletions(-)
+
+diff --git a/erts/emulator/beam/bif.c b/erts/emulator/beam/bif.c
+index efbb7fe..8e087b8 100644
+--- a/erts/emulator/beam/bif.c
++++ b/erts/emulator/beam/bif.c
+@@ -1735,7 +1735,7 @@ BIF_RETTYPE whereis_1(BIF_ALIST_1)
+ BIF_RETTYPE
+ ebif_bang_2(BIF_ALIST_2)
+ {
+-    return erl_send(BIF_P, BIF_ARG_1, BIF_ARG_2);
++    return erl_send_reliable(BIF_P, BIF_ARG_1, BIF_ARG_2, 1);
+ }
+ 
+ 
+@@ -1746,7 +1746,7 @@ ebif_bang_2(BIF_ALIST_2)
+ BIF_RETTYPE
+ ebif_tilde_2(BIF_ALIST_2)
+ {
+-    return erl_send(BIF_P, BIF_ARG_1, BIF_ARG_2);
++    return erl_send_reliable(BIF_P, BIF_ARG_1, BIF_ARG_2, 0);
+ }
+ 
+ 
+@@ -1762,9 +1762,10 @@ ebif_tilde_2(BIF_ALIST_2)
+ #define SEND_INTERNAL_ERROR	(-6)
+ 
+ Sint do_send(Process *p, Eterm to, Eterm msg, int suspend);
++Sint do_send_reliable(Process *p, Eterm to, Eterm msg, int suspend, int reliable);
+ 
+-static Sint remote_send(Process *p, DistEntry *dep,
+-			Eterm to, Eterm full_to, Eterm msg, int suspend)
++static Sint remote_send_reliable(Process *p, DistEntry *dep,
++			Eterm to, Eterm full_to, Eterm msg, int suspend, int reliable)
+ {
+     Sint res;
+     int code;
+@@ -1785,9 +1786,9 @@ static Sint remote_send(Process *p, DistEntry *dep,
+     case ERTS_DSIG_PREP_CONNECTED: {
+ 
+ 	if (is_atom(to))
+-	    code = erts_dsig_send_reg_msg(&dsd, to, msg);
++	    code = erts_dsig_send_reg_msg_reliable(&dsd, to, msg, reliable);
+ 	else
+-	    code = erts_dsig_send_msg(&dsd, to, msg);
++	    code = erts_dsig_send_msg_reliable(&dsd, to, msg, reliable);
+ 	/*
+ 	 * Note that reductions have been bumped on calling
+ 	 * process by erts_dsig_send_reg_msg() or
+@@ -1816,6 +1817,11 @@ static Sint remote_send(Process *p, DistEntry *dep,
+ 
+ Sint
+ do_send(Process *p, Eterm to, Eterm msg, int suspend) {
++    return do_send_reliable(p, to, msg, suspend, 1);
++}
++
++Sint
++do_send_reliable(Process *p, Eterm to, Eterm msg, int suspend, int reliable) {
+     Eterm portid;
+     Port *pt;
+     Process* rp;
+@@ -1853,7 +1859,7 @@ do_send(Process *p, Eterm to, Eterm msg, int suspend) {
+ 	    erts_send_error_to_logger(p->group_leader, dsbufp);
+ 	    return 0;
+ 	}
+-	return remote_send(p, dep, to, to, msg, suspend);
++	return remote_send_reliable(p, dep, to, to, msg, suspend, reliable);
+     } else if (is_atom(to)) {
+         int ret;
+         
+@@ -2053,7 +2059,7 @@ do_send(Process *p, Eterm to, Eterm msg, int suspend) {
+             goto send_message;
+         }
+     
+-        ret = remote_send(p, dep, tp[1], to, msg, suspend);
++        ret = remote_send_reliable(p, dep, tp[1], to, msg, suspend, reliable);
+         if (dep)
+             erts_deref_dist_entry(dep);
+         return ret;
+@@ -2185,7 +2191,12 @@ BIF_RETTYPE send_2(BIF_ALIST_2)
+ 
+ Eterm erl_send(Process *p, Eterm to, Eterm msg)
+ {
+-    Sint result = do_send(p, to, msg, !0);
++    return erl_send_reliable(p, to, msg, 1);
++}
++
++Eterm erl_send_reliable(Process *p, Eterm to, Eterm msg, int reliable)
++{
++    Sint result = do_send_reliable(p, to, msg, !0, reliable);
+     
+     if (result > 0) {
+ 	ERTS_VBUMP_REDS(p, result);
+diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
+index 0b00aa6..a1211b0 100644
+--- a/erts/emulator/beam/dist.c
++++ b/erts/emulator/beam/dist.c
+@@ -120,6 +120,7 @@ Export* dmonitor_p_trap = NULL;
+ 
+ static void clear_dist_entry(DistEntry*);
+ static int dsig_send(ErtsDSigData *, Eterm, Eterm, int);
++static int dsig_send_reliable(ErtsDSigData *, Eterm, Eterm, int, int);
+ static void send_nodes_mon_msgs(Process *, Eterm, Eterm, Eterm, Eterm);
+ static void init_nodes_monitors(void);
+ 
+@@ -736,6 +737,12 @@ erts_dsig_send_demonitor(ErtsDSigData *dsdp, Eterm watcher,
+ int
+ erts_dsig_send_msg(ErtsDSigData *dsdp, Eterm remote, Eterm message)
+ {
++    return erts_dsig_send_msg_reliable(dsdp, remote, message, 1);
++}
++
++int
++erts_dsig_send_msg_reliable(ErtsDSigData *dsdp, Eterm remote, Eterm message, int reliable)
++{
+     Eterm ctl;
+     DeclareTmpHeapNoproc(ctl_heap,5);
+     Eterm token = NIL;
+@@ -754,7 +761,7 @@ erts_dsig_send_msg(ErtsDSigData *dsdp, Eterm remote, Eterm message)
+                 make_small(DOP_SEND_TT), am_Cookie, remote, token);
+     else
+         ctl = TUPLE3(&ctl_heap[0], make_small(DOP_SEND), am_Cookie, remote);
+-    res = dsig_send(dsdp, ctl, message, 0);
++    res = dsig_send_reliable(dsdp, ctl, message, 0, reliable);
+     UnUseTmpHeapNoproc(5);
+     return res;
+ }
+@@ -762,6 +769,12 @@ erts_dsig_send_msg(ErtsDSigData *dsdp, Eterm remote, Eterm message)
+ int
+ erts_dsig_send_reg_msg(ErtsDSigData *dsdp, Eterm remote_name, Eterm message)
+ {
++    return erts_dsig_send_reg_msg_reliable(dsdp, remote_name, message, 1);
++}
++
++int
++erts_dsig_send_reg_msg_reliable(ErtsDSigData *dsdp, Eterm remote_name, Eterm message, int reliable)
++{
+     Eterm ctl;
+     DeclareTmpHeapNoproc(ctl_heap,6);
+     Eterm token = NIL;
+@@ -781,7 +794,7 @@ erts_dsig_send_reg_msg(ErtsDSigData *dsdp, Eterm remote_name, Eterm message)
+     else
+         ctl = TUPLE4(&ctl_heap[0], make_small(DOP_REG_SEND),
+                 sender->id, am_Cookie, remote_name);
+-    res = dsig_send(dsdp, ctl, message, 0);
++    res = dsig_send_reliable(dsdp, ctl, message, 0, reliable);
+     UnUseTmpHeapNoproc(6);
+     return res;
+ }
+@@ -1599,6 +1612,12 @@ int erts_net_message(Port *prt,
+ static int
+ dsig_send(ErtsDSigData *dsdp, Eterm ctl, Eterm msg, int force_busy)
+ {
++    return dsig_send_reliable(dsdp, ctl, msg, force_busy, 1);
++}
++
++static int
++dsig_send_reliable(ErtsDSigData *dsdp, Eterm ctl, Eterm msg, int force_busy, int reliable)
++{
+     Eterm cid;
+     int suspended = 0;
+     int resume = 0;
+@@ -1635,7 +1654,8 @@ dsig_send(ErtsDSigData *dsdp, Eterm ctl, Eterm msg, int force_busy)
+         erts_fprintf(stderr, "    MSG: %T\n", msg);
+ #endif
+ 
+-    data_size = pass_through_size;
++    data_size = 1; // one more byte for reliability
++    data_size += pass_through_size;
+     erts_reset_atom_cache_map(acmp);
+     data_size += erts_encode_dist_ext_size(ctl, flags, acmp);
+     if (is_value(msg))
+@@ -1656,6 +1676,8 @@ dsig_send(ErtsDSigData *dsdp, Eterm ctl, Eterm msg, int force_busy)
+         /* Encode message */
+         erts_encode_dist_ext(msg, &obuf->ext_endp, flags, acmp);
+     }
++    /* Encode reliability */
++    erts_encode_dist_reliability(&obuf->ext_endp, reliable);
+ 
+     ASSERT(obuf->extp < obuf->ext_endp);
+     ASSERT(&obuf->data[0] <= obuf->extp - pass_through_size);
+diff --git a/erts/emulator/beam/dist.h b/erts/emulator/beam/dist.h
+index 845151c..d4b8431 100644
+--- a/erts/emulator/beam/dist.h
++++ b/erts/emulator/beam/dist.h
+@@ -272,9 +272,11 @@ erts_destroy_dist_link(ErtsDistLinkData *dldp)
+ 
+ extern int erts_dsig_send_link(ErtsDSigData *, Eterm, Eterm);
+ extern int erts_dsig_send_msg(ErtsDSigData *, Eterm, Eterm);
++extern int erts_dsig_send_msg_reliable(ErtsDSigData *, Eterm, Eterm, int);
+ extern int erts_dsig_send_exit_tt(ErtsDSigData *, Eterm, Eterm, Eterm, Eterm);
+ extern int erts_dsig_send_unlink(ErtsDSigData *, Eterm, Eterm);
+ extern int erts_dsig_send_reg_msg(ErtsDSigData *, Eterm, Eterm);
++extern int erts_dsig_send_reg_msg_reliable(ErtsDSigData *, Eterm, Eterm, int);
+ extern int erts_dsig_send_group_leader(ErtsDSigData *, Eterm, Eterm);
+ extern int erts_dsig_send_exit(ErtsDSigData *, Eterm, Eterm, Eterm);
+ extern int erts_dsig_send_exit2(ErtsDSigData *, Eterm, Eterm, Eterm);
+diff --git a/erts/emulator/beam/external.c b/erts/emulator/beam/external.c
+index 7f41932..6d9e5a7 100644
+--- a/erts/emulator/beam/external.c
++++ b/erts/emulator/beam/external.c
+@@ -486,6 +486,14 @@ void erts_encode_dist_ext(Eterm term, byte **ext, Uint32 flags, ErtsAtomCacheMap
+     *ext = ep;
+ }
+ 
++void erts_encode_dist_reliability(byte **ext, int reliable)
++{
++    byte *ep = *ext;
++    if (reliable) *ep++ = 1;
++    else *ep++ = 0;
++    *ext = ep;
++}
++
+ void erts_encode_ext(Eterm term, byte **ext)
+ {
+     byte *ep = *ext;
+diff --git a/erts/emulator/beam/external.h b/erts/emulator/beam/external.h
+index eddd457..42b89df 100644
+--- a/erts/emulator/beam/external.h
++++ b/erts/emulator/beam/external.h
+@@ -158,6 +158,7 @@ byte *erts_encode_ext_dist_header_setup(byte *, ErtsAtomCacheMap *);
+ byte *erts_encode_ext_dist_header_finalize(byte *, ErtsAtomCache *);
+ Uint erts_encode_dist_ext_size(Eterm, Uint32, ErtsAtomCacheMap *);
+ void erts_encode_dist_ext(Eterm, byte **, Uint32, ErtsAtomCacheMap *);
++void erts_encode_dist_reliability(byte **, int);
+ 
+ Uint erts_encode_ext_size(Eterm);
+ Uint erts_encode_ext_size_2(Eterm, unsigned);
+diff --git a/erts/emulator/beam/global.h b/erts/emulator/beam/global.h
+index f1335f6..94ab7d1 100644
+--- a/erts/emulator/beam/global.h
++++ b/erts/emulator/beam/global.h
+@@ -849,6 +849,7 @@ void erts_queue_monitor_message(Process *,
+ 				Eterm);
+ void erts_init_bif(void);
+ Eterm erl_send(Process *p, Eterm to, Eterm msg);
++Eterm erl_send_reliable(Process *p, Eterm to, Eterm msg, int reliable);
+ 
+ /* erl_bif_op.c */
+ 
+-- 
+1.7.9.1
+
+
+From 52852f9c3365568fccc13d4b6f190d4ca3887a30 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Tue, 3 Jul 2012 15:45:14 +0200
+Subject: [PATCH 40/46] Disabling tick.
+
+---
+ lib/kernel/src/net_kernel.erl |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index d3127b9..71f8a75 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -1043,7 +1043,7 @@ ticker_loop(Kernel, Tick) ->
+ 	{new_ticktime, NewTick} ->
+ 	    ?tckr_dbg({ticker_changed_time, Tick, NewTick}),
+ 	    ?MODULE:ticker_loop(Kernel, NewTick)
+-    after Tick ->
++    after infinity ->
+ 	    Kernel ! tick,
+ 	    ?MODULE:ticker_loop(Kernel, Tick)
+     end.
+-- 
+1.7.9.1
+
+
+From 4d48e89184e0ae287e94d3b8fef188c870c11221 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Tue, 3 Jul 2012 17:09:59 +0200
+Subject: [PATCH 41/46] Trace.
+
+---
+ erts/emulator/beam/io.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
+index 9ac39fb..fcbcd1b 100644
+--- a/erts/emulator/beam/io.c
++++ b/erts/emulator/beam/io.c
+@@ -2774,6 +2774,8 @@ driver_deliver_term(ErlDrvPort port,
+     struct b2t_states__ b2t;
+ 
+     init_b2t_states(&b2t);
++    
++    erts_fprintf(stderr, "DEBUG: To %T\n", to);
+ 
+     /*
+      * We used to check port and process here. In the SMP enabled emulator,
+-- 
+1.7.9.1
+
+
+From a2d816aa8c98e4e3086fcd967f7ac0c313b290d8 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Thu, 5 Jul 2012 17:33:22 +0200
+Subject: [PATCH 42/46] Start beaconing.
+
+---
+ lib/kernel/src/net_kernel.erl |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 71f8a75..3ece85a 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -1314,6 +1314,7 @@ start_protos(Name, [Proto | Ps], Node, Ls) ->
+     Mod = list_to_atom(Proto ++ "_dist"),
+     case catch Mod:listen(Name) of
+ 	{ok, {Socket, Address, Creation}} ->
++        spawn_link(fun() -> Mod:beacon()),
+ 	    case set_node(Node, Creation) of
+ 		ok ->
+ 		    AcceptPid = Mod:accept(Socket),
+-- 
+1.7.9.1
+
+
+From 9d556e630e423cebc54e4f53925e6c31ae3ac6f7 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Thu, 5 Jul 2012 17:33:51 +0200
+Subject: [PATCH 43/46] Start beaconing.
+
+---
+ lib/kernel/src/net_kernel.erl |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 3ece85a..66f2455 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -1314,7 +1314,7 @@ start_protos(Name, [Proto | Ps], Node, Ls) ->
+     Mod = list_to_atom(Proto ++ "_dist"),
+     case catch Mod:listen(Name) of
+ 	{ok, {Socket, Address, Creation}} ->
+-        spawn_link(fun() -> Mod:beacon()),
++        spawn_link(fun() -> Mod:beacon() end),
+ 	    case set_node(Node, Creation) of
+ 		ok ->
+ 		    AcceptPid = Mod:accept(Socket),
+-- 
+1.7.9.1
+
+
+From c3241cceb2b428dbd214248bfa53a38bfcc44f11 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Thu, 5 Jul 2012 17:40:46 +0200
+Subject: [PATCH 44/46] Start beaconing.
+
+---
+ lib/kernel/src/net_kernel.erl |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 66f2455..fa88a4c 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -1314,6 +1314,7 @@ start_protos(Name, [Proto | Ps], Node, Ls) ->
+     Mod = list_to_atom(Proto ++ "_dist"),
+     case catch Mod:listen(Name) of
+ 	{ok, {Socket, Address, Creation}} ->
++        io:format(standard_error, "DEBUG: Start beacons receiver~n"),
+         spawn_link(fun() -> Mod:beacon() end),
+ 	    case set_node(Node, Creation) of
+ 		ok ->
+-- 
+1.7.9.1
+
+
+From d772d4076b8cf8d5b54cd987ec0ea694c3f96d5a Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Thu, 5 Jul 2012 17:44:22 +0200
+Subject: [PATCH 45/46] Removed everything.
+
+---
+ lib/kernel/src/net_kernel.erl |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index fa88a4c..71f8a75 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -1314,8 +1314,6 @@ start_protos(Name, [Proto | Ps], Node, Ls) ->
+     Mod = list_to_atom(Proto ++ "_dist"),
+     case catch Mod:listen(Name) of
+ 	{ok, {Socket, Address, Creation}} ->
+-        io:format(standard_error, "DEBUG: Start beacons receiver~n"),
+-        spawn_link(fun() -> Mod:beacon() end),
+ 	    case set_node(Node, Creation) of
+ 		ok ->
+ 		    AcceptPid = Mod:accept(Socket),
+-- 
+1.7.9.1
+
+
+From 5089481606245a127d6be6903510ce1119474f81 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Thu, 16 Aug 2012 11:14:57 +0200
+Subject: [PATCH 46/46] Added print.
+
+---
+ lib/kernel/src/net_kernel.erl |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 71f8a75..19dc8f8 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -248,6 +248,7 @@ update_publish_nodes(Ns) ->
+       Node :: node().
+ %% explicit connects
+ connect_node(Node) when is_atom(Node) ->
++    io:format(standard_error, "DEBUG: Connecting to node ~p~n", [Node]),
+     request({connect, normal, Node}).
+ hidden_connect_node(Node) when is_atom(Node) ->
+     request({connect, hidden, Node}).
+-- 
+1.7.9.1
 
