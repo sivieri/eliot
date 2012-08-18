@@ -1,6 +1,6 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @reference <a href="http://portal.acm.org/citation.cfm?id=1251177">Trickle</a>
--module(trickle_task).
+-module(eliot_trickle).
 -export([trickle/0, update_version/3]).
 -define(TAU_MAX, 60000).
 -define(TAU_MIN, 1000).

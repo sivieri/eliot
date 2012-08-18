@@ -1,4 +1,4 @@
--module(ctp_task).
+-module(eliot_ctp).
 -include("ctp.hrl").
 -export([ctp/0, collect/2]).
 -define(TAU_MAX, 600000).

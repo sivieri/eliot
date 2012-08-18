@@ -1,6 +1,6 @@
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
--module(oppflooder_task).
+-module(eliot_oppflooder).
 -export([oppflooder/0, send/2]).
 -define(MAX_WAITING_OF_MSG, 3).
 -define(MAX_RECEIVED_MSG, 30).
