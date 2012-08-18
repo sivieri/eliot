@@ -133,7 +133,7 @@ int check_expired(unsigned long now, unsigned long last, int resend);
 void print_ports();
 void print_acks();
 void do_clean(driver_data_t *res);
-unsigned long get_now();
+unsigned long get_current_time();
 unsigned long get_secs();
 void do_send_upstairs(ack_data_t *ack, driver_data_t *res);
 static void put_packet_length(char *b, int len);
@@ -457,7 +457,7 @@ void drv_timeout(ErlDrvData handle) {
     // This is handled by the first port (as for the main socket)
     ack_data_t *iterator, *prev = NULL, *tmp;
     driver_data_t *res = (driver_data_t *)handle;
-    unsigned long now = get_now();
+    unsigned long now = get_current_time();
     erl_drv_mutex_lock(ack_mutex);
     iterator = acks;
     while (iterator != NULL) {
@@ -687,7 +687,7 @@ int do_send2(driver_data_t* res, char* buf, int len, int reliable) {
     if (res->curstate != HANDSHAKED) driver_output(res->port, "Sok", 3);
     ack->resend = 1;
     ack->len = size;
-    ack->last = get_now();
+    ack->last = get_current_time();
     ack->msg = res->msg_number;
     ack->res = res;
     ack->caller = driver_caller(res->port);
@@ -830,7 +830,7 @@ void free_entry(driver_data_t* element) {
     driver_free(element);
 }
 
-unsigned long get_now() {
+unsigned long get_current_time() {
     unsigned long res;
     ErlDrvNowData *now = driver_alloc(sizeof(ErlDrvNowData));
     driver_get_now(now);
