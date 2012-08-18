@@ -1,7 +1,7 @@
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 -module(oppflooder_task).
--export([start_link/0, oppflooder/0, send/2]).
+-export([oppflooder/0, send/2]).
 -define(MAX_WAITING_OF_MSG, 3).
 -define(MAX_RECEIVED_MSG, 30).
 -define(SRCADDR, 16/unsigned-little-integer).
@@ -11,25 +11,16 @@
 
 % Public API
 
-start_link() ->
-    Pid = spawn_link(?MODULE, oppflooder, []),
-    register(oppflooder, Pid),
-    erlang:export(oppflooder),
-    {ok, Pid}.
-
-%% @doc Send a message from the given node.
-%% @spec send(atom(), any()) -> ok
--spec(send(atom(), any()) -> ok).
-send(DestId, Payload) ->
-    {_NodeName, NodeAddress} = utils:split_name(node()),
-    eliot_api:send_test(oppflooder, {DestId, NodeAddress}, {send, Payload}),
-    ok.
-
 %% @doc The flood implementation for the single node.
 %% @spec flood() -> none()
 -spec(oppflooder() -> none()).
 oppflooder() ->
     oppflooder([], dict:new(), 0).
+
+send(Pid, Payload) when is_binary(Payload) ->
+    Pid ! {local, Payload};
+send(Pid, Payload) ->
+    Pid ! {local, term_to_binary(Payload)}.
 
 % Private API
 
@@ -37,6 +28,11 @@ oppflooder() ->
 -spec(oppflooder([{integer(), integer()}], dict(), integer()) -> none()).
 oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
     receive
+    {local, Payload} ->
+        Id = eliot_api:nodeid(eliot_api:get_node_name()),
+        Msg = <<Id:?SRCADDR, NextMsgNum:?SEQNUM, ?INITIAL_OF_TTL:?TTL, Payload/binary>>,
+        {oppflooder, all} ! eliot_api:msg(Msg),
+        oppflooder(record_received({Id, NextMsgNum}, ReceivedMsgs), WaitingMsgs, (NextMsgNum + 1) rem 256);
     {_RSSI, {_SourceId, {send, Payload}}} ->
         PayloadB = term_to_binary(Payload),
         Id = eliot_api:nodeid(eliot_api:get_node_name()),

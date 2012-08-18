@@ -1,16 +1,10 @@
 -module(ctp_task).
 -include("ctp.hrl").
--export([start_link/0, ctp/0, collect/2]).
+-export([ctp/0, collect/2]).
 -define(TAU_MAX, 600000).
 -define(TAU_MIN, 64).
 
 % Public API
-
-start_link() ->
-    Pid = spawn_link(?MODULE, ctp, []),
-    register(ctp, Pid),
-    erlang:export(ctp),
-    {ok, Pid}.
 
 %% @doc Implementation of the algorithm for each node.
 %% @spec ctp() -> none()
@@ -24,14 +18,8 @@ ctp() ->
     FwdPid = spawn(fun() -> ctp_fwd:fwd_engine({NodeId, Collector}, {RoutingPid, LinkPid}) end),
     ctp(RoutingPid, LinkPid, FwdPid).
 
-%% @doc Send a data from the specified node; this data should be
-%% routed to a collector.
-%% @spec collect(atom(), any()) -> ok
--spec(collect(atom(), any()) -> ok).
-collect(DestId, Data) ->
-    {_NodeName, NodeAddress} = utils:split_name(node()),
-    eliot_api:send_test(ctp, {DestId, NodeAddress}, {collect, Data}),
-    ok.
+collect(Pid, Data) ->
+    Pid ! {local, Data}.
 
 % Private API
 
@@ -39,6 +27,9 @@ collect(DestId, Data) ->
 -spec(ctp(pid(), pid(), pid()) -> none()).
 ctp(RoutingPid, LinkPid, FwdPid) ->
     receive
+        {local, Data} ->
+            FwdPid ! {collect, Data},
+            ctp(RoutingPid, LinkPid, FwdPid);
         {RSSI, {SourceId, Msg}} when is_record(Msg, ack)  ->
             io:format("~p: Received ack from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
             FwdPid ! {SourceId, RSSI, Msg},
