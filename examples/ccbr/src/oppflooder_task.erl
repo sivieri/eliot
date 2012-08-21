@@ -7,6 +7,7 @@ start_link() ->
     Pid = spawn_link(eliot_oppflooder, oppflooder, []),
     register(oppflooder, Pid),
     erlang:export(oppflooder),
+    oppflooder_handler:add_handler(),
     {ok, Pid}.
 
 send(Payload) ->
