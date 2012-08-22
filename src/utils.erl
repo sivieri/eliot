@@ -51,8 +51,8 @@ get_host_ip() ->
         {ok, IfList} when length(IfList) == 2 ->
             [{_Real, IfOpts}] = lists:filter(fun({Name, _IfOpts}) when Name == "lo" -> false;
                                      ({_Name, _IfOpts}) -> true end, IfList),
-            {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
-            Address;
+            {addr, Address} = lists:keyfind(addr, 1, IfOpts),
+            inet_parse:ntoa(Address);
         {ok, IfList} ->
             {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
             Addresses = proplists:lookup_all(addr, IfOpts),
@@ -67,8 +67,9 @@ get_host_mac() ->
         {ok, IfList} when length(IfList) == 2 ->
             [{_Real, IfOpts}] = lists:filter(fun({Name, _IfOpts}) when Name == "lo" -> false;
                                      ({_Name, _IfOpts}) -> true end, IfList),
-            {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
-            Address;
+            {hwaddr, Address} = lists:keyfind(hwaddr, 1, IfOpts),
+            StringAddress = lists:map(fun(X) -> format("~2.16.0b", [X]) end, Address),
+            string:join(StringAddress, ":");
         {ok, IfList} ->
             {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
             {hwaddr, Address} = lists:keyfind(hwaddr, 1, IfOpts),

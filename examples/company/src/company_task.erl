@@ -23,7 +23,7 @@ company(#state{sm = SM} = State) ->
             if
                 SM == none ->
                     io:format("Company: Registering to SM ~p~n", [NodeIP]),
-                    utils:join_name(?NODENAME, NodeIP) ! eliot_api:msg(term_to_binary(company)),
+                    {sm, utils:join_name(?NODENAME, NodeIP)} ! eliot_api:msg(term_to_binary('company')),
                     company(#state{sm = NodeIP});
                 SM == NodeIP ->
                     company(State);
