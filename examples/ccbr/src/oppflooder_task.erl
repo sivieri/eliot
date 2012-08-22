@@ -4,11 +4,8 @@
 % Public API
 
 start_link() ->
-    Pid = spawn_link(eliot_oppflooder, oppflooder, []),
-    register(oppflooder, Pid),
-    erlang:export(oppflooder),
     oppflooder_handler:add_handler(),
-    {ok, Pid}.
+    ignore.
 
 send(Payload) ->
     eliot_oppflooder:send(oppflooder, Payload).

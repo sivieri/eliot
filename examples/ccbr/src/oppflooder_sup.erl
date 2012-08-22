@@ -12,6 +12,7 @@ start_link() ->
 init([]) ->
     {ok, { {one_for_one, 5, 10}, [
                                   ?CHILD(eliot_oppflooder_event, worker),
+                                  ?CHILD(eliot_oppflooder, worker),
                                   ?CHILD(oppflooder_task, worker)]} }.
 
 % Private API

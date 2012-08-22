@@ -1,1 +1,2 @@
 -define(SRCADDR, 16/unsigned-integer).
+-record(parameter, {name = none, value = 0, fixed = false}).

@@ -1,7 +1,7 @@
 %% @author Gianpaolo Cugola <cugola@elet.polimi.it>
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 -module(eliot_oppflooder).
--export([oppflooder/0, send/2]).
+-export([start_link/0, oppflooder/0, send/2]).
 -define(MAX_WAITING_OF_MSG, 3).
 -define(MAX_RECEIVED_MSG, 30).
 -define(SRCADDR, 16/unsigned-little-integer).
@@ -10,6 +10,12 @@
 -define(INITIAL_OF_TTL, 20).
 
 % Public API
+
+start_link() ->
+    Pid = spawn_link(?MODULE, oppflooder, []),
+    register(oppflooder, Pid),
+    erlang:export(oppflooder),
+    {ok, Pid}.
 
 %% @doc The flood implementation for the single node.
 %% @spec flood() -> none()
