@@ -55,7 +55,7 @@ oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
                       oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum);
                   false ->
                       % Notify any listener
-                      eliot_oppflooder_event:notify(Src, Payload),
+                      eliot_oppflooder_event:notify(SourceId, Payload),
                       % Start timers
                       Delay = 1000 + RSSI * 10 + random:uniform(100),
                       io:format("~p: forwarding msg in ~p ms~n", [eliot_api:get_node_name(), Delay]),

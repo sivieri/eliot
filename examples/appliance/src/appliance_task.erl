@@ -19,18 +19,18 @@ appliance() ->
 
 appliance(#state{sm = SM} = State) ->
     receive
-        {sm, NewSM} ->
+        {sm, {_NodeName, NodeIP}} ->
             if
                 SM == none ->
-                    io:format("Appliance: Registering to SM ~p~n", [NewSM]),
-                    utils:join_name(?NODENAME, NewSM) ! eliot_api:msg(term_to_binary(appliance)),
-                    appliance(#state{sm = NewSM});
-                SM == NewSM ->
+                    io:format("Appliance: Registering to SM ~p~n", [NodeIP]),
+                    utils:join_name(?NODENAME, NodeIP) ! eliot_api:msg(term_to_binary(appliance)),
+                    appliance(#state{sm = NodeIP});
+                SM == NodeIP ->
                     appliance(State);
                 true ->
-                    io:format("Appliance: Already registered to SM ~p, changing to ~p~n", [SM, NewSM]),
-                    utils:join_name(?NODENAME, NewSM) ! eliot_api:msg(term_to_binary(appliance)),
-                    appliance(#state{sm = NewSM})
+                    io:format("Appliance: Already registered to SM ~p, changing to ~p~n", [SM, NodeIP]),
+                    utils:join_name(?NODENAME, NodeIP) ! eliot_api:msg(term_to_binary(appliance)),
+                    appliance(#state{sm = NodeIP})
             end;
         Any ->
             io:format("Appliance: Unknown message ~p~n", [Any]),

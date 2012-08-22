@@ -19,18 +19,18 @@ company() ->
 
 company(#state{sm = SM} = State) ->
     receive
-        {sm, NewSM} ->
+        {sm, {_NodeName, NodeIP} ->
             if
                 SM == none ->
-                    io:format("Company: Registering to SM ~p~n", [NewSM]),
-                    utils:join_name(?NODENAME, NewSM) ! eliot_api:msg(term_to_binary(company)),
-                    company(#state{sm = NewSM});
-                SM == NewSM ->
+                    io:format("Company: Registering to SM ~p~n", [NodeIP]),
+                    utils:join_name(?NODENAME, NodeIP) ! eliot_api:msg(term_to_binary(company)),
+                    company(#state{sm = NodeIP});
+                SM == NodeIP ->
                     company(State);
                 true ->
-                    io:format("Company: Already registered to SM ~p, changing to ~p~n", [SM, NewSM]),
-                    utils:join_name(?NODENAME, NewSM) ! eliot_api:msg(term_to_binary(company)),
-                    company(#state{sm = NewSM})
+                    io:format("Company: Already registered to SM ~p, changing to ~p~n", [SM, NodeIP]),
+                    utils:join_name(?NODENAME, NodeIP) ! eliot_api:msg(term_to_binary(company)),
+                    company(#state{sm = NodeIP})
             end;
         Any ->
             io:format("Company: Unknown message ~p~n", [Any]),

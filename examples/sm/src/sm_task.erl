@@ -22,7 +22,9 @@ sm(#state{company = Company, appliances = Appliances, sensors = Sensors} = State
     receive
         beacon ->
             Msg = erlang:term_to_binary(sm),
-            eliot_oppflooder:send(oppflooder, Msg);
+            eliot_oppflooder:send(oppflooder, Msg),
+            erlang:send_after(?TIMER, self(), beacon),
+            sm(State);
         {_RSSI, {{_NodeId, NodeIP}, Content}} ->
             io:format("SM: Trying to register ~p as ~p~n", [NodeIP, erlang:binary_to_term(Content)]),
             {NewCompany, NewAppliances, NewSensors} = case erlang:binary_to_term(Content) of
