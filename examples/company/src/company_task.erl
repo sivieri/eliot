@@ -19,7 +19,7 @@ company() ->
 
 company(#state{sm = SM} = State) ->
     receive
-        {sm, {_NodeName, NodeIP} ->
+        {sm, {_NodeName, NodeIP}} ->
             if
                 SM == none ->
                     io:format("Company: Registering to SM ~p~n", [NodeIP]),
