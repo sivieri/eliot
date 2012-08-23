@@ -1,8 +1,8 @@
 -module(sm_task).
--export([start_link/0, sm/0]).
+-export([start_link/0, sm/0, schedule/0]).
 -include("scenario.hrl").
 -define(TIMER, 10 * 1000).
--record(state, {company = none, appliances = [], sensors = []}).
+-record(state, {company = none, appliances = dict:new(), sensors = []}).
 
 % Public API
 
@@ -16,6 +16,9 @@ start_link() ->
 sm() ->
     sm(#state{}).
 
+schedule() ->
+    sm ! schedule.
+
 % Private API
 
 sm(#state{company = Company, appliances = Appliances, sensors = Sensors} = State) ->
@@ -25,10 +28,14 @@ sm(#state{company = Company, appliances = Appliances, sensors = Sensors} = State
             eliot_oppflooder:send(oppflooder, Msg),
             erlang:send_after(?TIMER, self(), beacon),
             sm(State);
-        {_RSSI, {{_NodeId, NodeIP}, Content}} ->
-            io:format("SM: Trying to register ~p as ~p~n", [NodeIP, erlang:binary_to_term(Content)]),
+        schedule ->
+            Schedule = sm_algorithm:schedule(Appliances),
+            sm_algorithm:notify(Appliances, Schedule),
+            sm(State);
+        {_RSSI, {{NodeId, NodeIP} = Source, Content}} ->
             {NewCompany, NewAppliances, NewSensors} = case erlang:binary_to_term(Content) of
                 company when Company == none ->
+                    io:format("SM: Registered a new company ~p~n", [Source]),
                     {NodeIP, Appliances, Sensors};
                 company when Company == NodeIP ->
                     {Company, Appliances, Sensors};
@@ -36,17 +43,26 @@ sm(#state{company = Company, appliances = Appliances, sensors = Sensors} = State
                     io:format("SM: Already registered to the company ~p (new request from ~p)~n", [Company, NodeIP]),
                     {Company, Appliances, Sensors};
                 appliance ->
-                    case lists:member(NodeIP, Appliances) of
+                    case dict:is_key(NodeId, Appliances) of
                         true ->
                             {Company, Appliances, Sensors};
                         false ->
-                            {Company, [NodeIP|Appliances], Sensors}
+                            io:format("SM: Registered a new appliance ~p~n", [Source]),
+                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP}, Appliances), Sensors}
+                    end;
+                {appliance, data, Pid, Params} when is_pid(Pid) andalso is_list(Params) ->
+                    case dict:is_key(NodeId, Appliances) of
+                        true ->
+                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP, pid = Pid, params = Params}, Appliances), Sensors};
+                        false ->
+                            {Company, Appliances, Sensors}
                     end;
                 sensor ->
                     case lists:member(NodeIP, Sensors) of
                         true ->
                             {Company, Appliances, Sensors};
                         false ->
+                            io:format("SM: Registered a new sensor ~p~n", [Source]),
                             {Company, Appliances, [NodeIP|Sensors]}
                     end;
                 Any ->

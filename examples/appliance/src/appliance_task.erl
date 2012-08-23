@@ -23,7 +23,9 @@ appliance(#state{sm = SM} = State) ->
             if
                 SM == none ->
                     io:format("Appliance: Registering to SM ~p~n", [NodeIP]),
-                    {sm, utils:join_name(?NODENAME, NodeIP)} ! eliot_api:msg(term_to_binary('appliance')),
+                    Dest = {sm, utils:join_name(?NODENAME, NodeIP)},
+                    Dest ! eliot_api:msg(term_to_binary('appliance')),
+                    Dest ! eliot_api:msg(term_to_binary({appliance, data, whereis(module), get(params)})),
                     appliance(#state{sm = NodeIP});
                 SM == NodeIP ->
                     appliance(State);
