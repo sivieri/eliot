@@ -5,11 +5,11 @@
 % Public API
 
 ac(Id) ->
-    put(params, [#parameter{name = temperature, type = temperature}, #parameter{name = starttime, type = time}, #parameter{name = endtime, type = time}]),
+    application:set_env(appliance, params, [#parameter{name = temperature, type = temperature}, #parameter{name = starttime, type = time}, #parameter{name = endtime, type = time}]),
     appliance:start(Id).
 
 dishwasher(Id) ->
-    put(params, [#parameter{name = starttime, type = time}, #parameter{name = endtime, type = time}]),
+    application:set_env(appliance, params, [#parameter{name = starttime, type = time}, #parameter{name = endtime, type = time}]),
     appliance:start(Id).
 
 % Private API

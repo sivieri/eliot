@@ -25,7 +25,7 @@ appliance(#state{sm = SM} = State) ->
                     io:format("Appliance: Registering to SM ~p~n", [NodeIP]),
                     Dest = {sm, utils:join_name(?NODENAME, NodeIP)},
                     Dest ! eliot_api:msg(term_to_binary('appliance')),
-                    Dest ! eliot_api:msg(term_to_binary({appliance, data, whereis(module), get(params)})),
+                    Dest ! eliot_api:msg(term_to_binary({appliance, data, whereis(model), application:get_env(appliance, params)})),
                     appliance(#state{sm = NodeIP});
                 SM == NodeIP ->
                     appliance(State);
