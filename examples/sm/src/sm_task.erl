@@ -1,5 +1,5 @@
 -module(sm_task).
--export([start_link/0, sm/0, schedule/0]).
+-export([start_link/0, sm/0, schedule/3]).
 -include("scenario.hrl").
 -define(TIMER, 10 * 1000).
 -record(state, {company = none, appliances = dict:new(), sensors = []}).
@@ -16,8 +16,8 @@ start_link() ->
 sm() ->
     sm(#state{}).
 
-schedule() ->
-    sm ! schedule.
+schedule(Starttime, Endtime, Cap) ->
+    sm ! {schedule, Starttime, Endtime, Cap}.
 
 % Private API
 
@@ -28,10 +28,14 @@ sm(#state{company = Company, appliances = Appliances, sensors = Sensors} = State
             eliot_oppflooder:send(oppflooder, Msg),
             erlang:send_after(?TIMER, self(), beacon),
             sm(State);
-        schedule ->
-            Schedule = sm_algorithm:schedule(Appliances),
-            sm_algorithm:notify(Appliances, Schedule),
+        {schedule, Starttime, Endtime, Cap} ->
+            Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{starttime = Starttime, endtime = Endtime, cap = Cap}, Appliances) end),
+            register(algorithm, Pid),
+            erlang:export(algorithm),
             sm(State);
+        {result, Schedule} ->
+            sm_algorithm:notify(Schedule),
+            sm(#state{company = Company, appliances = Schedule, sensors = Sensors});
         {_RSSI, {{NodeId, NodeIP} = Source, Content}} ->
             {NewCompany, NewAppliances, NewSensors} = case erlang:binary_to_term(Content) of
                 company when Company == none ->
