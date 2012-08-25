@@ -12,8 +12,8 @@ schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
     SortedSlots = lists:sort(fun(#slot{priority = Priority1},
                                                   #slot{priority = Priority2}) when Priority2 >= Priority1 -> true;
                                                  (_Slot1, _Slot2) -> false end , Slots),
-    calc(SortedSlots, Cap, Appliances),
-    sm ! {result, Appliances}.
+    NewAppliances = calc(SortedSlots, Cap, Appliances),
+    sm ! {result, NewAppliances}.
 
 notify(Schedule) ->
     dict:fold(fun(_Name, #appliance{name = _Name, ip = IP, pid = _Pid, params = Params}, _AccIn) ->
@@ -22,6 +22,8 @@ notify(Schedule) ->
 
 % Private API
 
+calc([], _Cap, Appliances) ->
+    Appliances;
 calc([#slot{starttime = Starttime, endtime = Endtime}|T], Cap, Appliances) ->
     NewAppliances = calc_slot(Starttime, Endtime, Cap, Appliances),
     calc(T, Cap, NewAppliances).
