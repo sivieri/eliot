@@ -35,6 +35,15 @@ appliance(#state{sm = SM} = State) ->
                     utils:join_name(?NODENAME, NodeIP) ! eliot_api:msg(term_to_binary(appliance)),
                     appliance(#state{sm = NodeIP})
             end;
+        {schedule, Params} ->
+            io:format("Appliance: New schedule ~p has been decided by the SM~n", [Params]),
+            appliance(State);
+        {eval, CurrentTime, Params} ->
+            io:format("Appliance: Evaluation of parameters ~p at time ~p~n", [Params, CurrentTime]),
+            Ans = eliot_api:lpc(model, {eval, CurrentTime, Params}),
+            Dest = utils:join_name(?NODENAME, SM),
+            {algorithm, Dest} ! eliot_api:msg(Ans),
+            appliance(State);
         Any ->
             io:format("Appliance: Unknown message ~p~n", [Any]),
             appliance(State)
