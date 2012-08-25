@@ -32,19 +32,30 @@ calc_slot({StartHour, _StartMinute}, {EndHour, _EndMinute}, Cap, Appliances) ->
     calc_single_slot(StartHour, EndHour, StartHour, Cap, Appliances).
 
 calc_single_slot(Start, End, Cur, Cap, Appliances) when Cur < End ->
-    {NewAppliances, Total} = dict:fold(fun(A, B, C) -> ok end, {dict:new(), 0}, Appliances),
+    {NewAppliances, _Total} = dict:fold(fun(Key, Appliance, {CurAppliances, CurConsumption}) ->
+                                                                {NewAppliance, NewVal} = calc_single_app(Cur, CurConsumption, Cap, Appliance),
+                                                                {dict:store(Key, NewAppliance, CurAppliances), CurConsumption + NewVal} end, {dict:new(), 0}, Appliances),
     calc_single_slot(Start, End, Cur + 1, Cap, NewAppliances);
-calc_single_slot(_Start, End, Cur, _Cap, Appliances) ->
+calc_single_slot(_Start, _End, _Cur, _Cap, Appliances) ->
     Appliances.
 
-calc_single_app(Cur, Cap, #appliance{params = Params} = Appliance) ->
+calc_single_app(Cur, CurConsumption, Cap, #appliance{pid = Dest, params = Params} = Appliance) ->
     #parameter{name = starttime, value = Start} = hd(lists:filter(fun(#parameter{name = starttime}) -> true;
                                                                                                                  (_Parameter) -> false end, Params)),
     #parameter{name = endtime, value = End} = hd(lists:filter(fun(#parameter{name = endtime}) -> true;
                                                                                                                  (_Parameter) -> false end, Params)),
     if
         Cur >= Start andalso Cur < End ->
-            ok;
+            Message = {eval, Cur, Params},
+            case eliot_api:rpc(Dest, Message) of
+                Consumption when Consumption + CurConsumption =< Cap ->
+                    {Appliance, Consumption};
+                _Consumtpion ->
+                    NewParams = lists:map(fun(#parameter{name = starttime, value = Value} = Param) -> Param#parameter{value= Value + 1 rem 24};
+                                                                  (#parameter{name = endtime, value = Value} = Param) -> Param#parameter{value= Value + 1 rem 24};
+                                                                  (Param) -> Param end, Params),
+                    {Appliance#appliance{params = NewParams}, 0}
+            end;
         true ->
-            ok
+            {Appliance, 0}
     end.
