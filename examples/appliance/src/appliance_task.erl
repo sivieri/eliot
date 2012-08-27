@@ -10,6 +10,7 @@ start_link() ->
     Pid = spawn_link(?MODULE, appliance, []),
     register(appliance, Pid),
     erlang:export(appliance),
+    erlang:export(Pid),
     {ok, Pid}.
 
 appliance() ->
@@ -26,7 +27,7 @@ appliance(#state{sm = SM} = State) ->
                     Dest = {sm, utils:join_name(?NODENAME, NodeIP)},
                     Dest ! eliot_api:msg(term_to_binary('appliance')),
                     {ok, Params} = application:get_env(appliance, params),
-                    Dest ! eliot_api:msg(term_to_binary({appliance, data, whereis(model), Params})),
+                    Dest ! eliot_api:msg(term_to_binary({appliance, data, self(), Params})),
                     appliance(#state{sm = NodeIP});
                 SM == NodeIP ->
                     appliance(State);
