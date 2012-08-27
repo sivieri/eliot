@@ -46,7 +46,7 @@ appliance(#state{sm = SM} = State) ->
                     Dest = utils:join_name(?NODENAME, SM),
                     {algorithm, Dest} ! eliot_api:msg(term_to_binary(Ans));
                 Any ->
-                    io:format("Appliance: Unknown message ~p~n", [Any])
+                    io:format("Appliance: Unknown binary message ~p~n", [Any])
             end,
             appliance(State);
         Any ->

@@ -13,12 +13,14 @@ schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
                                                   #slot{priority = Priority2}) when Priority2 >= Priority1 -> true;
                                                  (_Slot1, _Slot2) -> false end , Slots),
     NewAppliances = calc(SortedSlots, Cap, Appliances),
+    io:format("SM Algorithm: New schedule~n"),
+    utils:print_dict(NewAppliances),
     sm ! {result, NewAppliances}.
 
 notify(Schedule) ->
     dict:fold(fun(_Name, #appliance{name = _Name, ip = IP, pid = _Pid, params = Params}, _AccIn) ->
                                 Dest = utils:join_name(?NODENAME, IP),
-                                {appliance, Dest} ! eliot_api:msg({schedule, Params}) end, 0, Schedule).
+                                {appliance, Dest} ! eliot_api:msg(term_to_binary({schedule, Params})) end, 0, Schedule).
 
 % Private API
 
