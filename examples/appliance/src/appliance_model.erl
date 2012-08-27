@@ -6,6 +6,7 @@
 start_link() ->
     Pid = spawn_link(?MODULE, model, []),
     register(model, Pid),
+    erlang:export(Pid),
     {ok, Pid}.
 
 model() ->
