@@ -44,7 +44,7 @@ appliance(#state{sm = SM} = State) ->
                     io:format("Appliance: Evaluation of parameters ~p at time ~p~n", [Params, CurrentTime]),
                     Ans = eliot_api:lpc(model, {eval, CurrentTime, Params}),
                     Dest = utils:join_name(?NODENAME, SM),
-                    {algorithm, Dest} ! eliot_api:msg(Ans);
+                    {algorithm, Dest} ! eliot_api:msg(term_to_binary(Ans));
                 Any ->
                     io:format("Appliance: Unknown message ~p~n", [Any])
             end,
