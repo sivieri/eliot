@@ -190,7 +190,7 @@ rpc(Dest, Message) ->
 lpc(Dest, Message) ->
     Dest ! {self(), Message},
     receive
-        {Dest, Answer} ->
+        {_Dest, Answer} ->
             Answer
     end.
 
