@@ -18,7 +18,7 @@ schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
 notify(Schedule) ->
     dict:fold(fun(_Name, #appliance{name = _Name, ip = IP, pid = _Pid, params = Params}, _AccIn) ->
                                 Dest = utils:join_name(?NODENAME, IP),
-                                {appliance, Dest} ! {schedule, Params} end, 0, Schedule).
+                                {appliance, Dest} ! eliot_api:msg({schedule, Params}) end, 0, Schedule).
 
 % Private API
 
