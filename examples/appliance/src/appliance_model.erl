@@ -11,6 +11,12 @@ start_link() ->
 
 model() ->
     receive
+        {_RSSI, {_Source, Content}} ->
+            case binary_to_term(Content) of
+                Any ->
+                    io:format("Appliance model: Unknown message ~p~n", [Any])
+            end,
+            model();
         Any ->
             io:format("Appliance model: Unknown message ~p~n", [Any]),
             model()
