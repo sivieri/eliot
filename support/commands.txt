@@ -1,0 +1,2 @@
+sm_task:get_appliances().
+sm_task:schedule([{slot, {0, 0}, {23, 0}, 0}], 3000).

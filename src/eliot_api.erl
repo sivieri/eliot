@@ -181,7 +181,6 @@ msg(Msg) ->
 -endif.
 
 rpc(Dest, Message) ->
-    io:format("RPC: ~p~n", Message),
     Dest ! eliot_api:msg(term_to_binary(Message)),
     receive
         {_RSSI, {_Source, Content}} ->
