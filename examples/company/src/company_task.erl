@@ -1,5 +1,5 @@
 -module(company_task).
--export([start_link/0, company/0]).
+-export([start_link/0, company/0, set_cap/1]).
 -include("eliot.hrl").
 -record(state, {sm = none}).
 
@@ -15,10 +15,17 @@ start_link() ->
 company() ->
     company(#state{}).
 
+set_cap(Cap) ->
+    company ! {cap, Cap}.
+
 % Private API
 
 company(#state{sm = SM} = State) ->
     receive
+        {cap, Cap} ->
+            Dest = utils:join_name(?NODENAME, SM),
+            {sm, Dest} ! eliot_api:msg(term_to_binary({company, cap, Cap})),
+            company(State);
         {sm, {_NodeName, NodeIP}} ->
             if
                 SM == none ->
@@ -32,6 +39,14 @@ company(#state{sm = SM} = State) ->
                     utils:join_name(?NODENAME, NodeIP) ! eliot_api:msg(term_to_binary(company)),
                     company(#state{sm = NodeIP})
             end;
+        {_RSSI, {Source, Content}} ->
+            case binary_to_term(Content) of
+                {sm, current, Value} ->
+                    io:format("Company: ~p is consuming ~p KWh~n", [Source, Value]);
+                Any ->
+                    io:format("Company: Unknown binary message ~p~n", [Any])
+            end,
+            company(State);
         Any ->
             io:format("Company: Unknown message ~p~n", [Any]),
             company(State)
