@@ -1,6 +1,6 @@
 -module(sm_sup).
 -behaviour(supervisor).
--export([start_link/0, add_child/2, stop_child/1]).
+-export([start_link/0, add_child/2, stop_child/1, start_model/4]).
 -export([init/1]).
 -define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
 -define(CHILDARGS(I, Type, Args), {I, {I, start_link, Args}, permanent, 5000, Type, [I]}).
@@ -21,5 +21,28 @@ add_child(Child, Args) ->
 stop_child(Child) ->
     supervisor:terminate_child(?MODULE, Child),
     supervisor:delete_child(?MODULE, Child).
+
+start_model(ModuleAtom, ModuleRealBinary, ModuleHash, Filename) ->
+    % First: load module (or update it)
+    case code:is_loaded(ModuleAtom) of
+        {file, _} ->
+            {_, OldModuleBinary, _} = code:get_object_code(ModuleAtom),
+            OldHash = utils:code_hash(OldModuleBinary),
+            case string:equal(OldHash, ModuleHash) of
+                true ->
+                    already_loaded;
+                false ->
+                    code:load_binary(ModuleAtom, Filename, ModuleRealBinary),
+                    ok_updated
+            end;
+        false ->
+            code:load_binary(ModuleAtom, Filename, ModuleRealBinary),
+            ok
+    end,
+    % Second: spawn a new (supervised) process
+    {ok, Pid} = add_child(ModuleAtom, []),
+    % Third: get information and return them
+    Data = eliot_api:lpc(Pid, data),
+    {Pid, Data}.
 
 % Private API

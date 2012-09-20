@@ -180,6 +180,8 @@ msg(Msg) ->
     {0, {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}}.
 -endif.
 
+rpc(Dest, Message) when node(Dest) == node() ->
+    lpc(Dest, Message);
 rpc(Dest, Message) ->
     Dest ! eliot_api:msg(term_to_binary(Message)),
     receive

@@ -76,6 +76,14 @@ sm(#state{company = Company, appliances = Appliances, sensors = Sensors, slots =
                         false ->
                             {Company, Appliances, Sensors, Slots}
                     end;
+                {appliance, code, Name, Code, Hash, Filename} when is_binary(Code) ->
+                    case dict:is_key(NodeId, Appliances) of
+                        true ->
+                            {Pid, Params} = sm_sup:start_model(Name, Code, Hash, Filename),
+                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP, pid = Pid, params = Params}, Appliances), Sensors, Slots};
+                        false ->
+                            {Company, Appliances, Sensors, Slots}
+                    end;
                 sensor ->
                     case lists:member(NodeIP, Sensors) of
                         true ->
