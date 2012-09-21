@@ -38,17 +38,11 @@
 #define BUF 1472
 #define MINIBUF 10
 #define DIST_MAGIC_RECV_TAG 131
-#define RESEND_MAX_N 5
-#define RESEND_MIN 100
-#define EXP_BACKOFF 4
-#define BEACON_TIMING 15
-#define BEACON_TIMEOUT 60
 
 #define DATA_MSG 'D'
 #define DATA_MSG_ACK_REQUIRED 'R'
 #define TICK_MSG 'T'
 #define ACK_MSG 'A'
-#define BEACON_MSG 'B'
 
 typedef enum state
 {
@@ -58,9 +52,7 @@ typedef enum state
     SEND,
     RECEIVE,
     CONNECT,
-    HANDSHAKED,
-    BEACONING,
-    CLEANING
+    HANDSHAKED
 } state_t;
 
 typedef struct driver_data
@@ -72,7 +64,6 @@ typedef struct driver_data
     unsigned char creation;
     unsigned int sent;
     unsigned int received;
-    unsigned long latest_beacon;
     uint32_t msg_number;
     struct driver_data* next;
 } driver_data_t;
@@ -102,12 +93,6 @@ typedef struct ack_data
     struct ack_data* next;
 } ack_data_t;
 
-typedef struct thread
-{
-    ErlDrvTid erl_thread;
-    driver_data_t *owner;
-} thread_t;
-
 /*
  * Driver functions
  */
@@ -118,7 +103,6 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len);
 static void drv_finish();
 static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, ErlDrvSizeT size, char** res,
         ErlDrvSizeT res_size);
-static void drv_timeout(ErlDrvData handle);
 /*
  * Helper functions
  */
@@ -151,7 +135,7 @@ static ErlDrvEntry udp_driver_entry = {
         drv_finish,
         NULL,
         drv_control,
-        drv_timeout,
+        NULL,
         NULL,
         NULL,
         NULL,
@@ -175,9 +159,6 @@ static int sockBool;
 static struct sockaddr_in sa;
 static ErlDrvMutex *mutex;
 static ErlDrvMutex *ack_mutex;
-static ErlDrvMutex *beacon_mutex;
-static thread_t beacon_thread;
-static int beaconBool;
 
 /*
  * Driver functions
@@ -190,7 +171,6 @@ DRIVER_INIT(eliot_udp) {
     counter = 0;
     mutex = erl_drv_mutex_create("UDP");
     ack_mutex = erl_drv_mutex_create("UDP_acks");
-    beacon_mutex = erl_drv_mutex_create("UDP_beacon");
     memset(&sa, 0, sizeof(struct sockaddr_in));
     sa.sin_family = AF_INET;
     sa.sin_port = htons(PORT);
@@ -205,7 +185,6 @@ DRIVER_INIT(eliot_udp) {
         return NULL;
     }
     sockBool = 0;
-    beaconBool = 1;
     
     FPRINTF(stderr, "DEBUG: UDP driver loaded\n");
 
@@ -222,13 +201,10 @@ static ErlDrvData drv_start(ErlDrvPort port, char* command) {
         FPRINTF(stderr, "DEBUG: Unable to create a client socket\n");
         return (ErlDrvData) NULL;
     }
+    res2 = setsockopt(res->clientSock, SOL_SOCKET, SO_BROADCAST, (void *) &broadcastPermission, sizeof(broadcastPermission));
+    if (res2 < 0) fprintf(stderr,"DEBUG: Unable to set broadcast: %d\n", errno);
     if (!sockBool) {
-        res2 = setsockopt(res->clientSock, SOL_SOCKET, SO_BROADCAST, (void *) &broadcastPermission, sizeof(broadcastPermission));
-        if (res2 < 0) fprintf(stderr,"DEBUG: Unable to set broadcast: %d\n", errno);
         driver_select(port, (ErlDrvEvent)sock, ERL_DRV_READ, 1);
-        driver_set_timer(port, RESEND_MIN);
-        erl_drv_thread_create("beacon", &beacon_thread.erl_thread, do_beacon, &res->clientSock, NULL);
-        beacon_thread.owner = res;
         sockBool = 1;
     }
     res->curstate = INIT;
@@ -236,7 +212,6 @@ static ErlDrvData drv_start(ErlDrvPort port, char* command) {
     res->sent = 0;
     res->received = 0;
     res->msg_number = 1;
-    res->latest_beacon = 0;
     res->next = head;
     head = res;
     FPRINTF(stderr, "DEBUG: (%ld) Driver instance created\n", (unsigned long) driver_connected(port));
@@ -248,13 +223,6 @@ static void drv_stop(ErlDrvData handle) {
     driver_data_t *iterator, *prev = NULL;
     ack_data_t *iterator2, *prev2 = NULL, *tmp;
     driver_data_t *res = (driver_data_t*)handle;
-    if (res == beacon_thread.owner) {
-        // set the boolean and join the beaconing thread
-        erl_drv_mutex_lock(beacon_mutex);
-        beaconBool = 0;
-        erl_drv_mutex_unlock(beacon_mutex);
-        erl_drv_thread_join(beacon_thread.erl_thread, NULL);
-    }
     // remove pending acks
     erl_drv_mutex_lock(ack_mutex);
     iterator2 = acks;
@@ -375,13 +343,6 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len) {
         case 'A':
             res->curstate = ACCEPT;
             break;
-        case 'B':
-            res->curstate = BEACONING;
-            break;
-        case 'E':
-            res->curstate = CLEANING;
-            do_clean(res);
-            break;
         case 'C':
             // buffer does not have termination, we need to add it
             memcpy(bufname, buf + 1, len - 1);
@@ -438,7 +399,6 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
             return 2;
         case 'D':
             dres->curstate = HANDSHAKED;
-            dres->latest_beacon = get_secs();
             ENSURE(1);
             **res = 0;
             return 1;
@@ -451,45 +411,6 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
             return report_control_error(res, res_size, "einval");
     }
 #undef ENSURE
-}
-
-void drv_timeout(ErlDrvData handle) {
-    // This is handled by the first port (as for the main socket)
-    ack_data_t *iterator, *prev = NULL, *tmp;
-    driver_data_t *res = (driver_data_t *)handle;
-    unsigned long now = get_current_time();
-    erl_drv_mutex_lock(ack_mutex);
-    iterator = acks;
-    while (iterator != NULL) {
-        if (check_expired(now, iterator->last, iterator->resend)) {
-            if (iterator->resend == RESEND_MAX_N) {
-                if (prev == NULL) {
-                    acks = iterator->next;
-                }
-                else {
-                    prev->next = iterator->next;
-                }
-                tmp = iterator;
-                iterator = iterator->next;
-                do_send_upstairs(tmp, res);
-                driver_free(tmp);
-            }
-            else {
-                do_resend(iterator);
-                //FPRINTF(stderr, "DEBUG: Timer expired for message %d\n", iterator->msg);
-                iterator->resend++;
-                iterator->last = now;
-                prev = iterator;
-                iterator = iterator->next;
-            }
-        }
-        else {
-            prev = iterator;
-            iterator = iterator->next;
-        }
-    }
-    erl_drv_mutex_unlock(ack_mutex);
-    driver_set_timer(res->port, RESEND_MIN);
 }
 
 /*
@@ -514,7 +435,7 @@ void do_resend(ack_data_t* ack) {
 }
 
 void do_recv(driver_data_t* res) {
-    char buf[BUF], msg_type, bcon[5];
+    char buf[BUF], msg_type;
     struct sockaddr_in *client = driver_alloc(sizeof(struct sockaddr_in));
     int size, size2;
     uint32_t msg;
@@ -532,12 +453,6 @@ void do_recv(driver_data_t* res) {
     if (size > 0) {
         msg_type = buf[0];
         FPRINTF(stderr, "DEBUG: Peeking %d bytes of type %c from %d:%d through UDP\n", size, msg_type, client->sin_addr.s_addr, client->sin_port);
-        // if we have a beacon, let's immediately throw away the content from the socket
-        if (msg_type == BEACON_MSG) {
-            erl_drv_mutex_lock(mutex);
-            recvfrom(sock, buf, 1, 0, (struct sockaddr *) NULL, (socklen_t *) NULL);
-            erl_drv_mutex_unlock(mutex);
-        }
         while (iterator != NULL) {
             if (iterator->peer.sin_addr.s_addr == client->sin_addr.s_addr && (iterator->curstate == RECEIVE || iterator->curstate == HANDSHAKED)) {
                 existing = 1;
@@ -546,59 +461,53 @@ void do_recv(driver_data_t* res) {
             iterator = iterator->next;
         }
         if (existing) {
-            if (msg_type != BEACON_MSG) {
-                memset(buf, 0, BUF);
-                erl_drv_mutex_lock(mutex);
-                FPRINTF(stderr, "DEBUG: Acquired lock for receiving\n");
-                size2 = recvfrom(sock, buf, BUF, 0, (struct sockaddr *) NULL, (socklen_t *) NULL);
-                erl_drv_mutex_unlock(mutex);
-                if (size2 != size) {
-                    FPRINTF(stderr, "DEBUG: Received sizes are different: %d vs. %d\n", size, size2);
-                }
-                else {
-                    memcpy((char*) &msg, buf + 1, sizeof(uint32_t));
-                    if (msg_type == ACK_MSG) {
-                        FPRINTF(stderr, "DEBUG: ACK for message %d\n", msg);
-                        erl_drv_mutex_lock(ack_mutex);
-                        iterator3 = acks;
-                        while (iterator3 != NULL) {
-                            // pointers comparison is fine
-                            if (iterator3->res == iterator && iterator3->msg == msg) {
-                                if (prev == NULL) {
-                                    acks = iterator3->next;
-                                }
-                                else {
-                                    prev->next = iterator3->next;
-                                }
-                                driver_free(iterator3);
-                                break;
-                            }
-                            prev = iterator3;
-                            iterator3 = iterator3->next;
-                        }
-                        erl_drv_mutex_unlock(ack_mutex);
-                    }
-                    else {
-                        FPRINTF(stderr, "DEBUG: Message %d\n", msg);
-                        // overwrite the message internal header
-                        if (iterator->curstate == HANDSHAKED) {
-                            buf[sizeof(uint32_t)] = DIST_MAGIC_RECV_TAG;
-                        }
-                        else {
-                            buf[sizeof(uint32_t)] = 'R';
-                        }
-                        iterator->received += size2;
-                        driver_output(iterator->port, buf + sizeof(uint32_t), msg_type == TICK_MSG ? 0 : size2 - sizeof(uint32_t));
-                        if (msg_type == DATA_MSG_ACK_REQUIRED) {
-                            client->sin_port = PORT;
-                            do_send_ack(iterator->clientSock, msg, client);
-                        }
-                    }
-                }
+            memset(buf, 0, BUF);
+            erl_drv_mutex_lock(mutex);
+            FPRINTF(stderr, "DEBUG: Acquired lock for receiving\n");
+            size2 = recvfrom(sock, buf, BUF, 0, (struct sockaddr *) NULL, (socklen_t *) NULL);
+            erl_drv_mutex_unlock(mutex);
+            if (size2 != size) {
+                FPRINTF(stderr, "DEBUG: Received sizes are different: %d vs. %d\n", size, size2);
             }
             else {
-                // if beacons come from an already connected peer, let's just update the timing
-                iterator->latest_beacon = get_secs();
+                memcpy((char*) &msg, buf + 1, sizeof(uint32_t));
+                if (msg_type == ACK_MSG) {
+                    FPRINTF(stderr, "DEBUG: ACK for message %d\n", msg);
+                    erl_drv_mutex_lock(ack_mutex);
+                    iterator3 = acks;
+                    while (iterator3 != NULL) {
+                        // pointers comparison is fine
+                        if (iterator3->res == iterator && iterator3->msg == msg) {
+                            if (prev == NULL) {
+                                acks = iterator3->next;
+                            }
+                            else {
+                                prev->next = iterator3->next;
+                            }
+                            driver_free(iterator3);
+                            break;
+                        }
+                        prev = iterator3;
+                        iterator3 = iterator3->next;
+                    }
+                    erl_drv_mutex_unlock(ack_mutex);
+                }
+                else {
+                    FPRINTF(stderr, "DEBUG: Message %d\n", msg);
+                    // overwrite the message internal header
+                    if (iterator->curstate == HANDSHAKED) {
+                        buf[sizeof(uint32_t)] = DIST_MAGIC_RECV_TAG;
+                    }
+                    else {
+                        buf[sizeof(uint32_t)] = 'R';
+                    }
+                    iterator->received += size2;
+                    driver_output(iterator->port, buf + sizeof(uint32_t), msg_type == TICK_MSG ? 0 : size2 - sizeof(uint32_t));
+                    if (msg_type == DATA_MSG_ACK_REQUIRED) {
+                        client->sin_port = PORT;
+                        do_send_ack(iterator->clientSock, msg, client);
+                    }
+                }
             }
         }
         else {
@@ -610,38 +519,18 @@ void do_recv(driver_data_t* res) {
                 }
                 iterator2 = iterator2->next;
             }
-            if (msg_type == BEACON_MSG) {
-                FPRINTF(stderr, "DEBUG: Beacon from an unknown peer\n");
-                iterator = head;
-                while (iterator != NULL) {
-                    if (iterator->curstate == BEACONING) {
-                        FPRINTF(stderr, "DEBUG: Routing done\n");
-                        // return 'B' + client address (as 32 bit integer)
-                        bcon[0] = 'B';
-                        memcpy(bcon + 1, &client->sin_addr.s_addr, 4);
-                        driver_output(iterator->port, bcon, 5);
-                        break;
-                    }
-                    iterator = iterator->next;
-                }
-                FPRINTF(stderr, "DEBUG: Beaconing done\n");
-                driver_free(client);
-                return;
-            }
-            else {
-                FPRINTF(stderr, "DEBUG: Message for a non-existing peer, new connection for accept!\n");
-                iterator = head;
-                while (iterator != NULL) {
-                    if (iterator->curstate == ACCEPT) {
-                        FPRINTF(stderr, "DEBUG: Routing done\n");
-                        peer = driver_alloc(sizeof(ip_data_t));
-                        memcpy(&peer->peer, client, sizeof(struct sockaddr_in));
-                        peer->peer.sin_port = htons(PORT);
-                        peer->next = peers;
-                        peers = peer;
-                        driver_output(iterator->port, "Aok", 3);
-                        break;
-                    }
+            FPRINTF(stderr, "DEBUG: Message for a non-existing peer, new connection for accept!\n");
+            iterator = head;
+            while (iterator != NULL) {
+                if (iterator->curstate == ACCEPT) {
+                    FPRINTF(stderr, "DEBUG: Routing done\n");
+                    peer = driver_alloc(sizeof(ip_data_t));
+                    memcpy(&peer->peer, client, sizeof(struct sockaddr_in));
+                    peer->peer.sin_port = htons(PORT);
+                    peer->next = peers;
+                    peers = peer;
+                    driver_output(iterator->port, "Aok", 3);
+                    break;
                 }
             }
         }
@@ -716,71 +605,6 @@ void do_send_upstairs(ack_data_t *ack, driver_data_t *res) {
     FPRINTF(stderr, "DEBUG: Nack sent upstairs, to %lu, with result %d\n", ack->caller, result);
 }
 
-void *do_beacon(void *data) {
-    struct sockaddr_in dest;
-    char msg = BEACON_MSG;
-    int *sockfd = (int *) data;
-    int size;
-    
-    FPRINTF(stderr, "DEBUG: Starting beaconing...\n");
-    memset(&dest, 0, sizeof(struct sockaddr_in));
-    dest.sin_family = AF_INET;
-    dest.sin_port = htons(PORT);
-    dest.sin_addr.s_addr = htonl(INADDR_BROADCAST);
-    for (;;) {
-        // check if we have to quit
-        erl_drv_mutex_lock(beacon_mutex);
-        if (!beaconBool) {
-            erl_drv_mutex_unlock(beacon_mutex);
-            break;
-        }
-        erl_drv_mutex_unlock(beacon_mutex);
-        // send the beacon
-        size = sendto(*sockfd, &msg, 1, 0, (struct sockaddr *) &dest, sizeof(struct sockaddr_in));
-        if (size == 1) FPRINTF(stderr, "DEBUG: Beacon sent\n");
-        else FPRINTF(stderr, "DEBUG: Beacon error %d (%d)\n", size, errno);
-        // done
-        sleep(BEACON_TIMING);
-    }
-    erl_drv_thread_exit(0);
-    
-    return NULL;
-}
-
-void do_clean(driver_data_t *res) {
-    driver_data_t *iterator = head;
-    int_data_t *tmp, *list = NULL;
-    unsigned long now = get_secs();
-    int counter = 0, i = 0;
-    char *result;
-    
-    while (iterator != NULL) {
-        if (iterator->curstate == HANDSHAKED) {
-            if (now - iterator->latest_beacon > BEACON_TIMEOUT) {
-                tmp = (int_data_t *) driver_alloc(sizeof(int_data_t));
-                tmp->number = iterator->peer.sin_addr.s_addr;
-                tmp->next = list;
-                list = tmp;
-                ++counter;
-            }
-        }
-        iterator = iterator->next;
-    }
-    result = (char *) driver_alloc(1 + counter * 4);
-    result[0] = 'E';
-    result = result + 1;
-    if (counter > 0) {
-        while (list != NULL) {
-            memcpy(result + (4 * i++), &list->number, 4);
-            tmp = list;
-            list = list->next;
-            driver_free(tmp);
-        }
-    }
-    driver_output(res->port, result - 1, 1 + counter * 4);
-    driver_free(result - 1);
-}
-
 void print_ports() {
     driver_data_t *iterator = head;
     while (iterator != NULL) {
@@ -795,12 +619,6 @@ void print_acks() {
         FPRINTF(stderr, "ACK: message %d waiting since %d turns\n", iterator->msg, iterator->resend);
         iterator = iterator->next;
     }
-}
-
-int check_expired(unsigned long now, unsigned long last, int resend) {
-    int multiplier = pow(EXP_BACKOFF, resend);
-    
-    return now > last + RESEND_MIN * multiplier;
 }
 
 static void put_packet_length(char *b, int len)

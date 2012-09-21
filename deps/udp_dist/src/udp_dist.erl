@@ -2,7 +2,7 @@
 -export([childspecs/0, listen/1, accept/1, accept_connection/5,
          setup/5, close/1, select/1, is_node_name/1]).
 -export([accept_loop/2, do_accept/6, do_setup/6, getstat/1,tick/1]).
--export([split_node/3, splitnode/2, beacon/0]).
+-export([split_node/3, splitnode/2]).
 -import(error_logger,[error_msg/2]).
 -include("net_address.hrl").
 -include("dist.hrl").
@@ -16,7 +16,6 @@
             R ->
                 R
         end).
--define(BEACON_TIMEOUT, 10).
 
 % Public API
 
@@ -49,9 +48,8 @@ select(Node) ->
 listen(Name) ->
     case udp:listen(atom_to_list(Name)) of
         {ok, Socket} ->
-            % If this node is accessible, then start receiving beacons
-            ?trace("DEBUG: Ready to receive beacons...",[]),
-            spawn_link(fun() -> beacon() end),
+            % Create the 'all' port
+            spawn(fun() -> net_kernel:connect_node(all) end),
             {ok, {Socket, 
                   #net_address{address = [], 
                                host = inet:gethostname(),
@@ -61,51 +59,6 @@ listen(Name) ->
         Error ->
             Error
     end.
-
-%% ------------------------------------------------------------
-%% Create the beacon part, so that when an answer is received, a new
-%% connection attempt is made.
-%% ------------------------------------------------------------
-
-beacon() ->
-    Pid = spawn_link(fun() -> do_clean(udp:clean_create()) end),
-    erlang:send_after(?BEACON_TIMEOUT * 1000, Pid, clean),
-    do_beacon(udp:beacon_create()).
-
-do_beacon(Port) ->
-    case udp:beacon(Port) of
-        {ok, Host} ->
-            IP = int_to_ip(Host),
-            Name = erlang:list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa(IP)),
-            case node() of
-                Name ->
-                    ok;
-                _ ->
-                    ?trace("DEBUG: New beacon received from ~p~n", [Name]),
-                    spawn(fun() -> net_kernel:connect_node(Name) end)
-            end;
-        Error ->
-            Error
-    end,
-    do_beacon(Port).
-
-do_clean(Port) ->
-    receive
-        clean ->
-            ?trace("DEBUG: Time to cleanup!~n", []),
-            case udp:clean(Port) of
-                {ok, []} ->
-                    ok;
-                {ok, Hosts} ->
-                    lists:foreach(fun(Host) -> 
-                                          ?trace("DEBUG: Disconnecting from ~p~n", [Host]),
-                                          net_kernel:disconnect(Host) end, parse_ips(Hosts));
-                Error ->
-                    Error
-            end
-    end,
-    erlang:send_after(?BEACON_TIMEOUT * 1000, self(), clean),
-    do_clean(Port).
 
 %% ------------------------------------------------------------
 %% Accepts new connection attempts from other Erlang nodes.
@@ -209,6 +162,58 @@ setup(Node, Type, MyNode, LongOrShortNames,SetupTime) ->
                                    LongOrShortNames,
                                    SetupTime]).
 
+do_setup(Kernel, all, Type, MyNode, LongOrShortNames, SetupTime) ->
+    Timer = dist_util:start_timer(SetupTime),
+    case udp:connect(all) of
+        {ok, Socket} ->
+            ?trace("DEBUG: Starting handshake (sender side)~n", []),
+            HSData = #hs_data{
+                              kernel_pid = Kernel,
+                              other_node = all,
+                              this_node = MyNode,
+                              socket = Socket,
+                              timer = Timer,
+                              this_flags = ?DFLAG_PUBLISHED bor
+                                               ?DFLAG_ATOM_CACHE bor
+                                               ?DFLAG_EXTENDED_REFERENCES bor
+                                               ?DFLAG_DIST_MONITOR bor
+                                               ?DFLAG_FUN_TAGS,
+                              other_version = 1,
+                              f_send = fun(S,D) -> 
+                                               udp:send(S,D) 
+                                       end,
+                              f_recv = fun(S,_N,_T) -> 
+                                               udp:recv(S) 
+                                       end,
+                              f_setopts_pre_nodeup = 
+                                  fun(_S) ->
+                                          ok
+                                  end,
+                              f_setopts_post_nodeup = 
+                                  fun(S) ->
+                                          udp:set_mode(S, data)
+                                  end,
+                              f_getll = fun(S) ->
+                                                udp:get_port(S)
+                                        end,
+                              f_address = 
+                                  fun(_,_) ->
+                                          #net_address{
+                                                       address = {{255, 255, 255, 255}, 4369},
+                                                       host = all,
+                                                       protocol = udp,
+                                                       family = udp}
+                                  end,
+                              request_type = Type,
+                              mf_tick = {?MODULE, tick},
+                              mf_getstat = {?MODULE,getstat}
+                             },
+            dist_util:handshake_we_started(HSData),
+            ?trace("DEBUG: Handshake done~n", []);
+        Other ->
+            ?trace("Inner: ~p~n", [Other]),
+            ?shutdown(all)
+    end;
 do_setup(Kernel, Node, Type, MyNode, LongOrShortNames,SetupTime) ->
     process_flag(priority, max),
     ?trace("~p~n",[{udp_dist,self(),setup,Node}]),
@@ -322,16 +327,3 @@ tick(Sock) ->
     udp:tick(Sock).
 getstat(Socket) ->
     udp:get_status_counters(Socket).
-
-parse_ips(Hosts) ->
-    parse_ips(Hosts, []).
-
-parse_ips([], AccIn) ->
-    AccIn;
-parse_ips([A, B, C, D|T], AccIn) ->
-    parse_ips(T, [erlang:list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa(int_to_ip([A, B, C, D])))|AccIn]).
-
-int_to_ip(<<A:8, B:8, C:8, D:8>>) ->
-    {A, B, C, D};
-int_to_ip([A, B, C, D]) ->
-    {A, B, C, D}.

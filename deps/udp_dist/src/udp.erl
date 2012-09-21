@@ -2,8 +2,7 @@
 
 -export([listen/1, connect/1, accept/1, send/2, recv/1, close/1,
 	 get_port/1, get_status_counters/1, controlling_process/2,
-	 tick/1, get_creation/1, start/1, set_mode/2, print_ports/1, beacon_create/0, beacon/1,
-     clean_create/0, clean/1]).
+	 tick/1, get_creation/1, start/1, set_mode/2, print_ports/1]).
 -include("dist_util.hrl").
 -define(decode(A,B,C,D), (((A) bsl 24) bor 
 			  ((B) bsl 16) bor ((C) bsl 8) bor (D))).
@@ -35,26 +34,6 @@ accept(_Port) ->
     ?check_server(),
     ?trace("DEBUG: Accepting...~n", []),
     command(port(),$A,[]).
-
-beacon_create() ->
-    ?check_server(),
-    ?trace("DEBUG: Creating beacon port...~n", []),
-    port().
-
-beacon(Port) ->
-    ?check_server(),
-    ?trace("DEBUG: Beaconing...~n", []),
-    command(Port, $B, []).
-
-clean_create() ->
-    ?check_server(),
-    ?trace("DEBUG: Creating cleaning port...~n", []),
-    port().
-
-clean(Port) ->
-    ?check_server(),
-    ?trace("DEBUG: Cleaning...~n", []),
-    command(Port, $E, []).
 
 send(Port,Data) ->
     ?check_server(),
