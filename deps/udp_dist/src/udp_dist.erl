@@ -32,6 +32,8 @@ childspecs() ->
 %%  select(Node) => Bool
 %% ------------------------------------------------------------
 
+select(all) ->
+    true;
 select(Node) ->
     case split_node(atom_to_list(Node), $@, []) of
     [_,_Host] -> 
@@ -100,6 +102,8 @@ accept_connection(AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
 
 do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
     process_flag(priority, max),
+    {ok, [A, B, C, E]} = udp:ip(Socket),
+    OtherNode = list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa({A, B, C, E})),
     receive
         {AcceptPid, controller} ->
             ?trace("DEBUG: Starting handshake (receiver side)~n", []),
@@ -107,6 +111,7 @@ do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
             HSData = #hs_data{
                               kernel_pid = Kernel,
                               this_node = MyNode,
+                              other_node = OtherNode,
                               socket = Socket,
                               timer = Timer,
                               this_flags = ?DFLAG_PUBLISHED bor
@@ -164,7 +169,7 @@ setup(Node, Type, MyNode, LongOrShortNames,SetupTime) ->
 
 do_setup(Kernel, all, Type, MyNode, LongOrShortNames, SetupTime) ->
     Timer = dist_util:start_timer(SetupTime),
-    case udp:connect(all) of
+    case udp:broadcast(inet_parse:ntoa(get_bcast_addr())) of
         {ok, Socket} ->
             ?trace("DEBUG: Starting handshake (sender side)~n", []),
             HSData = #hs_data{
@@ -199,7 +204,7 @@ do_setup(Kernel, all, Type, MyNode, LongOrShortNames, SetupTime) ->
                               f_address = 
                                   fun(_,_) ->
                                           #net_address{
-                                                       address = {{255, 255, 255, 255}, 4369},
+                                                       address = {get_bcast_addr(), 4369},
                                                        host = all,
                                                        protocol = udp,
                                                        family = udp}
@@ -327,3 +332,16 @@ tick(Sock) ->
     udp:tick(Sock).
 getstat(Socket) ->
     udp:get_status_counters(Socket).
+
+get_bcast_addr() ->
+    case inet:getifaddrs() of
+        {ok, IfList} when length(IfList) == 2 ->
+            [{_Real, IfOpts}] = lists:filter(fun({Name, _IfOpts}) when Name == "lo" -> false;
+                                     ({_Name, _IfOpts}) -> true end, IfList),
+            {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
+            Address;
+        {ok, IfList} ->
+            {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
+            {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
+            Address
+    end.

@@ -21,11 +21,11 @@
 %%-define(dist_debug, true).
 
 
--ifdef(dist_debug).
+%-ifdef(dist_debug).
 -define(debug(Term), erlang:display(Term)).
--else.
--define(debug(Term), ok).
--endif.
+%-else.
+%-define(debug(Term), ok).
+%-endif.
 
 %-ifdef(dist_trace).
 -define(trace(Fmt,Args), io:format("~p ~p:~s",[erlang:now(),node(),lists:flatten(io_lib:format(Fmt, Args))])).
