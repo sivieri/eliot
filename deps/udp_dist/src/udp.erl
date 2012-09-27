@@ -2,7 +2,7 @@
 
 -export([listen/1, connect/1, accept/1, send/2, recv/1, close/1,
 	 get_port/1, get_status_counters/1, controlling_process/2,
-	 tick/1, get_creation/1, start/0, set_mode/2, print_ports/1, broadcast/1, ip/1]).
+	 tick/1, get_creation/1, start/0, set_mode/2, print_ports/1, broadcast/1, ip/1, peer/1]).
 -include("dist_util.hrl").
 -include("eliot.hrl").
 -define(decode(A,B,C,D), (((A) bsl 24) bor 
@@ -96,6 +96,11 @@ ip(Port) ->
     ?check_server(),
     ?trace("DEBUG: IP...~n", []),
     control(Port, $I).
+
+peer(Port) ->
+    ?check_server(),
+    ?trace("DEBUG: Pick up peer...~n", []),
+    control(Port, $E).
 
 set_mode(Port,data) ->
     ?check_server(),

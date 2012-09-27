@@ -384,7 +384,7 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
            *res = driver_alloc(N);         \
            }                    \
        } while(0)
-
+    ip_data_t* tmp;
     driver_data_t *dres = (driver_data_t *)handle;
     char tick = TICK_MSG;
     
@@ -424,6 +424,20 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
             **res = 0;
             put_packet_length((*res) + 1, dres->clientSock);
             return 5;
+        case 'E':
+            ENSURE(1);
+            **res = 0;
+            if (peers == NULL) {
+                FPRINTF(stderr, "DEBUG: Port in receive without a peer\n");
+            }
+            else {
+                memcpy(&dres->peer, &peers->peer, sizeof(struct sockaddr_in));
+                tmp = peers;
+                peers = tmp->next;
+                driver_free(tmp);
+                FPRINTF(stderr, "DEBUG: Found a waiting peer, assigned\n");
+            }
+            return 1;
         default:
             return report_control_error(res, res_size, "einval");
     }
