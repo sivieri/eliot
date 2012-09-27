@@ -103,7 +103,9 @@ accept_connection(AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
 do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
     process_flag(priority, max),
     {ok, [A, B, C, E]} = udp:ip(Socket),
-    OtherNode = list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa({A, B, C, E})),
+    IP = inet_parse:ntoa({A, B, C, E}),
+    ?trace("DEBUG: IP is ~p~n", [IP]),
+    OtherNode = list_to_atom(?NODENAME ++ "@" ++ IP),
     receive
         {AcceptPid, controller} ->
             ?trace("DEBUG: Starting handshake (receiver side)~n", []),

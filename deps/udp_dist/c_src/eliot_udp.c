@@ -386,7 +386,6 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
        } while(0)
 
     driver_data_t *dres = (driver_data_t *)handle;
-    char addr[4];
     char tick = TICK_MSG;
     
     FPRINTF(stderr, "DEBUG: Control: %c\n", (char) cmd);
@@ -422,12 +421,8 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
             return 1;
         case 'I':
             ENSURE(5);
-            memcpy(addr, &dres->clientSock, 4);
-            (*res)[0] = 0;
-            (*res)[1] = addr[0];
-            (*res)[2] = addr[1];
-            (*res)[3] = addr[2];
-            (*res)[4] = addr[3];
+            **res = 0;
+            put_packet_length((*res) + 1, dres->clientSock);
             return 5;
         default:
             return report_control_error(res, res_size, "einval");
