@@ -3,4 +3,4 @@
 -define(NOISE_DELTA, 5.0).
 -define(SENSITIVITY, 4.0).
 -define(NODENAME, "eliot").
--define(INTERFACE, "eth1").
+-define(INTERFACE, "vboxnet0").
