@@ -554,6 +554,7 @@ void do_recv(driver_data_t* res) {
                     driver_output(iterator->port, "Aok", 3);
                     break;
                 }
+                iterator = iterator->next;
             }
         }
         driver_free(client);
