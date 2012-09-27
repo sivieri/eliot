@@ -2,8 +2,9 @@
 
 -export([listen/1, connect/1, accept/1, send/2, recv/1, close/1,
 	 get_port/1, get_status_counters/1, controlling_process/2,
-	 tick/1, get_creation/1, start/1, set_mode/2, print_ports/1, broadcast/1, ip/1]).
+	 tick/1, get_creation/1, start/0, set_mode/2, print_ports/1, broadcast/1, ip/1]).
 -include("dist_util.hrl").
+-include("eliot.hrl").
 -define(decode(A,B,C,D), (((A) bsl 24) bor 
 			  ((B) bsl 16) bor ((C) bsl 8) bor (D))).
 -define(encode(N), [(((N) bsr 24) band 16#FF), (((N) bsr 16) band 16#FF),  
@@ -185,6 +186,23 @@ port() ->
 	    exit({unexpected_driver_response, Else})
     end.
 
-start(Name) ->
+start() ->
+    Name = list_to_atom(?NODENAME ++ "@" ++ get_host_ip()),
     net_kernel:start([Name, longnames]),
     erlang:set_cookie(node(), 'abc').
+
+get_host_ip() ->
+    case inet:getifaddrs() of
+        {ok, IfList} when length(IfList) == 2 ->
+            [{_Real, IfOpts}] = lists:filter(fun({Name, _IfOpts}) when Name == "lo" -> false;
+                                     ({_Name, _IfOpts}) -> true end, IfList),
+            {addr, Address} = lists:keyfind(addr, 1, IfOpts),
+            inet_parse:ntoa(Address);
+        {ok, IfList} ->
+            {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
+            Addresses = proplists:lookup_all(addr, IfOpts),
+            Ip4Addresses = lists:filter(fun({addr, Addr}) when tuple_size(Addr) == 4 -> true;
+                                                           ({addr, _Addr}) -> false end, Addresses),
+            {addr, Address} = hd(Ip4Addresses),
+            inet_parse:ntoa(Address)
+    end.
