@@ -102,8 +102,7 @@ accept_connection(AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
 
 do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
     process_flag(priority, max),
-    {ok, [A, B, C, E]} = udp:ip(Socket),
-    IP = inet_parse:ntoa({A, B, C, E}),
+    {ok, IP} = udp:ip(Socket),
     ?trace("DEBUG: IP is ~p~n", [IP]),
     OtherNode = list_to_atom(?NODENAME ++ "@" ++ IP),
     receive

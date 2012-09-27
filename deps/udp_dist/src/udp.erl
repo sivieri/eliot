@@ -124,7 +124,7 @@ control(Port, Command) ->
 	[0,A] ->
 	    {ok, [A]};
 	[0,A,B,C,D] ->
-	    {ok, [A,B,C,D]};
+	    {ok, ?decode(A, B, C, D)};
 	[0,A1,B1,C1,D1,A2,B2,C2,D2,A3,B3,C3,D3] ->
 	    {ok, {?decode(A1,B1,C1,D1),?decode(A2,B2,C2,D2),
 		  ?decode(A3,B3,C3,D3)}};
