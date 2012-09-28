@@ -99,6 +99,7 @@ ip(Port) ->
 
 set_mode(Port,data) ->
     ?check_server(),
+    ?trace("DEBUG: Mode set to data...~n", []),
     control(Port,$D).
 
 print_ports(Port) ->
