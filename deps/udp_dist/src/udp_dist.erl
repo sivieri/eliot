@@ -104,8 +104,9 @@ do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
     process_flag(priority, max),
     udp:recv(Socket),
     {ok, IP} = udp:ip(Socket),
-    ?trace("DEBUG: IP is ~p~n", [IP]),
-    OtherNode = list_to_atom(?NODENAME ++ "@" ++ IP),
+    {D, C, B, A} = int_to_ip(IP),
+    ?trace("DEBUG: IP is ~p~n", [inet_parse:ntoa({A, B, C, D})]),
+    OtherNode = list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa({A, B, C, D})),
     receive
         {AcceptPid, controller} ->
             ?trace("DEBUG: Starting handshake (receiver side)~n", []),
@@ -347,3 +348,6 @@ get_bcast_addr() ->
             {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
             Address
     end.
+
+int_to_ip(Ip) ->
+    {Ip bsr 24, (Ip band 16711680) bsr 16, (Ip band 65280) bsr 8, Ip band 255}.
