@@ -123,7 +123,7 @@ do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
                                                ?DFLAG_DIST_MONITOR bor
                                                ?DFLAG_FUN_TAGS,
                               allowed = Allowed,
-                              f_send = fun(S,D) -> udp:send(S,D) end,
+                              f_send = fun(S,E) -> udp:send(S,E) end,
                               f_recv = fun(S,_N,_T) -> udp:recv(S) 
                                        end,
                               f_setopts_pre_nodeup = 
