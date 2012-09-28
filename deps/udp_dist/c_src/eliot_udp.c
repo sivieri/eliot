@@ -340,7 +340,7 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len) {
                     FPRINTF(stderr, "DEBUG: Found a waiting peer, assigned\n");
                 }
             }
-            FPRINTF(stderr, "DEBUG: IP is %d\n", (unsigned int) res->peer.sin_addr.s_addr);
+            FPRINTF(stderr, "DEBUG: IP is %ld\n", (unsigned long) res->peer.sin_addr.s_addr);
             driver_output(res->port, "Rok", 3);
             break;
         case 'A':
