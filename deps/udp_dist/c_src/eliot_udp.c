@@ -340,6 +340,7 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len) {
                     FPRINTF(stderr, "DEBUG: Found a waiting peer, assigned\n");
                 }
             }
+            FPRINTF(stderr, "DEBUG: IP is %d\n", (unsigned int) res->peer.sin_addr.s_addr);
             driver_output(res->port, "Rok", 3);
             break;
         case 'A':
@@ -423,7 +424,7 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
         case 'I':
             ENSURE(5);
             **res = 0;
-            put_packet_length((*res) + 1, dres->clientSock);
+            put_packet_length((*res) + 1, dres->peer.sin_addr.s_addr);
             return 5;
         default:
             return report_control_error(res, res_size, "einval");
