@@ -480,6 +480,10 @@ void do_recv(driver_data_t* res) {
             iterator = iterator->next;
         }
         if (existing) {
+            if (iterator->curstate != HANDSHAKED) {
+                driver_free(client);
+                return;
+            }
             memset(buf, 0, BUF);
             erl_drv_mutex_lock(mutex);
             FPRINTF(stderr, "DEBUG: Acquired lock for receiving\n");
