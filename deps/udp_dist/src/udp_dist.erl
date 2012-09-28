@@ -115,6 +115,7 @@ do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
                               kernel_pid = Kernel,
                               this_node = MyNode,
                               other_node = OtherNode,
+                              other_version=1,
                               socket = Socket,
                               timer = Timer,
                               this_flags = ?DFLAG_PUBLISHED bor
