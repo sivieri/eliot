@@ -372,7 +372,7 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len) {
             res->peer.sin_addr.s_addr = inet_addr(bufname);
             driver_output(res->port, "Bok", 3);
         default:
-            FPRINTF(stderr, "DEBUG: Wrong command to UDP driver\n");
+            FPRINTF(stderr, "DEBUG: Wrong command to UDP driver (status being %d)\n", res->curstate);
             break;
     }
 }
