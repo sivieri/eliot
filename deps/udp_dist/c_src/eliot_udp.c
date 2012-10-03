@@ -418,6 +418,7 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
             **res = 0;
             return 1;
         case 'N':
+            FPRINTF(stderr, "DEBUG: Intermediate...\n");
             dres->curstate = INTERMEDIATE;
             ENSURE(1);
             **res = 0;
