@@ -128,8 +128,8 @@ do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
                               f_recv = fun(S,_N,_T) -> udp:recv(S) 
                                        end,
                               f_setopts_pre_nodeup = 
-                                  fun(_S) ->
-                                          ok
+                                  fun(S) ->
+                                          udp:set_mode(S, intermediate)
                                   end,
                               f_setopts_post_nodeup = 
                                   fun(S) ->
@@ -195,8 +195,8 @@ do_setup(Kernel, all, Type, MyNode, LongOrShortNames, SetupTime) ->
                                                udp:recv(S) 
                                        end,
                               f_setopts_pre_nodeup = 
-                                  fun(_S) ->
-                                          ok
+                                  fun(S) ->
+                                          udp:set_mode(S, intermediate)
                                   end,
                               f_setopts_post_nodeup = 
                                   fun(S) ->

@@ -52,6 +52,7 @@ typedef enum state
     SEND,
     RECEIVE,
     CONNECT,
+    INTERMEDIATE,
     HANDSHAKED,
     BROADCAST
 } state_t;
@@ -413,6 +414,11 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
             return 2;
         case 'D':
             dres->curstate = HANDSHAKED;
+            ENSURE(1);
+            **res = 0;
+            return 1;
+        case 'N':
+            dres->curstate = INTERMEDIATE;
             ENSURE(1);
             **res = 0;
             return 1;

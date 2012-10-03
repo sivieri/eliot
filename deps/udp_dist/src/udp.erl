@@ -97,6 +97,10 @@ ip(Port) ->
     ?trace("DEBUG: IP...~n", []),
     control(Port, $I).
 
+set_mode(Port, intermediate) ->
+    ?check_server(),
+    ?trace("DEBUG: Mode set to intermediate...~n", []),
+    control(Port, $N);
 set_mode(Port,data) ->
     ?check_server(),
     ?trace("DEBUG: Mode set to data...~n", []),
