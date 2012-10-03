@@ -119,7 +119,7 @@ do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
                               socket = Socket,
                               timer = Timer,
                               this_flags = ?DFLAG_PUBLISHED bor
-                                               ?DFLAG_ATOM_CACHE bor
+                                               ?DFLAG_HIDDEN_ATOM_CACHE bor
                                                ?DFLAG_EXTENDED_REFERENCES bor
                                                ?DFLAG_DIST_MONITOR bor
                                                ?DFLAG_FUN_TAGS,
@@ -183,7 +183,7 @@ do_setup(Kernel, all, Type, MyNode, LongOrShortNames, SetupTime) ->
                               socket = Socket,
                               timer = Timer,
                               this_flags = ?DFLAG_PUBLISHED bor
-                                               ?DFLAG_ATOM_CACHE bor
+                                               ?DFLAG_HIDDEN_ATOM_CACHE bor
                                                ?DFLAG_EXTENDED_REFERENCES bor
                                                ?DFLAG_DIST_MONITOR bor
                                                ?DFLAG_FUN_TAGS,
@@ -240,7 +240,7 @@ do_setup(Kernel, Node, Type, MyNode, LongOrShortNames,SetupTime) ->
                                       socket = Socket,
                                       timer = Timer,
                                       this_flags = ?DFLAG_PUBLISHED bor
-                                                       ?DFLAG_ATOM_CACHE bor
+                                                       ?DFLAG_HIDDEN_ATOM_CACHE bor
                                                        ?DFLAG_EXTENDED_REFERENCES bor
                                                        ?DFLAG_DIST_MONITOR bor
                                                        ?DFLAG_FUN_TAGS,
