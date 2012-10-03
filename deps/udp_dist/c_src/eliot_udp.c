@@ -373,7 +373,8 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len) {
             driver_output(res->port, "Bok", 3);
         default:
             if (res->curstate == CONNECT || res->curstate == INTERMEDIATE) {
-                // someone is writing here too early: queue the data
+                // someone is writing here too early: enqueue the data
+                FPRINTF(stderr, "DEBUG: Enqueuing %d bytes of data...\n", (int) len);
                 driver_enq(res->port, buf, len);
             }
             else {
