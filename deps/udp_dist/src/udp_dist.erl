@@ -100,7 +100,7 @@ accept_connection(AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
                [self(), AcceptPid, Socket, MyNode,
                 Allowed, SetupTime]).
 
-do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
+do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, _SetupTime) ->
     process_flag(priority, max),
     udp:recv(Socket),
     {ok, IP} = udp:ip(Socket),
@@ -110,14 +110,12 @@ do_accept(Kernel, AcceptPid, Socket, MyNode, Allowed, SetupTime) ->
     receive
         {AcceptPid, controller} ->
             ?trace("DEBUG: Starting handshake (receiver side)~n", []),
-            Timer = dist_util:start_timer(SetupTime),
             HSData = #hs_data{
                               kernel_pid = Kernel,
                               this_node = MyNode,
                               other_node = OtherNode,
                               other_version=1,
                               socket = Socket,
-                              timer = Timer,
                               this_flags = ?DFLAG_PUBLISHED bor
                                                ?DFLAG_HIDDEN_ATOM_CACHE bor
                                                ?DFLAG_EXTENDED_REFERENCES bor
@@ -171,8 +169,7 @@ setup(Node, Type, MyNode, LongOrShortNames,SetupTime) ->
                                    LongOrShortNames,
                                    SetupTime]).
 
-do_setup(Kernel, all, Type, MyNode, LongOrShortNames, SetupTime) ->
-    Timer = dist_util:start_timer(SetupTime),
+do_setup(Kernel, all, Type, MyNode, LongOrShortNames, _SetupTime) ->
     case udp:broadcast(inet_parse:ntoa(get_bcast_addr())) of
         {ok, Socket} ->
             ?trace("DEBUG: Starting handshake (sender side)~n", []),
@@ -181,7 +178,6 @@ do_setup(Kernel, all, Type, MyNode, LongOrShortNames, SetupTime) ->
                               other_node = all,
                               this_node = MyNode,
                               socket = Socket,
-                              timer = Timer,
                               this_flags = ?DFLAG_PUBLISHED bor
                                                ?DFLAG_HIDDEN_ATOM_CACHE bor
                                                ?DFLAG_EXTENDED_REFERENCES bor
@@ -223,13 +219,12 @@ do_setup(Kernel, all, Type, MyNode, LongOrShortNames, SetupTime) ->
             ?trace("Inner: ~p~n", [Other]),
             ?shutdown(all)
     end;
-do_setup(Kernel, Node, Type, MyNode, LongOrShortNames,SetupTime) ->
+do_setup(Kernel, Node, Type, MyNode, LongOrShortNames,_SetupTime) ->
     process_flag(priority, max),
     ?trace("~p~n",[{udp_dist,self(),setup,Node}]),
     [Name, Address] = splitnode(Node, LongOrShortNames),
      case inet:getaddr(Address, inet) of
          {ok, IP} ->
-            Timer = dist_util:start_timer(SetupTime),
             case udp:connect(IP) of
                 {ok, Socket} ->
                     ?trace("DEBUG: Starting handshake (sender side)~n", []),
@@ -238,7 +233,6 @@ do_setup(Kernel, Node, Type, MyNode, LongOrShortNames,SetupTime) ->
                                       other_node = Node,
                                       this_node = MyNode,
                                       socket = Socket,
-                                      timer = Timer,
                                       this_flags = ?DFLAG_PUBLISHED bor
                                                        ?DFLAG_HIDDEN_ATOM_CACHE bor
                                                        ?DFLAG_EXTENDED_REFERENCES bor
