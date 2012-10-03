@@ -378,7 +378,7 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len) {
                 driver_enq(res->port, buf, len);
             }
             else {
-                FPRINTF(stderr, "DEBUG: Wrong command to UDP driver (status being %d)\n", res->curstate);
+                FPRINTF(stderr, "DEBUG: Wrong command to UDP driver (%c, status being %d)\n", (char) *buf, res->curstate);
             }
             break;
     }
