@@ -372,7 +372,13 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len) {
             res->peer.sin_addr.s_addr = inet_addr(bufname);
             driver_output(res->port, "Bok", 3);
         default:
-            FPRINTF(stderr, "DEBUG: Wrong command to UDP driver (status being %d)\n", res->curstate);
+            if (res->curstate == CONNECT || res->curstate == INTERMEDIATE) {
+                // someone is writing here too early: queue the data
+                driver_enq(res->port, buf, len);
+            }
+            else {
+                FPRINTF(stderr, "DEBUG: Wrong command to UDP driver (status being %d)\n", res->curstate);
+            }
             break;
     }
 }
@@ -387,9 +393,10 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
            *res = driver_alloc(N);         \
            }                    \
        } while(0)
-
+    SysIOVec *iov;
+    int reliable, vlen, len;
     driver_data_t *dres = (driver_data_t *)handle;
-    char tick = TICK_MSG;
+    char tick = TICK_MSG, *buf2;
     
     FPRINTF(stderr, "DEBUG: Control: %c\n", (char) cmd);
 
@@ -414,6 +421,17 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
             return 2;
         case 'D':
             dres->curstate = HANDSHAKED;
+            if (driver_sizeq(dres->port) > 0) {
+                // enqueued data to be sent away
+                iov = driver_peekq(dres->port, &vlen);
+                buf2 = (char *) iov[0].iov_base;
+                len = iov[0].iov_len;
+                reliable = (int) buf2[len - 1];
+                FPRINTF(stderr, "DEBUG: (%ld) Direct output (%d - %d)\n", (unsigned long) driver_connected(dres->port), (int) buf2[0], reliable);
+                if (reliable) buf2[0] = DATA_MSG_ACK_REQUIRED;
+                else buf2[0] = DATA_MSG;
+                do_send2(dres, buf2, len - 1, reliable);
+            }
             ENSURE(1);
             **res = 0;
             return 1;
@@ -675,7 +693,14 @@ static int report_control_error(char **buffer, int buff_len,
 }
 
 void free_entry(driver_data_t* element) {
+    int l;
+    
     close(element->clientSock);
+    // empty the queue
+    l = driver_sizeq(element->port);
+    if (l > 0) {
+        driver_deq(element->port, l);
+    }
     driver_free(element);
 }
 
