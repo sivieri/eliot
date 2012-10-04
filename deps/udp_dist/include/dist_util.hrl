@@ -21,21 +21,21 @@
 %%-define(dist_debug, true).
 
 
-%-ifdef(dist_debug).
+-ifdef(dist_debug).
 -define(debug(Term), erlang:display(Term)).
-%-else.
-%-define(debug(Term), ok).
-%-endif.
+-else.
+-define(debug(Term), ok).
+-endif.
 
-%-ifdef(dist_trace).
+-ifdef(dist_trace).
 -define(trace(Fmt,Args), io:format("~p ~p:~s",[erlang:now(),node(),lists:flatten(io_lib:format(Fmt, Args))])).
 % Use the one below for config-file (early boot) connection tracing
 %-define(trace(Fmt,Args), erlang:display([erlang:now(),node(),lists:flatten(io_lib:format(Fmt, Args))])).
 -define(trace_factor,8).
-%-else.
-%-define(trace(Fmt,Args), ok).
-%-define(trace_factor,1).
-%-endif.
+-else.
+-define(trace(Fmt,Args), ok).
+-define(trace_factor,1).
+-endif.
 
 -define(shutdown(Data), dist_util:shutdown(?MODULE, ?LINE, Data)).
 -define(shutdown2(Data, Reason), dist_util:shutdown(?MODULE, ?LINE, Data, Reason)).
