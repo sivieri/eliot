@@ -498,6 +498,7 @@ void do_recv(driver_data_t* res) {
     if (size > 0) {
         msg_type = buf[0];
         FPRINTF(stderr, "DEBUG: Peeking %d bytes of type %c from %d:%d through UDP\n", size, msg_type, client->sin_addr.s_addr, client->sin_port);
+        print_ports();
         while (iterator != NULL) {
             if (iterator->peer.sin_addr.s_addr == client->sin_addr.s_addr && (iterator->curstate == RECEIVE || iterator->curstate == HANDSHAKED)) {
                 existing = 1;
