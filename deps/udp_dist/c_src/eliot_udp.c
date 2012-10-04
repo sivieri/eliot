@@ -46,15 +46,15 @@
 
 typedef enum state
 {
-    INIT,
-    LISTEN,
-    ACCEPT,
-    SEND,
-    RECEIVE,
-    CONNECT,
-    INTERMEDIATE,
-    HANDSHAKED,
-    BROADCAST
+    INIT, // 0
+    LISTEN, // 1
+    ACCEPT, // 2
+    SEND, // 3
+    RECEIVE, // 4
+    CONNECT, // 5
+    INTERMEDIATE, // 6
+    HANDSHAKED, // 7
+    BROADCAST // 8
 } state_t;
 
 typedef struct driver_data
@@ -500,7 +500,7 @@ void do_recv(driver_data_t* res) {
         FPRINTF(stderr, "DEBUG: Peeking %d bytes of type %c from %d:%d through UDP\n", size, msg_type, client->sin_addr.s_addr, client->sin_port);
         print_ports();
         while (iterator != NULL) {
-            if (iterator->peer.sin_addr.s_addr == client->sin_addr.s_addr && (iterator->curstate == RECEIVE || iterator->curstate == HANDSHAKED)) {
+            if (iterator->peer.sin_addr.s_addr == client->sin_addr.s_addr && (iterator->curstate == RECEIVE || iterator->curstate == INTERMEDIATE || iterator->curstate == HANDSHAKED)) {
                 existing = 1;
                 break;
             }
@@ -508,6 +508,8 @@ void do_recv(driver_data_t* res) {
         }
         if (existing) {
             if (iterator->curstate != HANDSHAKED) {
+                // we are still handshaking, BUT in a little time the message should be picked up,
+                // so for now let's just ignore it for the moment
                 driver_free(client);
                 return;
             }
