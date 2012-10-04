@@ -1,11 +1,11 @@
 From b53a481ed3d6117a8cd4d2bdf529e4b2805b5dc6 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 29 Apr 2012 12:16:06 +0200
-Subject: [PATCH 01/46] Broadcast operation integrated into the bang operator.
+Subject: [PATCH 01/66] Broadcast operation integrated into the bang operator.
 
 ---
  erts/emulator/beam/bif.c |  120 +++++++++++++++++++++++++---------------------
- 1 files changed, 66 insertions(+), 54 deletions(-)
+ 1 file changed, 66 insertions(+), 54 deletions(-)
 
 diff --git a/erts/emulator/beam/bif.c b/erts/emulator/beam/bif.c
 index 55f4798..37801b2 100644
@@ -145,17 +145,17 @@ index 55f4798..37801b2 100644
  	if (IS_TRACED(p)) /* XXX Is this really neccessary ??? */
  	    trace_send(p, to, msg);
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From b271e9ad5f8abdbe5de6f9431ed26ffbcfda2986 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 29 Apr 2012 12:16:25 +0200
-Subject: [PATCH 02/46] Added project file.
+Subject: [PATCH 02/66] Added project file.
 
 ---
  .project |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+ 1 file changed, 11 insertions(+)
  create mode 100644 .project
 
 diff --git a/.project b/.project
@@ -176,17 +176,17 @@ index 0000000..52d5dc2
 +	</natures>
 +</projectDescription>
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 2d5e7ec75998ed3180a497b55d55a63481ea0912 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Tue, 1 May 2012 18:59:41 +0200
-Subject: [PATCH 03/46] Broadcast messages, part II.
+Subject: [PATCH 03/66] Broadcast messages, part II.
 
 ---
  erts/emulator/beam/bif.c |   96 ++++++++++++++++++++++++++++------------------
- 1 files changed, 58 insertions(+), 38 deletions(-)
+ 1 file changed, 58 insertions(+), 38 deletions(-)
 
 diff --git a/erts/emulator/beam/bif.c b/erts/emulator/beam/bif.c
 index 37801b2..39b2371 100644
@@ -297,17 +297,17 @@ index 37801b2..39b2371 100644
  	       && (external_port_dist_entry(to)
  		   == erts_this_dist_entry)) {
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 6adb3a74a12214137037c0fc15b7d3b16b68e0cb Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Thu, 3 May 2012 11:16:25 +0200
-Subject: [PATCH 04/46] Changes in semantics.
+Subject: [PATCH 04/66] Changes in semantics.
 
 ---
  erts/emulator/beam/bif.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
 diff --git a/erts/emulator/beam/bif.c b/erts/emulator/beam/bif.c
 index 39b2371..2cc2da2 100644
@@ -343,13 +343,13 @@ index 39b2371..2cc2da2 100644
          }
          return ret;
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 8715f1458731dafe64f6f502d2e125c53101fdce Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 4 May 2012 16:45:02 +0200
-Subject: [PATCH 05/46] Porting export table down below.
+Subject: [PATCH 05/66] Porting export table down below.
 
 ---
  erts/emulator/beam/bif.c     |   33 +
@@ -5388,13 +5388,13 @@ index 0000000..817c064
 +
 +#endif
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From bc3d95fd077a1cb309428905497b7438c6f5c0c9 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 6 May 2012 18:39:55 +0200
-Subject: [PATCH 06/46] First draft of export module done.
+Subject: [PATCH 06/66] First draft of export module done.
 
 ---
  erts/emulator/beam/bif.c         |   12 +-
@@ -6045,17 +6045,17 @@ index 817c064..e90c9de 100644
  
  #endif
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 2e53ad7eacd4a01af9585a2bb03f85e46eb4cbdf Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Sun, 6 May 2012 18:49:58 +0200
-Subject: [PATCH 07/46] First draft of export module done/2.
+Subject: [PATCH 07/66] First draft of export module done/2.
 
 ---
  erts/emulator/beam/bif.c |   23 ++++++++++++++++++++++-
- 1 files changed, 22 insertions(+), 1 deletions(-)
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
 diff --git a/erts/emulator/beam/bif.c b/erts/emulator/beam/bif.c
 index a862f12..62f664e 100644
@@ -6101,13 +6101,13 @@ index a862f12..62f664e 100644
  }
  
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 625332450fe3a8d67d655c78406824a1a70d0034 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 7 May 2012 17:59:52 +0200
-Subject: [PATCH 08/46] Simplified version of export now working.
+Subject: [PATCH 08/66] Simplified version of export now working.
 
 ---
  erts/emulator/Makefile.in     |    3 +-
@@ -6565,18 +6565,18 @@ index e90c9de..087595c 100644
  int erts_export_process_by_pid(Process *, Eterm);
  int erts_unexport_process_by_name(Process *, ErtsProcLocks, struct port *, Eterm);
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 220f287bb35bf98905bc285fb3905ed264e466ec Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 7 May 2012 18:30:10 +0200
-Subject: [PATCH 09/46] Erlang export functions integrated in kernel global
+Subject: [PATCH 09/66] Erlang export functions integrated in kernel global
  module.
 
 ---
  erts/emulator/beam/dist.c    |  115 +++++++++++++++++++++++-------------------
- erts/emulator/beam/pexport.c |   42 +++++++++++++++-
+ erts/emulator/beam/pexport.c |   42 ++++++++++++++-
  erts/emulator/beam/pexport.h |    3 +-
  lib/kernel/src/global.erl    |   16 ++++--
  4 files changed, 117 insertions(+), 59 deletions(-)
@@ -6847,16 +6847,16 @@ index fa97614..ae71802 100644
  loop_the_registrar() ->
      receive 
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From b4bb0c49e12054b25390fada17e6078f0c115c4d Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 7 May 2012 19:40:30 +0200
-Subject: [PATCH 10/46] Working on integration with dist.
+Subject: [PATCH 10/66] Working on integration with dist.
 
 ---
- erts/emulator/beam/bif.c  |   30 ++++++-------------
+ erts/emulator/beam/bif.c  |   30 ++++++--------------
  erts/emulator/beam/dist.c |   69 ++++++++++++++++++++++++++++++++++++++++++++-
  2 files changed, 77 insertions(+), 22 deletions(-)
 
@@ -7016,13 +7016,13 @@ index d0ecb88..10a4e37 100644
                  rp = erts_whereis_process(NULL, 0, to, 0, ERTS_P2P_FLG_SMP_INC_REFC);
                  if (rp) {
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From ba33b71a618ca4ab782d95819269d68eb8bf4edb Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Tue, 8 May 2012 12:27:13 +0200
-Subject: [PATCH 11/46] It's working.
+Subject: [PATCH 11/66] It's working.
 
 ---
  erts/emulator/beam/dist.c        |    6 +++++-
@@ -7200,17 +7200,17 @@ index 1e07620..5e978d5 100644
      end;
  init(safe) ->
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From b72f8ef64cc95e5fb6a182b34f70a646da32b303 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Tue, 8 May 2012 14:30:08 +0200
-Subject: [PATCH 12/46] Un-use the tmp heap.
+Subject: [PATCH 12/66] Un-use the tmp heap.
 
 ---
  erts/emulator/beam/dist.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
 
 diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
 index 5ccc18d..a9bf6ee 100644
@@ -7225,13 +7225,13 @@ index 5ccc18d..a9bf6ee 100644
              else if (erts_is_exported_by_name(NULL, to)) {
                  erts_printf("DEBUG: Message received from %T, to exported process %T\n", from, to);
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 2ed19b102f486bde03f365278982b741040dbf39 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 14 May 2012 12:50:01 +0200
-Subject: [PATCH 13/46] Got the global module back.
+Subject: [PATCH 13/66] Got the global module back.
 
 ---
  lib/kernel/src/global.erl |   16 ++++++++++++----
@@ -7295,17 +7295,17 @@ index 5e978d5..c60db1b 100644
      end;
  init(safe) ->
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 7ba725cd6df6007d4b5fad8d9e2f0b0205000487 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Thu, 31 May 2012 18:21:47 +0200
-Subject: [PATCH 14/46] Added print infoz.
+Subject: [PATCH 14/66] Added print infoz.
 
 ---
  erts/emulator/beam/io.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
 
 diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
 index 49cd0e5..c290ca5 100644
@@ -7320,17 +7320,17 @@ index 49cd0e5..c290ca5 100644
  	if (len == 0)
  	    return erts_net_message(prt,
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 89bf792c2f2c4672d56db1085ef7dde7e2b86648 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Wed, 6 Jun 2012 17:52:53 +0200
-Subject: [PATCH 15/46] Print moved.
+Subject: [PATCH 15/66] Print moved.
 
 ---
  erts/emulator/beam/io.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
 index c290ca5..5ee42ef 100644
@@ -7347,17 +7347,17 @@ index c290ca5..5ee42ef 100644
  	    return erts_net_message(prt,
  				    prt->dist_entry,
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 4ad9c180c6916897d4f60e1af7275939d70c3f77 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Wed, 6 Jun 2012 18:03:31 +0200
-Subject: [PATCH 16/46] Bug hunt.
+Subject: [PATCH 16/66] Bug hunt.
 
 ---
  erts/emulator/beam/io.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
 index 5ee42ef..9ac39fb 100644
@@ -7373,17 +7373,17 @@ index 5ee42ef..9ac39fb 100644
  	    return erts_net_message(prt,
  				    prt->dist_entry,
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 06ef78a4d08e4833c5103290cd1a9aa545e76900 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Thu, 7 Jun 2012 18:17:16 +0200
-Subject: [PATCH 17/46] More prints.
+Subject: [PATCH 17/66] More prints.
 
 ---
  erts/emulator/beam/io.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
 
 diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
 index 9ac39fb..7862a7a 100644
@@ -7398,17 +7398,17 @@ index 9ac39fb..7862a7a 100644
          erts_fprintf(stderr, "DEBUG: status %d and lengths %d - %d, on port connected to %T\n", prt->status & ERTS_PORT_SFLG_DISTRIBUTION, hlen, len, prt->connected);
  	if (len == 0)
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 6d3b295b93726104b471bba69db2d98295ad0ff2 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 8 Jun 2012 11:43:47 +0200
-Subject: [PATCH 18/46] More prints.
+Subject: [PATCH 18/66] More prints.
 
 ---
  lib/kernel/src/net_kernel.erl |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index 9e3d730..7ca2bff 100644
@@ -7423,17 +7423,17 @@ index 9e3d730..7ca2bff 100644
  	{'EXIT',Reason} ->
  	    {error,Reason}
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 8d7ecdd3afc954e190598b3fa18559c4f0068580 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 8 Jun 2012 11:44:50 +0200
-Subject: [PATCH 19/46] More prints.
+Subject: [PATCH 19/66] More prints.
 
 ---
  erts/emulator/beam/io.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ 1 file changed, 1 deletion(-)
 
 diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
 index 7862a7a..9ac39fb 100644
@@ -7448,17 +7448,17 @@ index 7862a7a..9ac39fb 100644
          erts_fprintf(stderr, "DEBUG: status %d and lengths %d - %d, on port connected to %T\n", prt->status & ERTS_PORT_SFLG_DISTRIBUTION, hlen, len, prt->connected);
  	if (len == 0)
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 670f943c90a522bc4964be9b386611c513324b94 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 8 Jun 2012 11:50:44 +0200
-Subject: [PATCH 20/46] More prints.
+Subject: [PATCH 20/66] More prints.
 
 ---
  lib/kernel/src/net_kernel.erl |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index 7ca2bff..4cf062d 100644
@@ -7482,17 +7482,17 @@ index 7ca2bff..4cf062d 100644
  
  connecttime() ->
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 5506a9710b76acfac50e5c2c3d2457ffd1d96cd7 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 8 Jun 2012 11:51:43 +0200
-Subject: [PATCH 21/46] More prints.
+Subject: [PATCH 21/66] More prints.
 
 ---
  lib/kernel/src/net_kernel.erl |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index 4cf062d..9d3533c 100644
@@ -7517,17 +7517,17 @@ index 4cf062d..9d3533c 100644
  
  connecttime() ->
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 8e62dd0bd5bd370cac4de9c9239c0ac09a6ffbb1 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 8 Jun 2012 11:58:56 +0200
-Subject: [PATCH 22/46] More prints.
+Subject: [PATCH 22/66] More prints.
 
 ---
  erts/emulator/beam/dist.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ 1 file changed, 2 insertions(+)
 
 diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
 index a9bf6ee..911759c 100644
@@ -7543,17 +7543,17 @@ index a9bf6ee..911759c 100644
      pp->dist_entry = dep;
  
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 676b1f0c098b9f7cf089216f84e7449a05580947 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 8 Jun 2012 12:00:10 +0200
-Subject: [PATCH 23/46] More prints.
+Subject: [PATCH 23/66] More prints.
 
 ---
  erts/emulator/beam/dist.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
 index 911759c..56f6bff 100644
@@ -7569,17 +7569,17 @@ index 911759c..56f6bff 100644
      pp->dist_entry = dep;
  
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 472f5de724cf23e43509fcca754f13f657e650f1 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 8 Jun 2012 12:10:00 +0200
-Subject: [PATCH 24/46] More prints.
+Subject: [PATCH 24/66] More prints.
 
 ---
  lib/kernel/src/net_kernel.erl |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index 9d3533c..b6a23ad 100644
@@ -7604,17 +7604,17 @@ index 9d3533c..b6a23ad 100644
  
  connecttime() ->
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From ecc723ea8a0dad1b330fe21e6dc5ee1e25f5fac2 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 8 Jun 2012 12:16:00 +0200
-Subject: [PATCH 25/46] More prints.
+Subject: [PATCH 25/66] More prints.
 
 ---
  lib/kernel/src/net_kernel.erl |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ 1 file changed, 2 deletions(-)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index b6a23ad..9e3d730 100644
@@ -7637,17 +7637,17 @@ index b6a23ad..9e3d730 100644
  
  connecttime() ->
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From eed1c98fbfef79bd5917e1ff614c120acd05049c Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 15 Jun 2012 15:38:00 +0200
-Subject: [PATCH 26/46] Trace.
+Subject: [PATCH 26/66] Trace.
 
 ---
  lib/kernel/include/dist_util.hrl |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/lib/kernel/include/dist_util.hrl b/lib/kernel/include/dist_util.hrl
 index c3a7f97..fde102a 100644
@@ -7665,17 +7665,17 @@ index c3a7f97..fde102a 100644
  
  -ifdef(dist_debug).
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 22e222be8332b062b3a681f89be7995a3a577ebc Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 15 Jun 2012 16:02:18 +0200
-Subject: [PATCH 27/46] Trace.
+Subject: [PATCH 27/66] Trace.
 
 ---
  lib/kernel/src/dist_util.erl |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ 1 file changed, 2 insertions(+)
 
 diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
 index f0d54a2..b54c23b 100644
@@ -7693,17 +7693,17 @@ index f0d54a2..b54c23b 100644
  	    end;
  	_ ->
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 36af9f21810b2928a414612eaea8bccfc81b95f0 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 15 Jun 2012 16:12:02 +0200
-Subject: [PATCH 28/46] Trace.
+Subject: [PATCH 28/66] Trace.
 
 ---
  erts/emulator/beam/dist.c |   38 +++++++++++++++++++++++++++++---------
- 1 files changed, 29 insertions(+), 9 deletions(-)
+ 1 file changed, 29 insertions(+), 9 deletions(-)
 
 diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
 index 56f6bff..0b00aa6 100644
@@ -7799,17 +7799,17 @@ index 56f6bff..0b00aa6 100644
      erts_port_status_bor_set(pp, ERTS_PORT_SFLG_DISTRIBUTION);
      
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 6575d5c4aac4bebf55a70dc2912fcf155a5d513d Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 15 Jun 2012 16:47:29 +0200
-Subject: [PATCH 29/46] Trace.
+Subject: [PATCH 29/66] Trace.
 
 ---
  lib/kernel/src/dist_util.erl |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ 1 file changed, 3 insertions(+)
 
 diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
 index b54c23b..11dae5e 100644
@@ -7829,17 +7829,17 @@ index b54c23b..11dae5e 100644
  			     Node, 
  			     Socket, 
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 48d05ab54acfdcd4a8c7a122dd85ff0ad22f4358 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 15 Jun 2012 16:57:38 +0200
-Subject: [PATCH 30/46] Trace.
+Subject: [PATCH 30/66] Trace.
 
 ---
  lib/kernel/src/dist_util.erl |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ 1 file changed, 5 insertions(+)
 
 diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
 index 11dae5e..824f04b 100644
@@ -7876,17 +7876,17 @@ index 11dae5e..824f04b 100644
  		{ok, Read, Write, _} ->
  		    From ! {self(), get_status, {ok, Read, Write}},
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 93be32a35590cc099777b7e92543891983688d3b Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 15 Jun 2012 16:58:19 +0200
-Subject: [PATCH 31/46] Trace.
+Subject: [PATCH 31/66] Trace.
 
 ---
  lib/kernel/src/dist_util.erl |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
 index 824f04b..de54b34 100644
@@ -7928,17 +7928,17 @@ index 824f04b..de54b34 100644
  		{ok, Read, Write, _} ->
  		    From ! {self(), get_status, {ok, Read, Write}},
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From ce7df637df2897621c059497f6eb284864f1a55b Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 15 Jun 2012 18:02:43 +0200
-Subject: [PATCH 32/46] Trace--.
+Subject: [PATCH 32/66] Trace--.
 
 ---
  lib/kernel/include/dist_util.hrl |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/lib/kernel/include/dist_util.hrl b/lib/kernel/include/dist_util.hrl
 index fde102a..c3a7f97 100644
@@ -7956,17 +7956,17 @@ index fde102a..c3a7f97 100644
  
  -ifdef(dist_debug).
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From ce24603cea224b9f219795a7c5a367e3bdfc9c17 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 15 Jun 2012 18:04:38 +0200
-Subject: [PATCH 33/46] Trace.
+Subject: [PATCH 33/66] Trace.
 
 ---
  lib/kernel/include/dist_util.hrl |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/lib/kernel/include/dist_util.hrl b/lib/kernel/include/dist_util.hrl
 index c3a7f97..fde102a 100644
@@ -7984,17 +7984,17 @@ index c3a7f97..fde102a 100644
  
  -ifdef(dist_debug).
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 5da35626da3805f0997e60ef83a7fc5a64b1122c Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Fri, 15 Jun 2012 18:37:17 +0200
-Subject: [PATCH 34/46] Trace.
+Subject: [PATCH 34/66] Trace.
 
 ---
  erts/emulator/beam/external.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/erts/emulator/beam/external.c b/erts/emulator/beam/external.c
 index 152dbcf..7f41932 100644
@@ -8013,17 +8013,17 @@ index 152dbcf..7f41932 100644
  	    erts_dsprintf(dsbufp,
  			  "** Attempt to convert old incompatible "
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From a79b4bd78ac2a969975bb7b9321729d1ab4c6c1e Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 18 Jun 2012 17:05:21 +0200
-Subject: [PATCH 35/46] Trace.
+Subject: [PATCH 35/66] Trace.
 
 ---
  lib/kernel/src/dist_util.erl |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
 
 diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
 index de54b34..6ff0391 100644
@@ -8038,13 +8038,13 @@ index de54b34..6ff0391 100644
      T1 = T rem 4,
      case MFGetstat(Socket) of
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 0b3407e6338a851fd063c5885b79ff4336ff472e Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 18 Jun 2012 17:43:59 +0200
-Subject: [PATCH 36/46] Trace--.
+Subject: [PATCH 36/66] Trace--.
 
 ---
  lib/kernel/examples/uds_dist/c_src/uds_drv.c | 1167 +++++++++++++-------------
@@ -9609,17 +9609,17 @@ index fde102a..c3a7f97 100644
  
  -ifdef(dist_debug).
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From bb2420c0fc3604f5a6a6b235576a3e7bb40f67b9 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Mon, 18 Jun 2012 17:52:54 +0200
-Subject: [PATCH 37/46] Export net_kernel.
+Subject: [PATCH 37/66] Export net_kernel.
 
 ---
  lib/kernel/src/net_kernel.erl |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index 9e3d730..d3127b9 100644
@@ -9634,20 +9634,20 @@ index 9e3d730..d3127b9 100644
  	{error, {already_started, Pid}} ->
  	    {ok, Pid};
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From b42bb580d60200608186698d42f5af5c50b5bcf6 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Tue, 19 Jun 2012 12:24:04 +0200
-Subject: [PATCH 38/46] Introduced the new operator tilde, for now just
+Subject: [PATCH 38/66] Introduced the new operator tilde, for now just
  mimicking the bang operator.
 
 ---
  erts/emulator/beam/bif.c     |   11 +++++++++++
  erts/emulator/beam/bif.tab   |    1 +
  lib/stdlib/src/erl_parse.yrl |    4 +++-
- 3 files changed, 15 insertions(+), 1 deletions(-)
+ 3 files changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/erts/emulator/beam/bif.c b/erts/emulator/beam/bif.c
 index f40bdb7..efbb7fe 100644
@@ -9710,13 +9710,13 @@ index 928c10f..c500f71 100644
  inop_prec('andalso') -> {200,160,160};
  inop_prec('==') -> {300,200,300};
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 90c707b816b6c16312c02b5f12d16bce63cf11b7 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Thu, 21 Jun 2012 10:53:33 +0200
-Subject: [PATCH 39/46] Reliable...
+Subject: [PATCH 39/66] Reliable...
 
 ---
  erts/emulator/beam/bif.c      |   29 ++++++++++++++++++++---------
@@ -9966,17 +9966,17 @@ index f1335f6..94ab7d1 100644
  /* erl_bif_op.c */
  
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 52852f9c3365568fccc13d4b6f190d4ca3887a30 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Tue, 3 Jul 2012 15:45:14 +0200
-Subject: [PATCH 40/46] Disabling tick.
+Subject: [PATCH 40/66] Disabling tick.
 
 ---
  lib/kernel/src/net_kernel.erl |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index d3127b9..71f8a75 100644
@@ -9992,17 +9992,17 @@ index d3127b9..71f8a75 100644
  	    ?MODULE:ticker_loop(Kernel, Tick)
      end.
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 4d48e89184e0ae287e94d3b8fef188c870c11221 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Tue, 3 Jul 2012 17:09:59 +0200
-Subject: [PATCH 41/46] Trace.
+Subject: [PATCH 41/66] Trace.
 
 ---
  erts/emulator/beam/io.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ 1 file changed, 2 insertions(+)
 
 diff --git a/erts/emulator/beam/io.c b/erts/emulator/beam/io.c
 index 9ac39fb..fcbcd1b 100644
@@ -10018,17 +10018,17 @@ index 9ac39fb..fcbcd1b 100644
      /*
       * We used to check port and process here. In the SMP enabled emulator,
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From a2d816aa8c98e4e3086fcd967f7ac0c313b290d8 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Thu, 5 Jul 2012 17:33:22 +0200
-Subject: [PATCH 42/46] Start beaconing.
+Subject: [PATCH 42/66] Start beaconing.
 
 ---
  lib/kernel/src/net_kernel.erl |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index 71f8a75..3ece85a 100644
@@ -10043,17 +10043,17 @@ index 71f8a75..3ece85a 100644
  		ok ->
  		    AcceptPid = Mod:accept(Socket),
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 9d556e630e423cebc54e4f53925e6c31ae3ac6f7 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Thu, 5 Jul 2012 17:33:51 +0200
-Subject: [PATCH 43/46] Start beaconing.
+Subject: [PATCH 43/66] Start beaconing.
 
 ---
  lib/kernel/src/net_kernel.erl |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index 3ece85a..66f2455 100644
@@ -10069,17 +10069,17 @@ index 3ece85a..66f2455 100644
  		ok ->
  		    AcceptPid = Mod:accept(Socket),
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From c3241cceb2b428dbd214248bfa53a38bfcc44f11 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Thu, 5 Jul 2012 17:40:46 +0200
-Subject: [PATCH 44/46] Start beaconing.
+Subject: [PATCH 44/66] Start beaconing.
 
 ---
  lib/kernel/src/net_kernel.erl |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index 66f2455..fa88a4c 100644
@@ -10094,17 +10094,17 @@ index 66f2455..fa88a4c 100644
  	    case set_node(Node, Creation) of
  		ok ->
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From d772d4076b8cf8d5b54cd987ec0ea694c3f96d5a Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Thu, 5 Jul 2012 17:44:22 +0200
-Subject: [PATCH 45/46] Removed everything.
+Subject: [PATCH 45/66] Removed everything.
 
 ---
  lib/kernel/src/net_kernel.erl |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ 1 file changed, 2 deletions(-)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index fa88a4c..71f8a75 100644
@@ -10120,17 +10120,17 @@ index fa88a4c..71f8a75 100644
  		ok ->
  		    AcceptPid = Mod:accept(Socket),
 -- 
-1.7.9.1
+1.7.10.4
 
 
 From 5089481606245a127d6be6903510ce1119474f81 Mon Sep 17 00:00:00 2001
 From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
 Date: Thu, 16 Aug 2012 11:14:57 +0200
-Subject: [PATCH 46/46] Added print.
+Subject: [PATCH 46/66] Added print.
 
 ---
  lib/kernel/src/net_kernel.erl |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
 
 diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
 index 71f8a75..19dc8f8 100644
@@ -10145,5 +10145,938 @@ index 71f8a75..19dc8f8 100644
  hidden_connect_node(Node) when is_atom(Node) ->
      request({connect, hidden, Node}).
 -- 
-1.7.9.1
+1.7.10.4
+
+
+From 12896e20f281a28daac5d37d92659eede5f6e61a Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Tue, 21 Aug 2012 15:55:58 +0200
+Subject: [PATCH 47/66] Removed print.
+
+---
+ lib/kernel/src/net_kernel.erl |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 19dc8f8..71f8a75 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -248,7 +248,6 @@ update_publish_nodes(Ns) ->
+       Node :: node().
+ %% explicit connects
+ connect_node(Node) when is_atom(Node) ->
+-    io:format(standard_error, "DEBUG: Connecting to node ~p~n", [Node]),
+     request({connect, normal, Node}).
+ hidden_connect_node(Node) when is_atom(Node) ->
+     request({connect, hidden, Node}).
+-- 
+1.7.10.4
+
+
+From 90b898b6e8e9c3df49bd92575e2ed6d506a48f6a Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 21 Sep 2012 15:08:45 +0200
+Subject: [PATCH 48/66] Draft of the excluded handshake.
+
+---
+ erts/emulator/beam/bif.c     |   31 +++++++------------------------
+ lib/kernel/src/dist_util.erl |   28 +++-------------------------
+ 2 files changed, 10 insertions(+), 49 deletions(-)
+
+diff --git a/erts/emulator/beam/bif.c b/erts/emulator/beam/bif.c
+index 8e087b8..32101f9 100644
+--- a/erts/emulator/beam/bif.c
++++ b/erts/emulator/beam/bif.c
+@@ -1904,16 +1904,12 @@ do_send_reliable(Process *p, Eterm to, Eterm msg, int suspend, int reliable) {
+                 return SEND_BADARG;
+             }
+         }
+-        else { /* Broadcast to all nodes */
+-            Eterm visible = am_visible;
+-            Eterm nodesOutput = nodes_1(p, &visible);
++        else { /* Broadcast to all nodes {all, all} */
+             ret = 0;
+-            while (is_list(nodesOutput)) {
+-                Eterm* hp = HAlloc(p, 3);
+-                Eterm arg = TUPLE2(hp, am_all, CAR(list_val(nodesOutput)));
+-                ret = erl_send(p, arg, msg) || ret;
+-                nodesOutput = CDR(list_val(nodesOutput));
+-            }
++            Eterm* hp = HAlloc(p, 3);
++            Eterm arg = TUPLE2(hp, am_all, am_all));
++            ret = erl_send(p, arg, msg) || ret;
++            
+             return ret;
+         }
+     } else if (is_external_port(to)
+@@ -2012,9 +2008,9 @@ do_send_reliable(Process *p, Eterm to, Eterm msg, int suspend, int reliable) {
+ 	    return SEND_BADARG;
+ 	if (is_not_atom(tp[1]) || is_not_atom(tp[2]))
+ 	    return SEND_BADARG;
++	/* Sending to all is handled by the 'all' port, so no distinction here
++	    between unicast and broadcast */  
+ 	
+-    if (tp[2] != am_all) { /* Send to a single node (default mode) */
+-        
+         /* sysname_to_connected_dist_entry will return NULL if there
+            is no dist_entry or the dist_entry has no port,
+            but remote_send() will handle that. */
+@@ -2063,19 +2059,6 @@ do_send_reliable(Process *p, Eterm to, Eterm msg, int suspend, int reliable) {
+         if (dep)
+             erts_deref_dist_entry(dep);
+         return ret;
+-    }
+-    else { /* Broadcast to all nodes */
+-        Eterm visible = am_visible;
+-        Eterm nodesOutput = nodes_1(p, &visible);
+-        ret = 0;
+-        while (is_list(nodesOutput)) {
+-            Eterm* hp = HAlloc(p, 3);
+-            Eterm arg = TUPLE2(hp, tp[1], CAR(list_val(nodesOutput)));
+-            ret = erl_send(p, arg, msg) || ret;
+-            nodesOutput = CDR(list_val(nodesOutput));
+-        }
+-        return ret;
+-    }
+     } else {
+ 	if (IS_TRACED(p)) /* XXX Is this really neccessary ??? */
+ 	    trace_send(p, to, msg);
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index 6ff0391..bb22cd6 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -118,26 +118,14 @@ make_this_flags(RequestType, OtherNode) ->
+ 	 ?DFLAG_SMALL_ATOM_TAGS).
+ 
+ handshake_other_started(#hs_data{request_type=ReqType}=HSData0) ->
+-    {PreOtherFlags,Node,Version} = recv_name(HSData0),
+     PreThisFlags = make_this_flags(ReqType, Node),
+     {ThisFlags, OtherFlags} = adjust_flags(PreThisFlags,
+-					   PreOtherFlags),
++					   PreThisFlags),
+     HSData = HSData0#hs_data{this_flags=ThisFlags,
+ 			     other_flags=OtherFlags,
+ 			     other_version=Version,
+ 			     other_node=Node,
+ 			     other_started=true},
+-    check_dflag_xnc(HSData),
+-    is_allowed(HSData),
+-    ?debug({"MD5 connection from ~p (V~p)~n",
+-	    [Node, HSData#hs_data.other_version]}),
+-    mark_pending(HSData),
+-    {MyCookie,HisCookie} = get_cookies(Node),
+-    ChallengeA = gen_challenge(),
+-    send_challenge(HSData, ChallengeA),
+-    reset_timer(HSData#hs_data.timer),
+-    ChallengeB = recv_challenge_reply(HSData, ChallengeA, MyCookie),
+-    send_challenge_ack(HSData, gen_digest(ChallengeB, HisCookie)),
+     ?debug({dist_util, self(), accept_connection, Node}),
+     connection(HSData).
+ 
+@@ -312,20 +300,10 @@ handshake_we_started(#hs_data{request_type=ReqType,
+ 			      other_node=Node}=PreHSData) ->
+     PreThisFlags = make_this_flags(ReqType, Node),
+     HSData = PreHSData#hs_data{this_flags=PreThisFlags},
+-    send_name(HSData),
+-    recv_status(HSData),
+-    {PreOtherFlags,ChallengeA} = recv_challenge(HSData),
+-    {ThisFlags,OtherFlags} = adjust_flags(PreThisFlags, PreOtherFlags),
++    {ThisFlags,OtherFlags} = adjust_flags(PreThisFlags, PreThisFlags),
+     NewHSData = HSData#hs_data{this_flags = ThisFlags,
+ 			       other_flags = OtherFlags, 
+-			       other_started = false}, 
+-    check_dflag_xnc(NewHSData),
+-    MyChallenge = gen_challenge(),
+-    {MyCookie,HisCookie} = get_cookies(Node),
+-    send_challenge_reply(NewHSData,MyChallenge,
+-			 gen_digest(ChallengeA,HisCookie)),
+-    reset_timer(NewHSData#hs_data.timer),
+-    recv_challenge_ack(NewHSData, MyChallenge, MyCookie),
++			       other_started = false},
+     connection(NewHSData).
+ 
+ %% --------------------------------------------------------------
+-- 
+1.7.10.4
+
+
+From 93b2874a41bd4be68b6d8ed851b63acfc79e3516 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 26 Sep 2012 18:38:06 +0200
+Subject: [PATCH 49/66] Final draft of the all node.
+
+---
+ erts/emulator/beam/bif.c         |    2 +-
+ erts/emulator/beam/dist.c        |    4 ++--
+ lib/kernel/include/dist_util.hrl |   18 +++++++++---------
+ lib/kernel/src/dist_util.erl     |    4 +---
+ lib/kernel/src/net_kernel.erl    |   16 ++++++++--------
+ 5 files changed, 21 insertions(+), 23 deletions(-)
+
+diff --git a/erts/emulator/beam/bif.c b/erts/emulator/beam/bif.c
+index 32101f9..3522b8f 100644
+--- a/erts/emulator/beam/bif.c
++++ b/erts/emulator/beam/bif.c
+@@ -1907,7 +1907,7 @@ do_send_reliable(Process *p, Eterm to, Eterm msg, int suspend, int reliable) {
+         else { /* Broadcast to all nodes {all, all} */
+             ret = 0;
+             Eterm* hp = HAlloc(p, 3);
+-            Eterm arg = TUPLE2(hp, am_all, am_all));
++            Eterm arg = TUPLE2(hp, am_all, am_all);
+             ret = erl_send(p, arg, msg) || ret;
+             
+             return ret;
+diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
+index a1211b0..02dfefc 100644
+--- a/erts/emulator/beam/dist.c
++++ b/erts/emulator/beam/dist.c
+@@ -2483,10 +2483,10 @@ BIF_RETTYPE setnode_3(BIF_ALIST_3)
+      * Check and pick out arguments
+      */
+ 
+-    if (!is_node_name_atom(BIF_ARG_1) ||
++    if ((!is_node_name_atom(BIF_ARG_1) && BIF_ARG_1 != am_all) ||
+             is_not_internal_port(BIF_ARG_2) ||
+             (erts_this_node->sysname == am_Noname)) {
+-        erts_fprintf(stderr, "1\n");
++        erts_fprintf(stderr, "1 - %T\n", BIF_ARG_1);
+         goto badarg;
+     }
+ 
+diff --git a/lib/kernel/include/dist_util.hrl b/lib/kernel/include/dist_util.hrl
+index c3a7f97..9a97830 100644
+--- a/lib/kernel/include/dist_util.hrl
++++ b/lib/kernel/include/dist_util.hrl
+@@ -21,21 +21,21 @@
+ %%-define(dist_debug, true).
+ 
+ 
+--ifdef(dist_debug).
++%-ifdef(dist_debug).
+ -define(debug(Term), erlang:display(Term)).
+--else.
+--define(debug(Term), ok).
+--endif.
++%-else.
++%-define(debug(Term), ok).
++%-endif.
+ 
+--ifdef(dist_trace).
++%-ifdef(dist_trace).
+ -define(trace(Fmt,Args), io:format("~p ~p:~s",[erlang:now(),node(),lists:flatten(io_lib:format(Fmt, Args))])).
+ % Use the one below for config-file (early boot) connection tracing
+ %-define(trace(Fmt,Args), erlang:display([erlang:now(),node(),lists:flatten(io_lib:format(Fmt, Args))])).
+ -define(trace_factor,8).
+--else.
+--define(trace(Fmt,Args), ok).
+--define(trace_factor,1).
+--endif.
++%-else.
++%-define(trace(Fmt,Args), ok).
++%-define(trace_factor,1).
++%-endif.
+ 
+ -define(shutdown(Data), dist_util:shutdown(?MODULE, ?LINE, Data)).
+ -define(shutdown2(Data, Reason), dist_util:shutdown(?MODULE, ?LINE, Data, Reason)).
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index bb22cd6..440debd 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -117,14 +117,12 @@ make_this_flags(RequestType, OtherNode) ->
+ 	 ?DFLAG_DIST_HDR_ATOM_CACHE bor
+ 	 ?DFLAG_SMALL_ATOM_TAGS).
+ 
+-handshake_other_started(#hs_data{request_type=ReqType}=HSData0) ->
++handshake_other_started(#hs_data{request_type=ReqType,other_node=Node}=HSData0) ->
+     PreThisFlags = make_this_flags(ReqType, Node),
+     {ThisFlags, OtherFlags} = adjust_flags(PreThisFlags,
+ 					   PreThisFlags),
+     HSData = HSData0#hs_data{this_flags=ThisFlags,
+ 			     other_flags=OtherFlags,
+-			     other_version=Version,
+-			     other_node=Node,
+ 			     other_started=true},
+     ?debug({dist_util, self(), accept_connection, Node}),
+     connection(HSData).
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 71f8a75..da5631f 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -27,19 +27,19 @@
+ 
+ %-define(DBG,erlang:display([?MODULE,?LINE])).
+ 
+--ifdef(dist_debug).
++%-ifdef(dist_debug).
+ -define(debug(Term), erlang:display(Term)).
+--else.
+--define(debug(Term), ok).
+--endif.
++%-else.
++%-define(debug(Term), ok).
++%-endif.
+ 
+--ifdef(DEBUG).
++%-ifdef(DEBUG).
+ -define(connect_failure(Node,Term),
+ 	io:format("Net Kernel 2: Failed connection to node ~p, reason ~p~n",
+ 		  [Node,Term])).
+--else.
+--define(connect_failure(Node,Term),noop).
+--endif.
++%-else.
++%-define(connect_failure(Node,Term),noop).
++%-endif.
+ 
+ %% Default ticktime change transition period in seconds
+ -define(DEFAULT_TRANSITION_PERIOD, 60).
+-- 
+1.7.10.4
+
+
+From fb1e029b484d5d2a7f656271a85b8a04456ac1a3 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 28 Sep 2012 12:21:59 +0200
+Subject: [PATCH 50/66] Bug.
+
+---
+ erts/emulator/beam/register.c |    2 +-
+ lib/kernel/src/dist_util.erl  |    1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/erts/emulator/beam/register.c b/erts/emulator/beam/register.c
+index 26d6488..dae8434 100644
+--- a/erts/emulator/beam/register.c
++++ b/erts/emulator/beam/register.c
+@@ -177,7 +177,7 @@ int erts_register_name(Process *c_p, Eterm name, Eterm id)
+     RegProc r, *rp;
+     ERTS_SMP_CHK_HAVE_ONLY_MAIN_PROC_LOCK(c_p);
+ 
+-    if (is_not_atom(name) || name == am_undefined)
++    if (is_not_atom(name) || name == am_undefined || name == am_all)
+ 	return res;
+ 
+     if (c_p->id == id) /* A very common case I think... */
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index 440debd..47e07db 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -124,6 +124,7 @@ handshake_other_started(#hs_data{request_type=ReqType,other_node=Node}=HSData0)
+     HSData = HSData0#hs_data{this_flags=ThisFlags,
+ 			     other_flags=OtherFlags,
+ 			     other_started=true},
++    mark_pending(HSData),
+     ?debug({dist_util, self(), accept_connection, Node}),
+     connection(HSData).
+ 
+-- 
+1.7.10.4
+
+
+From eb28b8cef9815aec417e8f8175f4b868b90df886 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 28 Sep 2012 12:27:48 +0200
+Subject: [PATCH 51/66] Bug.
+
+---
+ lib/kernel/src/dist_util.erl |    3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index 47e07db..3d0649a 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -195,15 +195,12 @@ mark_pending(#hs_data{kernel_pid=Kernel,
+ 						    Node),
+ 			 HSData#hs_data.other_flags) of
+ 	ok ->
+-	    send_status(HSData, ok),
+ 	    reset_timer(HSData#hs_data.timer);
+ 
+ 	ok_pending ->
+-	    send_status(HSData, ok_simultaneous),
+ 	    reset_timer(HSData#hs_data.timer);
+ 
+ 	nok_pending ->
+-	    send_status(HSData, nok),
+ 	    ?shutdown(Node);
+ 	    
+ 	up_pending ->
+-- 
+1.7.10.4
+
+
+From e465501d64747508c9600fe4851fe3afd1f8a0f3 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Fri, 28 Sep 2012 14:12:19 +0200
+Subject: [PATCH 52/66] Bug.
+
+---
+ erts/emulator/beam/external.c |   18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/erts/emulator/beam/external.c b/erts/emulator/beam/external.c
+index 6d9e5a7..d629f1a 100644
+--- a/erts/emulator/beam/external.c
++++ b/erts/emulator/beam/external.c
+@@ -597,8 +597,10 @@ erts_prepare_dist_ext(ErtsDistExternal *edep,
+     }
+ 
+     if (ep[1] != DIST_HEADER) {
+-	if (edep->flags & ERTS_DIST_EXT_DFLAG_HDR)
++	if (edep->flags & ERTS_DIST_EXT_DFLAG_HDR) {
++	    erts_fprintf(stderr, "1\n");
+ 	    ERTS_EXT_HDR_FAIL;
++	}
+ 	edep->attab.size = 0;
+ 	edep->extp = ext;
+     }
+@@ -606,8 +608,10 @@ erts_prepare_dist_ext(ErtsDistExternal *edep,
+ 	int tix;
+ 	int no_atoms;
+ 
+-	if (!(edep->flags & ERTS_DIST_EXT_DFLAG_HDR))
++	if (!(edep->flags & ERTS_DIST_EXT_DFLAG_HDR)) {
++	    erts_fprintf(stderr, "2\n");
+ 	    ERTS_EXT_HDR_FAIL;
++	}
+ 
+ #undef CHKSIZE
+ #define CHKSIZE(SZ) \
+@@ -616,8 +620,10 @@ erts_prepare_dist_ext(ErtsDistExternal *edep,
+ 	CHKSIZE(1+1+1);
+ 	ep += 2;
+ 	no_atoms = (int) get_int8(ep);
+-	if (no_atoms < 0 || ERTS_ATOM_CACHE_SIZE < no_atoms)
++	if (no_atoms < 0 || ERTS_ATOM_CACHE_SIZE < no_atoms) {
++	    erts_fprintf(stderr, "3\n");
+ 	    ERTS_EXT_HDR_FAIL;
++	}
+ 	ep++;
+ 	if (no_atoms) {
+ #if MAX_ATOM_LENGTH > 255
+@@ -706,8 +712,10 @@ erts_prepare_dist_ext(ErtsDistExternal *edep,
+ 			ERTS_EXT_HDR_FAIL;
+ 		    ep++;
+ 		    atom = cache->in_arr[cix];
+-		    if (!is_atom(atom))
+-			ERTS_EXT_HDR_FAIL;
++		    if (!is_atom(atom)) {
++		        erts_fprintf(stderr, "4\n");
++		        ERTS_EXT_HDR_FAIL;
++		    }
+ 		    edep->attab.atom[tix] = atom;
+ 		}
+ 		else {
+-- 
+1.7.10.4
+
+
+From c19a1d2552a871f9562a465bea6dd94a1789fef7 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Tue, 2 Oct 2012 18:58:39 +0200
+Subject: [PATCH 53/66] Corrections.
+
+---
+ lib/kernel/src/dist_util.erl |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index 3d0649a..5455265 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -119,11 +119,14 @@ make_this_flags(RequestType, OtherNode) ->
+ 
+ handshake_other_started(#hs_data{request_type=ReqType,other_node=Node}=HSData0) ->
+     PreThisFlags = make_this_flags(ReqType, Node),
++    PreOtherFlags = make_this_flags(ReqType, node()),
+     {ThisFlags, OtherFlags} = adjust_flags(PreThisFlags,
+-					   PreThisFlags),
++					   PreOtherFlags),
+     HSData = HSData0#hs_data{this_flags=ThisFlags,
+ 			     other_flags=OtherFlags,
+ 			     other_started=true},
++    check_dflag_xnc(HSData),
++    is_allowed(HSData),
+     mark_pending(HSData),
+     ?debug({dist_util, self(), accept_connection, Node}),
+     connection(HSData).
+@@ -136,7 +139,6 @@ is_allowed(#hs_data{other_node = Node,
+ 		    allowed = Allowed} = HSData) ->
+     case lists:member(Node, Allowed) of
+ 	false when Allowed =/= [] ->
+-	    send_status(HSData, not_allowed),
+ 	    error_msg("** Connection attempt from "
+ 		      "disallowed node ~w ** ~n", [Node]),
+ 	    ?shutdown(Node);
+@@ -170,7 +172,6 @@ check_dflag_xnc(#hs_data{other_node = Node,
+ 		   end,
+ 	    case OtherStarted of
+ 		true ->
+-		    send_status(HSData, not_allowed),
+ 		    Dir = "from",
+ 		    How = "rejected";
+ 	        _ ->
+@@ -295,11 +296,13 @@ flush_down() ->
+ handshake_we_started(#hs_data{request_type=ReqType,
+ 			      other_node=Node}=PreHSData) ->
+     PreThisFlags = make_this_flags(ReqType, Node),
++    PreOtherFlags = make_this_flags(ReqType, node()),
+     HSData = PreHSData#hs_data{this_flags=PreThisFlags},
+-    {ThisFlags,OtherFlags} = adjust_flags(PreThisFlags, PreThisFlags),
++    {ThisFlags,OtherFlags} = adjust_flags(PreThisFlags, PreOtherFlags),
+     NewHSData = HSData#hs_data{this_flags = ThisFlags,
+ 			       other_flags = OtherFlags, 
+ 			       other_started = false},
++    check_dflag_xnc(NewHSData),
+     connection(NewHSData).
+ 
+ %% --------------------------------------------------------------
+-- 
+1.7.10.4
+
+
+From e37b3f55c84bf9efbcbfeeb38538509e198bf182 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 3 Oct 2012 12:29:57 +0200
+Subject: [PATCH 54/66] Debug.
+
+---
+ erts/emulator/beam/dist.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
+index 02dfefc..6166360 100644
+--- a/erts/emulator/beam/dist.c
++++ b/erts/emulator/beam/dist.c
+@@ -47,10 +47,10 @@
+ /* Turn this on to get printouts of all distribution messages
+  * which go on the line
+  */
+-#if 0
++#if 1
+ #define ERTS_DIST_MSG_DBG
+ #endif
+-#if 0
++#if 1
+ #define ERTS_RAW_DIST_MSG_DBG
+ #endif
+ 
+-- 
+1.7.10.4
+
+
+From 199577897c28dd3a7a54d44d3240bb4596f11241 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 3 Oct 2012 12:31:46 +0200
+Subject: [PATCH 55/66] Debug.
+
+---
+ erts/emulator/beam/dist.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
+index 6166360..1d7eebc 100644
+--- a/erts/emulator/beam/dist.c
++++ b/erts/emulator/beam/dist.c
+@@ -67,7 +67,7 @@ dist_msg_dbg(ErtsDistExternal *edep, char *what, byte *buf, int sz)
+ {
+     byte *extp = edep->extp;
+     Eterm msg;
+-    Sint size = erts_decode_dist_ext_size(edep, 0);
++    Sint size = erts_decode_dist_ext_size(edep);
+     if (size < 0) {
+         erts_fprintf(stderr,
+                 "DIST MSG DEBUG: erts_decode_dist_ext_size(%s) failed:\n",
+-- 
+1.7.10.4
+
+
+From 2d4288a3846943a6a23cb1360ad483a546cbd75a Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 3 Oct 2012 16:43:13 +0200
+Subject: [PATCH 56/66] --debug.
+
+---
+ erts/emulator/beam/dist.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/erts/emulator/beam/dist.c b/erts/emulator/beam/dist.c
+index 1d7eebc..e8438c4 100644
+--- a/erts/emulator/beam/dist.c
++++ b/erts/emulator/beam/dist.c
+@@ -47,10 +47,10 @@
+ /* Turn this on to get printouts of all distribution messages
+  * which go on the line
+  */
+-#if 1
++#if 0
+ #define ERTS_DIST_MSG_DBG
+ #endif
+-#if 1
++#if 0
+ #define ERTS_RAW_DIST_MSG_DBG
+ #endif
+ 
+-- 
+1.7.10.4
+
+
+From 76910e3064ce063402083d1e7c464f0258bc09fa Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 3 Oct 2012 17:01:36 +0200
+Subject: [PATCH 57/66] Pending--.
+
+---
+ lib/kernel/src/dist_util.erl |    5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index 5455265..a275c07 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -205,11 +205,6 @@ mark_pending(#hs_data{kernel_pid=Kernel,
+ 	    ?shutdown(Node);
+ 	    
+ 	up_pending ->
+-	    %% Check if connection is still alive, no
+-	    %% implies that the connection is no longer pending
+-	    %% due to simultaneous connect
+-	    do_alive(HSData),
+-
+ 	    %% This can happen if the other node goes down,
+ 	    %% and goes up again and contact us before we have
+ 	    %% detected that the socket was closed. 
+-- 
+1.7.10.4
+
+
+From f5e456d9f10171b40fe901b9f50a8b794d8f0ac6 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 3 Oct 2012 17:13:06 +0200
+Subject: [PATCH 58/66] Pending--.
+
+---
+ lib/kernel/src/dist_util.erl |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index a275c07..bed5cb1 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -127,7 +127,7 @@ handshake_other_started(#hs_data{request_type=ReqType,other_node=Node}=HSData0)
+ 			     other_started=true},
+     check_dflag_xnc(HSData),
+     is_allowed(HSData),
+-    mark_pending(HSData),
++    %mark_pending(HSData),
+     ?debug({dist_util, self(), accept_connection, Node}),
+     connection(HSData).
+ 
+-- 
+1.7.10.4
+
+
+From 38829fd3bf36ec6767323d9850a74a9315b09e20 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 3 Oct 2012 17:21:57 +0200
+Subject: [PATCH 59/66] Pending++.
+
+---
+ lib/kernel/src/dist_util.erl |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index bed5cb1..a275c07 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -127,7 +127,7 @@ handshake_other_started(#hs_data{request_type=ReqType,other_node=Node}=HSData0)
+ 			     other_started=true},
+     check_dflag_xnc(HSData),
+     is_allowed(HSData),
+-    %mark_pending(HSData),
++    mark_pending(HSData),
+     ?debug({dist_util, self(), accept_connection, Node}),
+     connection(HSData).
+ 
+-- 
+1.7.10.4
+
+
+From 1066f6e55ebf64e8019253baf29188469fa223a5 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 3 Oct 2012 17:35:23 +0200
+Subject: [PATCH 60/66] Removing timer.
+
+---
+ lib/kernel/src/dist_util.erl |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index a275c07..48e7a3d 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -196,10 +196,10 @@ mark_pending(#hs_data{kernel_pid=Kernel,
+ 						    Node),
+ 			 HSData#hs_data.other_flags) of
+ 	ok ->
+-	    reset_timer(HSData#hs_data.timer);
++	    ok;
+ 
+ 	ok_pending ->
+-	    reset_timer(HSData#hs_data.timer);
++	    ok;
+ 
+ 	nok_pending ->
+ 	    ?shutdown(Node);
+@@ -209,7 +209,7 @@ mark_pending(#hs_data{kernel_pid=Kernel,
+ 	    %% and goes up again and contact us before we have
+ 	    %% detected that the socket was closed. 
+ 	    wait_pending(Kernel),
+-	    reset_timer(HSData#hs_data.timer);
++	    ok;
+ 
+ 	already_pending ->
+ 	    %% FIXME: is this a case ?
+@@ -309,7 +309,6 @@ connection(#hs_data{other_node = Node,
+ 		    f_address = FAddress,
+ 		    f_setopts_pre_nodeup = FPreNodeup,
+ 		    f_setopts_post_nodeup = FPostNodeup}= HSData) ->
+-    cancel_timer(HSData#hs_data.timer),
+     PType = publish_type(HSData#hs_data.other_flags), 
+     case FPreNodeup(Socket) of
+ 	ok -> 
+-- 
+1.7.10.4
+
+
+From 4cb4e2680eaa82d6df99ca5756293591f113805c Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 3 Oct 2012 17:40:01 +0200
+Subject: [PATCH 61/66] Readding timer.
+
+---
+ lib/kernel/src/dist_util.erl |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index 48e7a3d..a275c07 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -196,10 +196,10 @@ mark_pending(#hs_data{kernel_pid=Kernel,
+ 						    Node),
+ 			 HSData#hs_data.other_flags) of
+ 	ok ->
+-	    ok;
++	    reset_timer(HSData#hs_data.timer);
+ 
+ 	ok_pending ->
+-	    ok;
++	    reset_timer(HSData#hs_data.timer);
+ 
+ 	nok_pending ->
+ 	    ?shutdown(Node);
+@@ -209,7 +209,7 @@ mark_pending(#hs_data{kernel_pid=Kernel,
+ 	    %% and goes up again and contact us before we have
+ 	    %% detected that the socket was closed. 
+ 	    wait_pending(Kernel),
+-	    ok;
++	    reset_timer(HSData#hs_data.timer);
+ 
+ 	already_pending ->
+ 	    %% FIXME: is this a case ?
+@@ -309,6 +309,7 @@ connection(#hs_data{other_node = Node,
+ 		    f_address = FAddress,
+ 		    f_setopts_pre_nodeup = FPreNodeup,
+ 		    f_setopts_post_nodeup = FPostNodeup}= HSData) ->
++    cancel_timer(HSData#hs_data.timer),
+     PType = publish_type(HSData#hs_data.other_flags), 
+     case FPreNodeup(Socket) of
+ 	ok -> 
+-- 
+1.7.10.4
+
+
+From 3de0ce58df9c7b15573533932acd00366f73f0a2 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 3 Oct 2012 17:45:25 +0200
+Subject: [PATCH 62/66] Pending.
+
+---
+ lib/kernel/src/net_kernel.erl |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index da5631f..697b39f 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -656,7 +656,7 @@ handle_info({AcceptPid, {accept_pending,MyNode,Node,Address,Type}}, State) ->
+ 		    {noreply,State1}
+ 	    end;
+ 	[#connection{state=up}=Conn] ->
+-	    AcceptPid ! {self(), {accept_pending, up_pending}},
++	    AcceptPid ! {self(), {accept_pending, already_pending}},
+ 	    ets:insert(sys_dist, Conn#connection { pending_owner = AcceptPid,
+ 						  state = up_pending }),
+ 	    Pend = [{AcceptPid, Node} | State#state.pend_owners ],
+-- 
+1.7.10.4
+
+
+From a85eced2adf2600f2358079448141e42c4ff5f65 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 3 Oct 2012 17:49:47 +0200
+Subject: [PATCH 63/66] Pending.
+
+---
+ lib/kernel/src/net_kernel.erl |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 697b39f..9cc8430 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -656,7 +656,7 @@ handle_info({AcceptPid, {accept_pending,MyNode,Node,Address,Type}}, State) ->
+ 		    {noreply,State1}
+ 	    end;
+ 	[#connection{state=up}=Conn] ->
+-	    AcceptPid ! {self(), {accept_pending, already_pending}},
++	    AcceptPid ! {self(), {accept_pending, ok}},
+ 	    ets:insert(sys_dist, Conn#connection { pending_owner = AcceptPid,
+ 						  state = up_pending }),
+ 	    Pend = [{AcceptPid, Node} | State#state.pend_owners ],
+-- 
+1.7.10.4
+
+
+From 9238bad6031def800e125a4042403a0c957ad500 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Wed, 3 Oct 2012 17:54:36 +0200
+Subject: [PATCH 64/66] Pending.
+
+---
+ lib/kernel/src/dist_util.erl |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/lib/kernel/src/dist_util.erl b/lib/kernel/src/dist_util.erl
+index a275c07..adf36ca 100644
+--- a/lib/kernel/src/dist_util.erl
++++ b/lib/kernel/src/dist_util.erl
+@@ -389,6 +389,7 @@ do_setnode(#hs_data{other_node = Node, socket = Socket,
+ 			      [Node]),
+ 		    ?shutdown(Node);
+ 		{'EXIT', Other} ->
++            ?trace("DEBUG: Nodes ~p~n", [nodes()]),
+             ?trace("DEBUG: Error ~p~n", [Other]),
+ 		    exit(Other);
+ 		_Else ->
+-- 
+1.7.10.4
+
+
+From cacede725285f329fe088a8e4ac952e1a14112dd Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Thu, 4 Oct 2012 11:12:43 +0200
+Subject: [PATCH 65/66] Revert.
+
+---
+ lib/kernel/src/net_kernel.erl |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index 9cc8430..da5631f 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -656,7 +656,7 @@ handle_info({AcceptPid, {accept_pending,MyNode,Node,Address,Type}}, State) ->
+ 		    {noreply,State1}
+ 	    end;
+ 	[#connection{state=up}=Conn] ->
+-	    AcceptPid ! {self(), {accept_pending, ok}},
++	    AcceptPid ! {self(), {accept_pending, up_pending}},
+ 	    ets:insert(sys_dist, Conn#connection { pending_owner = AcceptPid,
+ 						  state = up_pending }),
+ 	    Pend = [{AcceptPid, Node} | State#state.pend_owners ],
+-- 
+1.7.10.4
+
+
+From 87da112dfe73d90d6dd0c2415be7d2e4f25a86d6 Mon Sep 17 00:00:00 2001
+From: Alessandro Sivieri <alessandro.sivieri@gmail.com>
+Date: Thu, 4 Oct 2012 12:37:41 +0200
+Subject: [PATCH 66/66] Removed debug.
+
+---
+ lib/kernel/include/dist_util.hrl |   18 +++++++++---------
+ lib/kernel/src/net_kernel.erl    |   16 ++++++++--------
+ 2 files changed, 17 insertions(+), 17 deletions(-)
+
+diff --git a/lib/kernel/include/dist_util.hrl b/lib/kernel/include/dist_util.hrl
+index 9a97830..c3a7f97 100644
+--- a/lib/kernel/include/dist_util.hrl
++++ b/lib/kernel/include/dist_util.hrl
+@@ -21,21 +21,21 @@
+ %%-define(dist_debug, true).
+ 
+ 
+-%-ifdef(dist_debug).
++-ifdef(dist_debug).
+ -define(debug(Term), erlang:display(Term)).
+-%-else.
+-%-define(debug(Term), ok).
+-%-endif.
++-else.
++-define(debug(Term), ok).
++-endif.
+ 
+-%-ifdef(dist_trace).
++-ifdef(dist_trace).
+ -define(trace(Fmt,Args), io:format("~p ~p:~s",[erlang:now(),node(),lists:flatten(io_lib:format(Fmt, Args))])).
+ % Use the one below for config-file (early boot) connection tracing
+ %-define(trace(Fmt,Args), erlang:display([erlang:now(),node(),lists:flatten(io_lib:format(Fmt, Args))])).
+ -define(trace_factor,8).
+-%-else.
+-%-define(trace(Fmt,Args), ok).
+-%-define(trace_factor,1).
+-%-endif.
++-else.
++-define(trace(Fmt,Args), ok).
++-define(trace_factor,1).
++-endif.
+ 
+ -define(shutdown(Data), dist_util:shutdown(?MODULE, ?LINE, Data)).
+ -define(shutdown2(Data, Reason), dist_util:shutdown(?MODULE, ?LINE, Data, Reason)).
+diff --git a/lib/kernel/src/net_kernel.erl b/lib/kernel/src/net_kernel.erl
+index da5631f..71f8a75 100644
+--- a/lib/kernel/src/net_kernel.erl
++++ b/lib/kernel/src/net_kernel.erl
+@@ -27,19 +27,19 @@
+ 
+ %-define(DBG,erlang:display([?MODULE,?LINE])).
+ 
+-%-ifdef(dist_debug).
++-ifdef(dist_debug).
+ -define(debug(Term), erlang:display(Term)).
+-%-else.
+-%-define(debug(Term), ok).
+-%-endif.
++-else.
++-define(debug(Term), ok).
++-endif.
+ 
+-%-ifdef(DEBUG).
++-ifdef(DEBUG).
+ -define(connect_failure(Node,Term),
+ 	io:format("Net Kernel 2: Failed connection to node ~p, reason ~p~n",
+ 		  [Node,Term])).
+-%-else.
+-%-define(connect_failure(Node,Term),noop).
+-%-endif.
++-else.
++-define(connect_failure(Node,Term),noop).
++-endif.
+ 
+ %% Default ticktime change transition period in seconds
+ -define(DEFAULT_TRANSITION_PERIOD, 60).
+-- 
+1.7.10.4
 
