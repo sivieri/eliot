@@ -432,6 +432,7 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
                 if (reliable) buf2[0] = DATA_MSG_ACK_REQUIRED;
                 else buf2[0] = DATA_MSG;
                 do_send2(dres, buf2, len - 1, reliable);
+                driver_deq(dres->port, driver_sizeq(dres->port));
             }
             ENSURE(1);
             **res = 0;
