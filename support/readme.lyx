@@ -1,0 +1,514 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+ELIoT - ErLang for the Internet of Things
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+ELIoT is a framework for developing applications for the so-called 
+\begin_inset Quotes eld
+\end_inset
+
+Internet of Things
+\begin_inset Quotes erd
+\end_inset
+
+ scenarios using Erlang.
+\end_layout
+
+\begin_layout Standard
+It is constituted by three parts:
+\end_layout
+
+\begin_layout Itemize
+a specialized version of the Erlang Virtual Machine
+\end_layout
+
+\begin_layout Itemize
+a set of libraries
+\end_layout
+
+\begin_layout Itemize
+a simulator.
+\end_layout
+
+\begin_layout Subsection
+The Virtual Machine
+\end_layout
+
+\begin_layout Standard
+The VM has several important differences with respect to the original VM.
+\end_layout
+
+\begin_layout Standard
+The main difference is the distribution protocol: while Erlang uses a TCP-based
+ protocol for communication between nodes (instances of the VM running on
+ different machines), the ELIoT protcol is UDP-based and does not have any
+ concept of 
+\begin_inset Quotes eld
+\end_inset
+
+session
+\begin_inset Quotes erd
+\end_inset
+
+: a standard port (4369/UDP) is opened when a node is launched, and it waits
+ for incoming messages for that node; each Erlang process communicating
+ with the outside world will send a UDP message towards a specific node.
+ There is no concept of acknowledgements (except in some particular cases,
+ as described later), and in general a UDP message may be lost during the
+ communication, without either party knowing this fact.
+ As a consequence of this change in protocol, each machine/device can only
+ have one single instance of the VM running, and the list of neighbors maintaine
+d by the library is not reliable anymore.
+\end_layout
+
+\begin_layout Standard
+Deriving from the previous change, we introduced a new operator for unicast
+ communication and a new mode for broadcasting messages in a network.
+ In unicast, if the 
+\begin_inset Quotes eld
+\end_inset
+
+bang
+\begin_inset Quotes erd
+\end_inset
+
+ operator (
+\begin_inset Quotes eld
+\end_inset
+
+!
+\begin_inset Quotes erd
+\end_inset
+
+) is used, then the distribution protocol tries to achieve some degree of
+ reliability: the message is sent and an acknowledgement is expected by
+ the other party; if not received after a certain timeout, the message is
+ resent.
+ After a certain number of tentatives, the driver gives up and sends a NACK
+ message to the application level.
+ If the ACK is not necessary/wanted, then a completely unreliable message
+ can be sent by using the 
+\begin_inset Quotes eld
+\end_inset
+
+tilde
+\begin_inset Quotes erd
+\end_inset
+
+ operator (
+\begin_inset Quotes eld
+\end_inset
+
+~
+\begin_inset Quotes erd
+\end_inset
+
+, not existing in Erlang): if used, the driver will simply send the message
+ using UDP and forget about it.
+\end_layout
+
+\begin_layout Standard
+In Erlang, broadcasting is usually performed by sending n single unicasts
+ to the neighbors (using the 
+\noun on
+erlang:nodes/0
+\noun default
+ function); as stated before, in our implementation the neighbors list is
+ not reliable anymore, so broadcasting a message means sending it to the
+ (fictious) node called 
+\begin_inset Quotes eld
+\end_inset
+
+all
+\begin_inset Quotes erd
+\end_inset
+
+, which is interpreted by the driver as a message to be broadcasted to the
+ entire subnetwork (i.e., if the local address is 192.168.1.23, the message is
+ sent to 192.168.1.255).
+\end_layout
+
+\begin_layout Standard
+A new operation called 
+\begin_inset Quotes eld
+\end_inset
+
+export
+\begin_inset Quotes erd
+\end_inset
+
+ is introduced (
+\noun on
+erlang:export/1
+\noun default
+), which has to be invoked for allowing a process to receive messages from
+ the network: while in Erlang usually each process can receive messages
+ from the outside world (given that its name or its process identifier has
+ to be known by any other party in the communication), in ELIoT a process
+ has to be 
+\begin_inset Quotes eld
+\end_inset
+
+exported
+\begin_inset Quotes erd
+\end_inset
+
+ (by name or by pid), and from that moment on it will receive messages coming
+ from the network.
+ Other operations allow a process to be 
+\begin_inset Quotes eld
+\end_inset
+
+unexported
+\begin_inset Quotes erd
+\end_inset
+
+ and to obtain a list of all locally exported processes.
+\end_layout
+
+\begin_layout Subsection
+The library
+\end_layout
+
+\begin_layout Standard
+The ELIoT library contains several parts:
+\end_layout
+
+\begin_layout Itemize
+the UDP driver that is used as the new distribution protocol (note that
+ the ELIoT VM is not able to use the default TCP driver anymore)
+\end_layout
+
+\begin_layout Itemize
+the main API (the 
+\noun on
+eliot_api
+\noun default
+ module), which allows a node to save some data so that it will be available
+ to all the processes running in the same node, and spawn other processes
+ in the whole subnetwork (or in a single node), and other utility functions
+\end_layout
+
+\begin_layout Itemize
+several algorithms used in distributed systems (i.e., CTP, trickle)
+\end_layout
+
+\begin_layout Itemize
+the simulator library (see the next subsection for details)
+\end_layout
+
+\begin_layout Itemize
+some low level libraries used for interfacing with hardware (i.e., GPIO, WiFi
+ modules).
+\end_layout
+
+\begin_layout Standard
+There are also a few examples for testing these algorithms, in the subfolder
+ 
+\begin_inset Quotes eld
+\end_inset
+
+examples
+\begin_inset Quotes erd
+\end_inset
+
+, and other tools used for simulation.
+\end_layout
+
+\begin_layout Subsection
+The simulator
+\end_layout
+
+\begin_layout Standard
+The simulator allows two different modes:
+\end_layout
+
+\begin_layout Itemize
+full simulation: a set of nodes is created and simulated inside a single
+ machine (VM instance)
+\end_layout
+
+\begin_layout Itemize
+mixed simulation: a set of nodes is simulated in a single machine, while
+ some other nodes are executed on different devices: this allows the code
+ to be tested also on real devices, and at the same time the size of the
+ network can be greater than the number of devices that can be used (both
+ simulated and real devices can communicate with each other in this scenario).
+\end_layout
+
+\begin_layout Standard
+The code executed in simulations is exactly the same to be executed on real
+ devices: it has only to be recompiled and then executed in the simulator;
+ of course, some operations can be introduced so that in a full simulation
+ some data can be injected in the network (i.e., in a dissemination scenario,
+ some new data can be introduced on a single node, so that the dissemination
+ of that data can be started).
+\end_layout
+
+\begin_layout Section
+Installation
+\end_layout
+
+\begin_layout Subsection
+Installing the VM
+\end_layout
+
+\begin_layout Standard
+The ELIoT VM git repository can be cloned at the URL 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+gitosis@sola0.dei.polimi.it:erlang.git
+\end_layout
+
+\end_inset
+
+, and can be downloaded (for authorized users only) from there; it can be
+ consequently compiled by executing the following commands from a shell:
+\end_layout
+
+\begin_layout Quote
+./otp_build autoconf
+\end_layout
+
+\begin_layout Quote
+./configure --disable-hipe --prefix=/some/path
+\end_layout
+
+\begin_layout Quote
+make
+\end_layout
+
+\begin_layout Quote
+make install
+\end_layout
+
+\begin_layout Standard
+It could be useful if the path specified during configuration is different
+ from the system ones (i.e., 
+\noun on
+/usr/
+\noun default
+, 
+\noun on
+/usr/local
+\noun default
+), so that the ELIoT installation does not interfere with the standard one
+ that can be installed using the package manager of the chosen Linux distributio
+n.
+\end_layout
+
+\begin_layout Subsection
+Compiling the framework
+\end_layout
+
+\begin_layout Standard
+The ELIoT framework can be cloned at the URL 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+gitosis@sola0.dei.polimi.it:eliot.git
+\end_layout
+
+\end_inset
+
+, and it can be compiled by executing 
+\noun on
+make
+\noun default
+ from the command line (the ELIoT VM 
+\begin_inset Quotes eld
+\end_inset
+
+bin
+\begin_inset Quotes erd
+\end_inset
+
+ subdirectory should be in PATH).
+ Before compiling the code, there are two files that have to be edited by
+ hand (at least for now):
+\end_layout
+
+\begin_layout Itemize
+include/eliot.hrl
+\end_layout
+
+\begin_layout Itemize
+deps/udp_dist/include/eliot.hrl
+\end_layout
+
+\begin_layout Standard
+They are actually the same file duplicated in different locations; in both
+ files, the constant value called 
+\noun on
+interface
+\noun default
+ has to be changed to reflect the name of the network interface in use (i.e.,
+ 
+\noun on
+eth0/eth1
+\noun default
+ in case of a wired interface, 
+\noun on
+wlan0
+\noun default
+ in case of a wireless interface; refer to the 
+\noun on
+ifconfig
+\noun default
+ command to know the currently used interface name).
+ This is important, because this information is used by both the ELIoT driver
+ and the framework for effective communication.
+\end_layout
+
+\begin_layout Subsection
+Executing the interpreter
+\end_layout
+
+\begin_layout Standard
+The interpreter can be executed from the main ELIoT directory by launching
+ the following commands from a shell:
+\end_layout
+
+\begin_layout Quote
+shell> /path/to/eliot/bin/erl -pa ebin deps/*/ebin -proto_dist udp -no_epmd
+\end_layout
+
+\begin_layout Quote
+erl> udp:start().
+\end_layout
+
+\begin_layout Standard
+The first is executed in the shell, and when the Erlang prompt is ready,
+ the second line has to be executed; this will start the distribution protocol
+ (some debug messages can still be shown from time to time, and they can
+ be ignored usually).
+ At this point, the interpreter can be used as usual and also for communicating
+ to other nodes executed on different machines.
+ If the network distribution is not used (for example for executing a local
+ application), then the 
+\noun on
+udp:start()
+\noun default
+ command can be ignored.
+\end_layout
+
+\begin_layout Subsubsection
+Executing an example (on a device)
+\end_layout
+
+\begin_layout Standard
+For executing one of the examples, it is necessary to execute 
+\noun on
+make
+\noun default
+ again in that directory (checking that the 
+\noun on
+deps
+\noun default
+ directory contains a link to the main ELIoT directory); at this point,
+ the shell script 
+\noun on
+start.sh
+\noun default
+ contained in each directory will start the algorithm.
+\end_layout
+
+\begin_layout Subsubsection
+Executing an example (on the simulator)
+\end_layout
+
+\begin_layout Standard
+The 
+\noun on
+make
+\noun default
+ command has to be executed with the argument 
+\noun on
+simulation
+\noun default
+: this will recompile all the code (the example and the framework itself),
+ and at this point the same shell script as before can be executed with
+ the same argument, and the simulation nodes will be launched (and may produce
+ some output, depending on the application being simulated); at this point,
+ there are some operations that can be used to simulate data collection/dissemin
+ation or other operations, please refer to each application to know more
+ about it.
+\end_layout
+
+\begin_layout Author
+Alessandro Sivieri
+\end_layout
+
+\end_body
+\end_document
