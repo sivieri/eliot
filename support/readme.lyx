@@ -408,7 +408,15 @@ bin
 \begin_inset Quotes erd
 \end_inset
 
- subdirectory should be in PATH).
+ subdirectory should be in PATH, and this can be done by executing
+\end_layout
+
+\begin_layout Quote
+export PATH=/some/path/bin:$PATH
+\end_layout
+
+\begin_layout Standard
+from the command line).
  Before compiling the code, there are two files that have to be edited by
  hand (at least for now):
 \end_layout
@@ -471,9 +479,9 @@ The first is executed in the shell, and when the Erlang prompt is ready,
  to other nodes executed on different machines.
  If the network distribution is not used (for example for executing a local
  application), then the 
-\noun on
+\emph on
 udp:start()
-\noun default
+\emph default
  command can be ignored.
 \end_layout
 
