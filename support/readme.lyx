@@ -64,6 +64,10 @@
 ELIoT - ErLang for the Internet of Things
 \end_layout
 
+\begin_layout Author
+Alessandro Sivieri
+\end_layout
+
 \begin_layout Section
 Introduction
 \end_layout
@@ -176,9 +180,9 @@ tilde
 \begin_layout Standard
 In Erlang, broadcasting is usually performed by sending n single unicasts
  to the neighbors (using the 
-\noun on
+\emph on
 erlang:nodes/0
-\noun default
+\emph default
  function); as stated before, in our implementation the neighbors list is
  not reliable anymore, so broadcasting a message means sending it to the
  (fictious) node called 
@@ -204,9 +208,9 @@ export
 \end_inset
 
  is introduced (
-\noun on
+\emph on
 erlang:export/1
-\noun default
+\emph default
 ), which has to be invoked for allowing a process to receive messages from
  the network: while in Erlang usually each process can receive messages
  from the outside world (given that its name or its process identifier has
@@ -247,9 +251,9 @@ the UDP driver that is used as the new distribution protocol (note that
 
 \begin_layout Itemize
 the main API (the 
-\noun on
+\emph on
 eliot_api
-\noun default
+\emph default
  module), which allows a node to save some data so that it will be available
  to all the processes running in the same node, and spawn other processes
  in the whole subnetwork (or in a single node), and other utility functions
@@ -320,6 +324,16 @@ Installing the VM
 \end_layout
 
 \begin_layout Standard
+Before installing the VM, some dependencies need to be installed in the
+ system; in particular, for Ubuntu the following packages have to be installed:
+\end_layout
+
+\begin_layout Quote
+build-essential automake wx-common wx2.8-headers libwxgtk2.8-dev unixodbc-dev
+ libncurses5-dev fop flex bison perl5 default-jdk libsctp-dev libssl-dev
+\end_layout
+
+\begin_layout Standard
 The ELIoT VM git repository can be cloned at the URL 
 \begin_inset Flex URL
 status collapsed
@@ -354,13 +368,13 @@ make install
 \begin_layout Standard
 It could be useful if the path specified during configuration is different
  from the system ones (i.e., 
-\noun on
+\emph on
 /usr/
-\noun default
-, 
 \noun on
-/usr/local
+, 
 \noun default
+/usr/local
+\emph default
 ), so that the ELIoT installation does not interfere with the standard one
  that can be installed using the package manager of the chosen Linux distributio
 n.
@@ -383,9 +397,9 @@ gitosis@sola0.dei.polimi.it:eliot.git
 \end_inset
 
 , and it can be compiled by executing 
-\noun on
+\emph on
 make
-\noun default
+\emph default
  from the command line (the ELIoT VM 
 \begin_inset Quotes eld
 \end_inset
@@ -410,22 +424,22 @@ deps/udp_dist/include/eliot.hrl
 \begin_layout Standard
 They are actually the same file duplicated in different locations; in both
  files, the constant value called 
-\noun on
+\emph on
 interface
-\noun default
+\emph default
  has to be changed to reflect the name of the network interface in use (i.e.,
  
-\noun on
+\emph on
 eth0/eth1
-\noun default
+\emph default
  in case of a wired interface, 
-\noun on
+\emph on
 wlan0
-\noun default
+\emph default
  in case of a wireless interface; refer to the 
-\noun on
+\emph on
 ifconfig
-\noun default
+\emph default
  command to know the currently used interface name).
  This is important, because this information is used by both the ELIoT driver
  and the framework for effective communication.
@@ -469,18 +483,18 @@ Executing an example (on a device)
 
 \begin_layout Standard
 For executing one of the examples, it is necessary to execute 
-\noun on
+\emph on
 make
-\noun default
+\emph default
  again in that directory (checking that the 
-\noun on
+\emph on
 deps
-\noun default
+\emph default
  directory contains a link to the main ELIoT directory); at this point,
  the shell script 
-\noun on
+\emph on
 start.sh
-\noun default
+\emph default
  contained in each directory will start the algorithm.
 \end_layout
 
@@ -490,13 +504,13 @@ Executing an example (on the simulator)
 
 \begin_layout Standard
 The 
-\noun on
+\emph on
 make
-\noun default
+\emph default
  command has to be executed with the argument 
-\noun on
+\emph on
 simulation
-\noun default
+\emph default
 : this will recompile all the code (the example and the framework itself),
  and at this point the same shell script as before can be executed with
  the same argument, and the simulation nodes will be launched (and may produce
@@ -504,10 +518,6 @@ simulation
  there are some operations that can be used to simulate data collection/dissemin
 ation or other operations, please refer to each application to know more
  about it.
-\end_layout
-
-\begin_layout Author
-Alessandro Sivieri
 \end_layout
 
 \end_body
