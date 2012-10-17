@@ -354,7 +354,29 @@ gitosis@sola0.dei.polimi.it:erlang.git
 \end_layout
 
 \begin_layout Quote
-./configure --disable-hipe --prefix=/some/path
+./configure -
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+{}
+\end_layout
+
+\end_inset
+
+-disable-hipe -
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+{}
+\end_layout
+
+\end_inset
+
+-prefix=/some/path
 \end_layout
 
 \begin_layout Quote
@@ -458,12 +480,13 @@ Executing the interpreter
 \end_layout
 
 \begin_layout Standard
-The interpreter can be executed from the main ELIoT directory by launching
- the following commands from a shell:
+The interpreter can be executed from the main ELIoT directory (the same
+ of the previous subsection) by launching the following commands from a
+ shell:
 \end_layout
 
 \begin_layout Quote
-shell> /path/to/eliot/bin/erl -pa ebin deps/*/ebin -proto_dist udp -no_epmd
+shell> /some/path/bin/erl -pa ebin deps/*/ebin -proto_dist udp -no_epmd
 \end_layout
 
 \begin_layout Quote
