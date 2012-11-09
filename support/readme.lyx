@@ -475,6 +475,24 @@ ifconfig
  and the framework for effective communication.
 \end_layout
 
+\begin_layout Standard
+There is also a third file:
+\end_layout
+
+\begin_layout Itemize
+deps/udp_dist/src/udp_server.erl
+\end_layout
+
+\begin_layout Standard
+This file has, at line 44, a path specifying where the interpreter can find
+ the new UDP driver that has been developed (which is located under the
+ 
+\emph on
+priv
+\emph default
+ directory), and it has to reflect the full path where Eliot has been downloaded.
+\end_layout
+
 \begin_layout Subsection
 Executing the interpreter
 \end_layout
