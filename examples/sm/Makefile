@@ -1,11 +1,11 @@
 all: deploy
 
 deploy:
-	ELIOT_MODE=deploy ./rebar compile
+	(cd src;$(MAKE) deploy)
 
 simulation:
-	ELIOT_MODE=simulation ./rebar compile
+	(cd src;$(MAKE) simulation)
 
 clean:
-	ELIOT_MODE=deploy ./rebar clean
-	ELIOT_MODE=simulation ./rebar clean
+	rm -f ebin/*
+	rm -f simbin/*

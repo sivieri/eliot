@@ -1,0 +1,10 @@
+{application,appliance,
+             [{description,[]},
+              {vsn,"1"},
+              {registered,[]},
+              {applications,[kernel,stdlib]},
+              {mod,{appliance_app,[]}},
+              {env,[]},
+              {modules,[appliance,appliance_app,appliance_handler,
+                        appliance_model,appliance_sup,appliance_task,
+                        appliances]}]}.

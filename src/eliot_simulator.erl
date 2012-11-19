@@ -160,7 +160,8 @@ gateway() ->
         Msg ->
             Processes = erlang:exported(),
             {registered_name, OwnName} = process_info(self(), registered_name),
-            List = lists:filter(fun(X) -> lists:prefix(erlang:atom_to_list(OwnName), erlang:atom_to_list(X)) end, Processes),
+            List = lists:filter(fun(X) when is_pid(X) -> false;
+                                            (X) -> lists:prefix(erlang:atom_to_list(OwnName), erlang:atom_to_list(X)) end, Processes),
             lists:foreach(fun(X) -> X ! Msg end, List),
             gateway()
     end.

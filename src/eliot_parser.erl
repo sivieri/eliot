@@ -40,6 +40,10 @@ parse_function(Forms, Options, StartModule, StartFunction, EndModule, EndFunctio
                     {Module, Function} = ?CHANGED2,
                     erl_syntax:application(erl_syntax:module_qualifier(erl_syntax:atom(Module), erl_syntax:atom(Function)),
                                     [erl_syntax:infix_expr_left(Form), erl_syntax:infix_expr_right(Form)]);
+                 '~' ->
+                    {Module, Function} = ?CHANGED2,
+                    erl_syntax:application(erl_syntax:module_qualifier(erl_syntax:atom(Module), erl_syntax:atom(Function)),
+                                    [erl_syntax:infix_expr_left(Form), erl_syntax:infix_expr_right(Form)]);
                 _Any ->
                     Form
              end
