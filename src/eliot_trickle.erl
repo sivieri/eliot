@@ -70,8 +70,8 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
             NewTRef = erlang:send_after(T, trickle, transmit),
             NewTauRef = erlang:send_after(NewTau, trickle, restart),
             trickle(NewTau, {NewTauRef, NewTRef}, 0, <<NewSrc:?SRCADDR, NewVersion:?VERSION, NewPayload/binary>>);
-        {_RSSI, {SourceId, {version, <<_NewSrc:?SRCADDR, NewVersion:?VERSION, _NewPayload/binary>>}}} ->
-            io:format("~p: Received code ~p from ~p (same or older)~n", [eliot_api:get_node_name(), NewVersion, SourceId]),
+        {_RSSI, {_SourceId, {version, <<_NewSrc:?SRCADDR, _NewVersion:?VERSION, _NewPayload/binary>>}}} ->
+            %io:format("~p: Received code ~p from ~p (same or older)~n", [eliot_api:get_node_name(), NewVersion, SourceId]),
             trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>);
         Any ->
             io:format("~p: Cannot parse ~p~n", [eliot_api:get_node_name(), Any]),
