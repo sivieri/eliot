@@ -5,11 +5,16 @@
 
 % Public API
 
+-ifdef(simulation).
 start_link() ->
     Pid = spawn_link(eliot_trickle, trickle, []),
     register(trickle, Pid),
     erlang:export(trickle),
     {ok, Pid}.
+-else.
+start_link() ->
+    ignore.
+-endif.
 
 update_version(Version, Payload) ->
     eliot_trickle:update_version(trickle, Version, Payload).

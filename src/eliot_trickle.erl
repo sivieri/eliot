@@ -1,7 +1,7 @@
 %% @author Alessandro Sivieri <sivieri@elet.polimi.it>
 %% @reference <a href="http://portal.acm.org/citation.cfm?id=1251177">Trickle</a>
 -module(eliot_trickle).
--export([trickle/0, update_version/3]).
+-export([start_link/0, trickle/0, update_version/3]).
 -define(TAU_MAX, 60000).
 -define(TAU_MIN, 1000).
 -define(K, 2).
@@ -9,6 +9,12 @@
 -define(VERSION, 32/unsigned-little-integer).
 
 % Public API
+
+start_link() ->
+    Pid = spawn_link(?MODULE, trickle, []),
+    register(trickle, Pid),
+    erlang:export(trickle),
+    {ok, Pid}.
 
 %% @doc Implementation of the algorithm for each node.
 %% @spec trickle() -> none()

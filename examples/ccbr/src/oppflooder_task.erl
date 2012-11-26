@@ -5,8 +5,9 @@
 
 -ifdef(simulation).
 start_link() ->
-    spawn_link(eliot_oppflooder_event, start_link, []),
-    Pid = spawn_link(eliot_oppflooder, start_link, []),
+    eliot_oppflooder_event:start(),
+    Pid = eliot_oppflooder:start_link(),
+    oppflooder_handler:add_handler(),
     {ok, Pid}.
 -else.
 start_link() ->
