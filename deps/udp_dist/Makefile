@@ -1,14 +1,14 @@
 all: deploy
 
 lib:
-	(cd c_src;$(MAKE))
+	(mkdir -p priv;cd c_src;$(MAKE))
 	cp c_src/eliot_udp.so priv/
 
 deploy: lib
-	(cd src;$(MAKE) deploy)
+	(mkdir -p ebin;cd src;$(MAKE) deploy)
 
 simulation: lib
-	(cd src;$(MAKE) simulation)
+	(mkdir -p simbin;cd src;$(MAKE) simulation)
 
 clean:
 	rm -f ebin/*
