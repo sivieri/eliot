@@ -9,3 +9,5 @@ erl_crash.dump
 *.o
 *.d
 *.so
+eliot-gpio
+eliot-rssi
