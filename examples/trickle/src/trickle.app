@@ -3,6 +3,6 @@
               {vsn,"1"},
               {registered,[]},
               {applications,[kernel,stdlib]},
-              {mod,{oppflooder_app,[]}},
+              {mod,{trickle_app,[]}},
               {env,[]},
               {modules,[trickle,trickle_app,trickle_sup,trickle_task]}]}.
