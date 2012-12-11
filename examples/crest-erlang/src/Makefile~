@@ -1,0 +1,13 @@
+INCLUDE_DIRS := ../include $(wildcard ../deps/*/include)
+EBIN_DIRS := ../ebin $(wildcard ../deps/*/ebin)
+EBIN_DIR := ../ebin
+ERLC_FLAGS := -W $(INCLUDE_DIRS:../%=-I ../%) $(EBIN_DIRS:%=-pa %) +debug_info
+ERLC := erlc
+
+CREST_SRC = crest_app.erl crest_sup.erl crest.erl crest_deps.erl crest_json.erl crest_local.erl crest_manager.erl crest_operation.erl crest_peer.erl crest_spawn.erl crest_spawn_sup.erl crest_utils.erl crest_web.erl demo.erl demo_text_mining.erl destructure_json.erl gen_server2.erl original.erl uuid.erl
+
+all: deploy
+
+deploy:
+	cp *.app.src ../ebin
+	$(ERLC) $(ERLC_FLAGS) -o $(EBIN_DIR) $(CREST_SRC)

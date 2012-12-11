@@ -1,0 +1,12 @@
+# Ignore binaries and docs (as usual)
+ebin
+doc
+logs/*.txt
+logs/index
+logs/*.log
+logs/?
+logs/??
+erl_crash.dump
+.project
+.settings
+deps
