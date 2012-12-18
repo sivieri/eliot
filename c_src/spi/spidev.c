@@ -15,7 +15,6 @@ typedef struct {
   uint8_t mode;
   uint8_t bits_per_word;
   uint8_t max_speed_hz;
-  char errmsg[256];
 } state_t;
 
 static state_t state;
@@ -106,8 +105,8 @@ static ERL_NIF_TERM xfer2_1(ErlNifEnv *env, int argc,
     xfer.len = length;
     status = ioctl(state.fd, SPI_IOC_MESSAGE(1), &xfer);
     if (status < 0) {
-        //enif_free(txbuf);
-        //enif_free(rxbuf);
+        enif_free(txbuf);
+        enif_free(rxbuf);
         return enif_make_tuple2(env, enif_make_atom(env, "error"), enif_make_string(env, "spi ioc message", ERL_NIF_LATIN1));
     }
     list = enif_make_list(env, 0);
@@ -116,8 +115,8 @@ static ERL_NIF_TERM xfer2_1(ErlNifEnv *env, int argc,
         list = enif_make_list_cell(env, cell, list);
     }
     res = enif_make_tuple2(env, enif_make_atom(env, "ok"), list);
-    //enif_free(txbuf);
-    //enif_free(rxbuf);
+    enif_free(txbuf);
+    enif_free(rxbuf);
     
     return res;
 }
