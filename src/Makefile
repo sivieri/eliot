@@ -9,7 +9,7 @@ ERLC_SIM_FLAGS := $(ERLC_SIM_BASE_FLAGS) -Dsimulation
 ERLC_SIM_PARSER_FLAGS := $(ERLC_SIM_FLAGS) +'{parse_transform, eliot_parser}'
 ERLC := erlc
 
-ELIOT_DIST = eliot_api.erl eliot_app.erl eliot_dispatcher.erl eliot_forwarder.erl eliot_gpio.erl eliot_rssi.erl eliot_simulator.erl eliot_sup.erl eliot.erl utils.erl
+ELIOT_DIST = eliot_api.erl eliot_app.erl eliot_dispatcher.erl eliot_forwarder.erl eliot_gpio.erl eliot_rssi.erl eliot_simulator.erl eliot_sup.erl eliot.erl utils.erl eliot_spidev.erl
 ELIOT_PARSER = eliot_parser.erl
 ELIOT_ALGS = ctp_fwd.erl ctp_link.erl ctp_routing.erl eliot_ctp.erl eliot_oppflooder_event.erl eliot_oppflooder.erl eliot_trickle.erl
 
