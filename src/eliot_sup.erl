@@ -11,9 +11,7 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(eliot_dispatcher, worker),
-                                               ?CHILD(eliot_gpio, worker),
-                                               ?CHILD(eliot_rssi, worker)]}}.
+    {ok, { {one_for_one, 5, 10}, [?CHILD(eliot_dispatcher, worker)]}}.
 
 start_task(Module) ->
     supervisor:start_child(?MODULE, ?CHILD(Module, worker)).
