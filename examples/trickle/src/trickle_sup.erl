@@ -12,7 +12,6 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(eliot_trickle, worker),
-                                                    ?CHILD(trickle_task, worker)]} }.
+    {ok, { {one_for_one, 5, 10}, [?CHILD(eliot_trickle, worker),?CHILD(trickle_task, worker)]} }.
 
 % Private API
