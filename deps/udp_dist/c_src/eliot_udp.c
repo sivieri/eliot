@@ -158,6 +158,7 @@ static ack_data_t* acks;
 static int counter;
 static int sock;
 static int sockBool;
+static unsigned long myaddress;
 static struct sockaddr_in sa;
 static ErlDrvMutex *mutex;
 static ErlDrvMutex *ack_mutex;
@@ -187,6 +188,7 @@ DRIVER_INIT(eliot_udp) {
         return NULL;
     }
     sockBool = 0;
+    myaddress = 0;
     
     FPRINTF(stderr, "DEBUG: UDP driver loaded\n");
 
@@ -321,6 +323,10 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len) {
         case 'L':
             res->curstate = LISTEN;
             driver_output(res->port, "Lok", 3);
+            break;
+        case 'M':
+            myaddress = inet_addr(buf + 1);
+            driver_output(res->port, "Mok", 3);
             break;
         case 'S':
             res->curstate = SEND;
@@ -499,6 +505,12 @@ void do_recv(driver_data_t* res) {
     if (size > 0) {
         msg_type = buf[0];
         FPRINTF(stderr, "DEBUG: Peeking %d bytes of type %c from %d:%d through UDP\n", size, msg_type, client->sin_addr.s_addr, client->sin_port);
+        // ignore it if it comes from us (but remove it from the socket)
+        if (myaddress == client->sin_addr.s_addr) {
+            recvfrom(sock, buf, BUF, 0, (struct sockaddr *) NULL, (socklen_t *) NULL);
+            driver_free(client);
+            return;
+        }
         print_ports();
         while (iterator != NULL) {
             if (iterator->peer.sin_addr.s_addr == client->sin_addr.s_addr && (iterator->curstate == RECEIVE || iterator->curstate == INTERMEDIATE || iterator->curstate == HANDSHAKED)) {

@@ -50,6 +50,9 @@ select(Node) ->
 listen(Name) ->
     case udp:listen(atom_to_list(Name)) of
         {ok, Socket} ->
+            % Set my address in the driver
+            % (yeah, it sucks doing it here, but anyway...)
+            udp:myaddr(Socket, inet_parse:ntoa(get_host_ip())),
             % Create the 'all' port
             spawn(fun() -> net_kernel:connect_node(all) end),
             {ok, {Socket, 
@@ -347,6 +350,22 @@ get_bcast_addr() ->
         {ok, IfList} ->
             {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
             {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
+            Address
+    end.
+
+get_host_ip() ->
+    case inet:getifaddrs() of
+        {ok, IfList} when length(IfList) == 2 ->
+            [{_Real, IfOpts}] = lists:filter(fun({Name, _IfOpts}) when Name == "lo" -> false;
+                                     ({_Name, _IfOpts}) -> true end, IfList),
+            {addr, Address} = lists:keyfind(addr, 1, IfOpts),
+            Address;
+        {ok, IfList} ->
+            {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
+            Addresses = proplists:lookup_all(addr, IfOpts),
+            Ip4Addresses = lists:filter(fun({addr, Addr}) when tuple_size(Addr) == 4 -> true;
+                                                           ({addr, _Addr}) -> false end, Addresses),
+            {addr, Address} = hd(Ip4Addresses),
             Address
     end.
 
