@@ -306,7 +306,7 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len) {
     driver_data_t* res = (driver_data_t*)handle;
     ip_data_t* tmp;
     int reliable;
-    char bufname[BUF];
+    char bufname[BUF], addr[16];
 
     if (len == 0)
         return;
@@ -325,7 +325,9 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len) {
             driver_output(res->port, "Lok", 3);
             break;
         case 'M':
-            myaddress = inet_addr(buf + 1);
+            memcpy(addr, buf + 1, len - 1);
+            addr[len - 1] = '\0';
+            myaddress = inet_addr(addr);
             driver_output(res->port, "Mok", 3);
             break;
         case 'S':
