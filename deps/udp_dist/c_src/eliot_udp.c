@@ -629,9 +629,13 @@ int do_send(driver_data_t* res, char* buf, int len, int reliable) {
 }
 
 int do_send2(driver_data_t* res, char* buf, int len, int reliable) {
-    int size;
+    int size, i;
     ack_data_t* ack;
 
+    for (i = 0; i < len; ++i) {
+        fprintf(stderr, "%b8u ", buf[i]);
+    }
+    fprintf(stderr, "\n");
     ack = driver_alloc(sizeof(ack_data_t));
     ack->buf[0] = buf[0];
     size = 1;
