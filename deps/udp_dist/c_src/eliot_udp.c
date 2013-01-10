@@ -610,8 +610,12 @@ void do_recv(driver_data_t* res) {
 }
 
 int do_send(driver_data_t* res, char* buf, int len, int reliable) {
-    int size;
+    int size, i;
 
+    for (i = 0; i < len; ++i) {
+        fprintf(stderr, "%b8u ", buf[i]);
+    }
+    fprintf(stderr, "\n");
     size = sendto(res->clientSock, buf, len, 0, (struct sockaddr*)&res->peer,
                     sizeof(struct sockaddr_in));
     if (size > 0) {
