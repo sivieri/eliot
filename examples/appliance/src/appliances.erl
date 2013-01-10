@@ -1,8 +1,15 @@
 -module(appliances).
--export([ac/1, dw/1, wm/1]).
+-export([start/1, ac/1, dw/1, wm/1]).
 -include("scenario.hrl").
 
 % Public API
+
+start([Type, Id]) when Type == 2 ->
+    dw(Id);
+start([Type, Id]) when Type == 3 ->
+    wm(Id);
+start([_Type, Id]) ->
+    ac(Id).
 
 ac(Id) ->
     application:set_env(appliance, type, ac),

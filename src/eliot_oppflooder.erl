@@ -54,6 +54,7 @@ oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
                       io:format("~p: Already received this msg~n", [eliot_api:get_node_name()]),
                       oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum);
                   false ->
+                      io:format("~p: Received new msg ~p from ~p~n", [eliot_api:get_node_name(), SourceId, Payload]),
                       % Notify any listener
                       eliot_oppflooder_event:notify(SourceId, Payload),
                       % Start timers
