@@ -609,13 +609,12 @@ void do_recv(driver_data_t* res) {
     }
 }
 
+/* 
+ * Deprecated!!!
+ */
 int do_send(driver_data_t* res, char* buf, int len, int reliable) {
-    int size, i;
+    int size;
 
-    for (i = 0; i < len; ++i) {
-        fprintf(stderr, "%b8u ", buf[i]);
-    }
-    fprintf(stderr, "\n");
     size = sendto(res->clientSock, buf, len, 0, (struct sockaddr*)&res->peer,
                     sizeof(struct sockaddr_in));
     if (size > 0) {
@@ -629,13 +628,13 @@ int do_send(driver_data_t* res, char* buf, int len, int reliable) {
 }
 
 int do_send2(driver_data_t* res, char* buf, int len, int reliable) {
-    int size, i;
+    int size;
     ack_data_t* ack;
 
-    for (i = 0; i < len; ++i) {
-        fprintf(stderr, "%b8u ", buf[i]);
+    /*for (i = 0; i < len; ++i) {
+        fprintf(stderr, "%d ", (uint8_t) buf[i]);
     }
-    fprintf(stderr, "\n");
+    fprintf(stderr, "\n");*/
     ack = driver_alloc(sizeof(ack_data_t));
     ack->buf[0] = buf[0];
     size = 1;
