@@ -1,5 +1,5 @@
 -module(sm_task).
--export([start_link/0, sm/0, schedule/2, get_appliances/0, set_appliances/1]).
+-export([start_link/0, sm/0, schedule/2, get_appliances/0, set_appliances/1, test_schedule/0]).
 -include("scenario.hrl").
 -define(TIMER, 10 * 1000).
 -record(state, {company = none, appliances = dict:new(), sensors = [], slots = []}).
@@ -15,6 +15,10 @@ start_link() ->
 
 sm() ->
     sm(#state{}).
+
+test_schedule() ->
+    schedule([#slot{starttime = {7, 00}, endtime = {20, 00}, priority = 0},
+                     #slot{starttime = {20, 00}, endtime = {7, 00}, priority = 1}], 3000).
 
 schedule(Slots, Cap) ->
     sm ! {schedule, Slots, Cap}.
