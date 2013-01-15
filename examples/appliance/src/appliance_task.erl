@@ -33,7 +33,7 @@ appliance(#state{sm = SM} = State) ->
                     appliance(State);
                 true ->
                     io:format("Appliance: Already registered to SM ~p, changing to ~p~n", [SM, NodeIP]),
-                    utils:join_name(?NODENAME, NodeIP) ! eliot_api:msg(term_to_binary(appliance)),
+                    utils:join_name(?NODENAME, NodeIP) ~ eliot_api:msg(term_to_binary(appliance)),
                     appliance(#state{sm = NodeIP})
             end;
         {_RSSI, {_Source, Content}} ->
