@@ -17,7 +17,7 @@ current(#state{company = Company} = State) ->
     receive
         send ->
             Dest = utils:join_name(?NODENAME, Company),
-            {company, Dest} ! eliot_api:msg(term_to_binary({sm, current, 100})),
+            {company, Dest} ~ eliot_api:msg(term_to_binary({sm, current, 100})),
             erlang:send_after(?TIMER, self(), send);
         Any ->
             io:format("Sm Current: Unknown message ~p~n", [Any])

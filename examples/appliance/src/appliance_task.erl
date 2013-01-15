@@ -25,9 +25,9 @@ appliance(#state{sm = SM} = State) ->
                 SM == none ->
                     io:format("Appliance: Registering to SM ~p~n", [NodeIP]),
                     Dest = {sm, utils:join_name(?NODENAME, NodeIP)},
-                    Dest ! eliot_api:msg(term_to_binary('appliance')),
+                    Dest ~ eliot_api:msg(term_to_binary('appliance')),
                     {ok, Params} = application:get_env(appliance, params),
-                    Dest ! eliot_api:msg(term_to_binary({appliance, data, self(), Params})),
+                    Dest ~ eliot_api:msg(term_to_binary({appliance, data, self(), Params})),
                     appliance(#state{sm = NodeIP});
                 SM == NodeIP ->
                     appliance(State);
@@ -44,7 +44,7 @@ appliance(#state{sm = SM} = State) ->
                     io:format("Appliance: Evaluation of parameters ~p at time ~p~n", [Params, CurrentTime]),
                     Ans = eliot_api:lpc(model, {eval, CurrentTime, Params}),
                     Dest = utils:join_name(?NODENAME, SM),
-                    {algorithm, Dest} ! eliot_api:msg(term_to_binary(Ans));
+                    {algorithm, Dest} ~ eliot_api:msg(term_to_binary(Ans));
                 Any ->
                     io:format("Appliance: Unknown binary message ~p~n", [Any])
             end,

@@ -2,7 +2,7 @@
 %% @doc Framework.
 -module(eliot_api).
 -include("eliot.hrl").
--export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0, put_data/2, get_data/1, rpc/2, lpc/2, id/0]).
+-export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0, put_data/2, get_data/1, rpc/2, rpc_noacks/2, lpc/2, id/0]).
 -export([send_test/3, msg/1]).
 -export([spawn/2, spawn/3, spawn/4, spawn/5, bcast_spawn/1, bcast_spawn/2, bcast_spawn/3, bcast_spawn/4]).
 
@@ -190,6 +190,18 @@ rpc(Dest, Message) ->
     receive
         {_RSSI, {_Source, Content}} ->
             binary_to_term(Content)
+    end.
+
+rpc_noacks(Dest, Message) when node(Dest) == node() ->
+    lpc(Dest, Message);
+rpc_noacks(Dest, Message) ->
+    Dest ~ eliot_api:msg(term_to_binary(Message)),
+    receive
+        {_RSSI, {_Source, Content}} ->
+            binary_to_term(Content)
+    after
+        ?RPC_NOACKS ->
+            {error, no_answer}
     end.
 
 lpc(Dest, Message) ->

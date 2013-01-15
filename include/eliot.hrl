@@ -4,3 +4,4 @@
 -define(SENSITIVITY, 4.0).
 -define(NODENAME, "eliot").
 -define(INTERFACE, "eth1").
+-define(RPC_NOACKS, 30000).

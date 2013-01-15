@@ -24,7 +24,7 @@ company(#state{sm = SM} = State) ->
     receive
         {cap, Cap} ->
             Dest = utils:join_name(?NODENAME, SM),
-            {sm, Dest} ! eliot_api:msg(term_to_binary({company, cap, Cap})),
+            {sm, Dest} ~ eliot_api:msg(term_to_binary({company, cap, Cap})),
             company(State);
         {sm, {_NodeName, NodeIP}} ->
             if

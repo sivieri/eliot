@@ -20,7 +20,7 @@ schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
 notify(Schedule) ->
     dict:fold(fun(_Name, #appliance{name = _Name, ip = IP, pid = _Pid, params = Params}, _AccIn) ->
                                 Dest = utils:join_name(?NODENAME, IP),
-                                {appliance, Dest} ! eliot_api:msg(term_to_binary({schedule, Params})) end, 0, Schedule).
+                                {appliance, Dest} ~ eliot_api:msg(term_to_binary({schedule, Params})) end, 0, Schedule).
 
 % Private API
 
@@ -51,7 +51,7 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{pid = Dest, params = Params
     if
         Cur >= Start andalso Cur < End ->
             Message = {eval, Cur, Params},
-            case eliot_api:rpc(Dest, Message) of
+            case eliot_api:rpc_noacks(Dest, Message) of
                 Consumption when Consumption + CurConsumption =< Cap ->
                     {Appliance, Consumption};
                 _Consumtpion ->
