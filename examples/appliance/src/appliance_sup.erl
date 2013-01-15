@@ -10,9 +10,7 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(eliot_oppflooder_event, worker),
-                                                    ?CHILD(eliot_oppflooder, worker),
-                                                    ?CHILD(appliance_model, worker),
+    {ok, { {one_for_one, 5, 10}, [?CHILD(appliance_model, worker),
                                                     ?CHILD(appliance_task, worker)]} }.
 
 % Private API

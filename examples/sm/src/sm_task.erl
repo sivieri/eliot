@@ -2,7 +2,7 @@
 -export([start_link/0, sm/0, schedule/2, get_appliances/0, set_appliances/1, test_schedule/0]).
 -include("scenario.hrl").
 -define(TIMER, 10 * 1000).
--record(state, {company = none, appliances = dict:new(), sensors = [], slots = []}).
+-record(state, {company = none, appliances = dict:new(), slots = [], cap = 0}).
 
 % Public API
 
@@ -31,11 +31,11 @@ set_appliances(Appliances) ->
 
 % Private API
 
-sm(#state{company = Company, appliances = Appliances, sensors = Sensors, slots = Slots} = State) ->
+sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} = State) ->
     receive
         beacon ->
-            Msg = erlang:term_to_binary(sm),
-            eliot_oppflooder:send(oppflooder, Msg),
+            Msg = <<?SM:8/unsigned-little-integer>>,
+            {sm, all} ~ eliot_api:msg(Msg),
             erlang:send_after(?TIMER, self(), beacon),
             sm(State);
         {Pid, {get, appliances}} ->
@@ -43,64 +43,58 @@ sm(#state{company = Company, appliances = Appliances, sensors = Sensors, slots =
             sm(State);
         {set, appliances, NewAppliances} ->
             sm(State#state{appliances = NewAppliances});
-        {schedule, NewSlots, Cap} ->
+        {schedule, NewSlots} ->
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = NewSlots, cap = Cap}, Appliances) end),
             register(algorithm, Pid),
             erlang:export(algorithm),
             sm(State#state{slots = NewSlots});
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
-            sm(#state{company = Company, appliances = Schedule, sensors = Sensors});
+            sm(#state{company = Company, appliances = Schedule});
         {_RSSI, {{NodeId, NodeIP} = Source, Content}} ->
-            {NewCompany, NewAppliances, NewSensors, NewSlots} = case erlang:binary_to_term(Content) of
-                company when Company == none ->
+            {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of
+                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == none ->
                     io:format("SM: Registered a new company ~p~n", [Source]),
                     sm_sup:add_child(sm_current, [NodeIP]),
-                    {NodeIP, Appliances, Sensors, Slots};
-                company when Company == NodeIP ->
-                    {Company, Appliances, Sensors, Slots};
-                company ->
+                    {NodeIP, Appliances, Slots, CCap};
+                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == NodeIP andalso CCap == Cap ->
+                    {Company, Appliances, Slots, Cap};
+                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == NodeIP ->
+                    self() !{schedule, Slots, CCap},
+                    {Company, Appliances, Slots, CCap};
+                <<?COMPANY:8/unsigned-little-integer, _CCap:16/unsigned-little-integer>> ->
                     io:format("SM: Already registered to the company ~p (new request from ~p)~n", [Company, NodeIP]),
-                    {Company, Appliances, Sensors, Slots};
-                {company, cap, NewCap} ->
-                    self() !{schedule, Slots, NewCap},
-                    {Company, Appliances, Sensors, Slots};
-                appliance ->
+                    {Company, Appliances,  Slots, Cap};
+                <<?APPLIANCE:8/unsigned-little-integer>> ->
                     case dict:is_key(NodeId, Appliances) of
                         true ->
-                            {Company, Appliances, Sensors, Slots};
+                            {Company, Appliances,  Slots};
                         false ->
                             io:format("SM: Registered a new appliance ~p~n", [Source]),
-                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP}, Appliances), Sensors, Slots}
+                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP}, Appliances), Slots}
                     end;
-                {appliance, data, Pid, Params} when is_pid(Pid) andalso is_list(Params) ->
+                <<?APPLIANCE:8/unsigned-little-integer, PidBin:27, ParamsBin/binary>>  ->
+                    Pid = binary_to_term(PidBin),
+                    Params = data:decode_params(ParamsBin),
                     case dict:is_key(NodeId, Appliances) of
                         true ->
-                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP, pid = Pid, params = Params}, Appliances), Sensors, Slots};
+                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP, pid = Pid, params = Params}, Appliances),  Slots, Cap};
                         false ->
-                            {Company, Appliances, Sensors, Slots}
+                            {Company, Appliances,  Slots, Cap}
                     end;
-                {appliance, code, Name, Code, Hash, Filename} when is_binary(Code) ->
-                    case dict:is_key(NodeId, Appliances) of
-                        true ->
-                            {Pid, Params} = sm_sup:start_model(Name, Code, Hash, Filename),
-                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP, pid = Pid, params = Params}, Appliances), Sensors, Slots};
-                        false ->
-                            {Company, Appliances, Sensors, Slots}
-                    end;
-                sensor ->
-                    case lists:member(NodeIP, Sensors) of
-                        true ->
-                            {Company, Appliances, Sensors, Slots};
-                        false ->
-                            io:format("SM: Registered a new sensor ~p~n", [Source]),
-                            {Company, Appliances, [NodeIP|Sensors], Slots}
-                    end;
+%%                 {appliance, code, Name, Code, Hash, Filename} when is_binary(Code) ->
+%%                     case dict:is_key(NodeId, Appliances) of
+%%                         true ->
+%%                             {Pid, Params} = sm_sup:start_model(Name, Code, Hash, Filename),
+%%                             {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP, pid = Pid, params = Params}, Appliances),  Slots, Cap};
+%%                         false ->
+%%                             {Company, Appliances,  Slots, Cap}
+%%                     end;
                 Any ->
                     io:format("SM: Unknown device ~p~n", [Any]),
-                    {Company, Appliances, Sensors, Slots}
+                    {Company, Appliances,  Slots}
             end,
-            sm(#state{company = NewCompany, appliances = NewAppliances, sensors = NewSensors, slots = NewSlots});
+            sm(#state{company = NewCompany, appliances = NewAppliances, slots = NewSlots, cap = NewCap});
         Any ->
             io:format("SM: Unknown message ~p~n", [Any]),
             sm(State)

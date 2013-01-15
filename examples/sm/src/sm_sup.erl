@@ -11,8 +11,7 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [?CHILD(eliot_oppflooder, worker),
-                                  ?CHILD(sm_task, worker)]} }.
+    {ok, { {one_for_one, 5, 10}, [?CHILD(sm_task, worker)]} }.
 
 add_child(Child, Args) ->
     ChildSpec = ?CHILDARGS(Child, worker, Args),

@@ -9,7 +9,7 @@ ERLC_SIM_FLAGS := $(ERLC_SIM_BASE_FLAGS) -Dsimulation
 ERLC_SIM_PARSER_FLAGS := $(ERLC_SIM_FLAGS) +'{parse_transform, eliot_parser}'
 ERLC := erlc
 
-APP_SRC = appliance_app.erl appliance_handler.erl appliance_model.erl appliance_sup.erl appliance_task.erl appliance.erl appliances.erl
+APP_SRC = appliance_app.erl appliance_model.erl appliance_sup.erl appliance_task.erl appliance.erl appliances.erl data.erl
 
 all: deploy
 

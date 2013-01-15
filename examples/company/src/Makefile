@@ -9,7 +9,7 @@ ERLC_SIM_FLAGS := $(ERLC_SIM_BASE_FLAGS) -Dsimulation
 ERLC_SIM_PARSER_FLAGS := $(ERLC_SIM_FLAGS) +'{parse_transform, eliot_parser}'
 ERLC := erlc
 
-COMPANY_SRC = company_app.erl company_handler.erl company_sup.erl company_task.erl company.erl
+COMPANY_SRC = company_app.erl company_sup.erl company_task.erl company.erl
 
 all: deploy
 
