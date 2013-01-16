@@ -69,10 +69,10 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
                 <<?APPLIANCE:8/unsigned-little-integer>> ->
                     case dict:is_key(NodeId, Appliances) of
                         true ->
-                            {Company, Appliances,  Slots};
+                            {Company, Appliances,  Slots, Cap};
                         false ->
                             io:format("SM: Registered a new appliance ~p~n", [Source]),
-                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP}, Appliances), Slots}
+                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP}, Appliances), Slots, Cap}
                     end;
                 <<?APPLIANCE:8/unsigned-little-integer, PidBin:27, ParamsBin/binary>>  ->
                     Pid = binary_to_term(PidBin),
@@ -93,7 +93,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
 %%                     end;
                 Any ->
                     io:format("SM: Unknown device ~p~n", [Any]),
-                    {Company, Appliances,  Slots}
+                    {Company, Appliances,  Slots, Cap}
             end,
             sm(#state{company = NewCompany, appliances = NewAppliances, slots = NewSlots, cap = NewCap});
         Any ->
