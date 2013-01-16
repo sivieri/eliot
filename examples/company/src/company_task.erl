@@ -7,7 +7,6 @@
 % Public API
 
 start_link() ->
-    company_handler:add_handler(),
     Pid = spawn_link(?MODULE, company, []),
     register(company, Pid),
     erlang:export(company),

@@ -35,7 +35,8 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
     receive
         beacon ->
             Msg = <<?SM:8/unsigned-little-integer>>,
-            {sm, all} ~ eliot_api:msg(Msg),
+            {company, all} ~ eliot_api:msg(Msg),
+            {appliance, all} ~ eliot_api:msg(Msg),
             erlang:send_after(?TIMER, self(), beacon),
             sm(State);
         {Pid, {get, appliances}} ->

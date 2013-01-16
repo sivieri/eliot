@@ -7,7 +7,6 @@
 % Public API
 
 start_link() ->
-    appliance_handler:add_handler(),
     Pid = spawn_link(?MODULE, appliance, []),
     register(appliance, Pid),
     erlang:export(appliance),
