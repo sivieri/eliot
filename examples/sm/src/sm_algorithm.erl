@@ -50,11 +50,12 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{pid = Dest, params = Params
                                                                                                                  (_Parameter) -> false end, Params)),
     if
         Cur >= Start andalso Cur < End ->
-            Message = {eval, Cur, Params},
+            Bin1 = data:encode_params(Params),
+            Message = <<?EVAL:8/unsigned-little-integer, Cur:8/unsigned-little-integer, Bin1/binary>>,
             case eliot_api:rpc_noacks(Dest, Message) of
-                Consumption when Consumption + CurConsumption =< Cap ->
+                <<?EVAL:8/unsigned-little-integer, Consumption:16/unsigned-little-integer>> when Consumption + CurConsumption =< Cap ->
                     {Appliance, Consumption};
-                _Consumtpion ->
+                _Other ->
                     NewParams = lists:map(fun(#parameter{name = starttime, value = Value} = Param) -> Param#parameter{value= Value + 1 rem 24};
                                                                   (#parameter{name = endtime, value = Value} = Param) -> Param#parameter{value= Value + 1 rem 24};
                                                                   (Param) -> Param end, Params),
