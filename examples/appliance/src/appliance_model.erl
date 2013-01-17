@@ -20,16 +20,7 @@ model() ->
                 {ok, wm} ->
                     1500
             end,
-            #parameter{name = starttime, value = Start} = hd(lists:filter(fun(#parameter{name = starttime}) -> true;
-                                                                                                         (_Parameter) -> false end, Params)),
-            #parameter{name = endtime, value = End} = hd(lists:filter(fun(#parameter{name = endtime}) -> true;
-                                                                                                         (_Parameter) -> false end, Params)),
-            if
-                Cur >= Start andalso Cur < End ->
-                    Sender ! {self(), Val};
-                true ->
-                    Sender ! {self(), 0}
-            end,
+            Sender ! {self(), Val},
             model();
         Any ->
             io:format("Appliance model: Unknown message ~p~n", [Any]),
