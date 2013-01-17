@@ -4,12 +4,16 @@
 
 % Public API
 
-start([Type, Id]) when Type == 2 ->
-    dw(Id);
-start([Type, Id]) when Type == 3 ->
-    wm(Id);
-start([_Type, Id]) ->
-    ac(Id).
+start([Type, Id]) ->
+    TypeInt = erlang:list_to_integer(erlang:atom_to_list(Type)),
+    if
+        TypeInt == 2 ->
+            dw(Id);
+        TypeInt == 3 ->
+            wm(Id);
+        true ->
+            ac(Id)
+    end.
 
 ac(Id) ->
     application:set_env(appliance, type, ac),
