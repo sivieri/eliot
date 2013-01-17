@@ -1,5 +1,5 @@
 -module(sm_task).
--export([start_link/0, sm/0, schedule/2, get_appliances/0, set_appliances/1, test_schedule/0]).
+-export([start_link/0, sm/0, schedule/1, schedule/2, get_appliances/0, set_appliances/1, test_schedule/0]).
 -include("scenario.hrl").
 -define(TIMER, 10 * 1000).
 -record(state, {company = none, appliances = dict:new(), slots = [], cap = 0}).
@@ -18,7 +18,10 @@ sm() ->
 
 test_schedule() ->
     schedule([#slot{starttime = {7, 00}, endtime = {20, 00}, priority = 0},
-                     #slot{starttime = {20, 00}, endtime = {7, 00}, priority = 1}], 3000).
+                     #slot{starttime = {20, 00}, endtime = {7, 00}, priority = 1}]).
+
+schedule(Slots) ->
+    sm ! {schedule, Slots}.
 
 schedule(Slots, Cap) ->
     sm ! {schedule, Slots, Cap}.
@@ -49,6 +52,11 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
             register(algorithm, Pid),
             erlang:export(algorithm),
             sm(State#state{slots = NewSlots});
+        {schedule, NewSlots, NewCap} ->
+            Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = NewSlots, cap = NewCap}, Appliances) end),
+            register(algorithm, Pid),
+            erlang:export(algorithm),
+            sm(State#state{slots = NewSlots, cap = NewCap});
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
             sm(#state{company = Company, appliances = Schedule});
