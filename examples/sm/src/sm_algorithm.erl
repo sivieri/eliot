@@ -51,7 +51,6 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{pid = Dest, params = Params
     #parameter{name = endtime, value = End} = hd(lists:filter(fun(#parameter{name = endtime}) -> true;
                                                                                                                  (_Parameter) -> false end, Params)),
     RealCur = Cur rem 24,
-    io:format(standard_error, "Current: ~p~nAppliance ~p -> ~p~n", [RealCur, Start, End]),
     if
         RealCur >= Start andalso RealCur < End ->
             Bin1 = data:encode_params(Params),
