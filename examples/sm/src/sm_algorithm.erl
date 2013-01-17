@@ -49,11 +49,11 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{pid = Dest, params = Params
                                                                                                                  (_Parameter) -> false end, Params)),
     #parameter{name = endtime, value = End} = hd(lists:filter(fun(#parameter{name = endtime}) -> true;
                                                                                                                  (_Parameter) -> false end, Params)),
-    RealEnd = End rem 24,
+    RealCur = Cur rem 24,
     if
-        Cur >= Start andalso Cur < RealEnd ->
+        RealCur >= Start andalso RealCur < End ->
             Bin1 = data:encode_params(Params),
-            Message = <<?EVAL:8/unsigned-little-integer, Cur:8/unsigned-little-integer, Bin1/binary>>,
+            Message = <<?EVAL:8/unsigned-little-integer, RealCur:8/unsigned-little-integer, Bin1/binary>>,
             case eliot_api:rpc_noacks(Dest, Message) of
                 <<?EVAL:8/unsigned-little-integer, Consumption:16/unsigned-little-integer>> when Consumption + CurConsumption =< Cap ->
                     {Appliance, Consumption};
