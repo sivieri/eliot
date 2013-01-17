@@ -39,6 +39,7 @@ calc_slot({StartHour, _StartMinute}, {EndHour, _EndMinute}, Cap, Appliances) ->
 calc_single_slot(Start, End, Cur, Cap, Appliances) when Cur < End ->
     {NewAppliances, _Total} = dict:fold(fun(Key, Appliance, {CurAppliances, CurConsumption}) ->
                                                                 {NewAppliance, NewVal} = calc_single_app(Cur, CurConsumption, Cap, Appliance),
+                                                                io:format(standard_error, "New consumption: ~p~n", [CurConsumption + NewVal]),
                                                                 {dict:store(Key, NewAppliance, CurAppliances), CurConsumption + NewVal} end, {dict:new(), 0}, Appliances),
     calc_single_slot(Start, End, Cur + 1, Cap, NewAppliances);
 calc_single_slot(_Start, _End, _Cur, _Cap, Appliances) ->
@@ -50,6 +51,7 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{pid = Dest, params = Params
     #parameter{name = endtime, value = End} = hd(lists:filter(fun(#parameter{name = endtime}) -> true;
                                                                                                                  (_Parameter) -> false end, Params)),
     RealCur = Cur rem 24,
+    io:format(standard_error, "Current: ~p~nAppliance ~p -> ~p~n", [RealCur, Start, End]),
     if
         RealCur >= Start andalso RealCur < End ->
             Bin1 = data:encode_params(Params),
