@@ -10,8 +10,8 @@ schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
     io:format("SM Algorithm: Appliances~n"),
     utils:print_dict(Appliances),
     SortedSlots = lists:sort(fun(#slot{priority = Priority1},
-                                                  #slot{priority = Priority2}) when Priority2 >= Priority1 -> true;
-                                                 (_Slot1, _Slot2) -> false end , Slots),
+                                                  #slot{priority = Priority2}) when Priority2 >= Priority1 -> false;
+                                                 (_Slot1, _Slot2) -> true end , Slots),
     NewAppliances = calc(SortedSlots, Cap, Appliances),
     io:format("SM Algorithm: New schedule~n"),
     utils:print_dict(NewAppliances),
@@ -49,8 +49,9 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{pid = Dest, params = Params
                                                                                                                  (_Parameter) -> false end, Params)),
     #parameter{name = endtime, value = End} = hd(lists:filter(fun(#parameter{name = endtime}) -> true;
                                                                                                                  (_Parameter) -> false end, Params)),
+    RealEnd = End rem 24,
     if
-        Cur >= Start andalso Cur < End ->
+        Cur >= Start andalso Cur < RealEnd ->
             Bin1 = data:encode_params(Params),
             Message = <<?EVAL:8/unsigned-little-integer, Cur:8/unsigned-little-integer, Bin1/binary>>,
             case eliot_api:rpc_noacks(Dest, Message) of
