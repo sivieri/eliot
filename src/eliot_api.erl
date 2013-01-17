@@ -194,11 +194,20 @@ rpc(Dest, Message) ->
 
 rpc_noacks(Dest, Message) when node(Dest) == node() ->
     lpc(Dest, Message);
-rpc_noacks(Dest, Message) ->
-    Dest ~ eliot_api:msg(term_to_binary(Message)),
+rpc_noacks(Dest, Message) when is_binary(Message) ->
+    Dest ~ eliot_api:msg(Message),
     receive
         {_RSSI, {_Source, Content}} ->
-            binary_to_term(Content)
+            Content
+    after
+        ?RPC_NOACKS ->
+            {error, no_answer}
+    end;
+rpc_noacks(Dest, Message) ->
+    Dest ~ eliot_api:msg(erlang:term_to_binary(Message)),
+    receive
+        {_RSSI, {_Source, Content}} ->
+            erlang:binary_to_term(Content)
     after
         ?RPC_NOACKS ->
             {error, no_answer}
