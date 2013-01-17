@@ -13,12 +13,17 @@ start_link() ->
     {ok, Pid}.
 
 appliance() ->
-    erlang:export(self()),
     appliance(#state{}).
 
 % Private API
 
 appliance(#state{sm = SM} = State) ->
+    case lists:member(self(), erlang:exported()) of
+        true ->
+            ok;
+        false ->
+            erlang:export(self())
+    end,
     receive
         {_RSSI, {{_NodeId, NodeIP} = _Source, Content}} ->
             case Content of
