@@ -2,6 +2,7 @@
 -export([encode_params/1, decode_params/1]).
 -define(PADDING, 20).
 -include("scenario.hrl").
+-compile(export_all).
 
 % Public API
 
@@ -24,9 +25,9 @@ decode_params(Other) ->
 
 decode_params(<<>>, AccIn) ->
     lists:reverse(AccIn);
-decode_params(<<NameBin:20, TypeBin:20, Value:8/unsigned-little-integer, 1:8/unsigned-little-integer, Other/binary>>, AccIn) ->
+decode_params(<<NameBin:20/binary, TypeBin:20/binary, Value:8/unsigned-little-integer, 1:8/unsigned-little-integer, Other/binary>>, AccIn) ->
     decode_params(Other, [#parameter{name = remove_padding_atom(NameBin), type = remove_padding_atom(TypeBin), value = Value, fixed = true}|AccIn]);
-decode_params(<<NameBin:20, TypeBin:20, Value:8/unsigned-little-integer, 0:8/unsigned-little-integer, Other/binary>>, AccIn) ->
+decode_params(<<NameBin:20/binary, TypeBin:20/binary, Value:8/unsigned-little-integer, 0:8/unsigned-little-integer, Other/binary>>, AccIn) ->
     decode_params(Other, [#parameter{name = remove_padding_atom(NameBin), type = remove_padding_atom(TypeBin), value = Value, fixed = false}|AccIn]).
 
 add_padding_atom(Atom) ->
