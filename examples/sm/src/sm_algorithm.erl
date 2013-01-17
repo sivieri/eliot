@@ -20,7 +20,8 @@ schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
 notify(Schedule) ->
     dict:fold(fun(_Name, #appliance{name = _Name, ip = IP, pid = _Pid, params = Params}, _AccIn) ->
                                 Dest = utils:join_name(?NODENAME, IP),
-                                {appliance, Dest} ~ eliot_api:msg(term_to_binary({schedule, Params})) end, 0, Schedule).
+                                Bin1 = data:encode_params(Params),
+                                {appliance, Dest} ~ eliot_api:msg(<<?SCHEDULE:8/unsigned-little-integer, Bin1/binary>>) end, 0, Schedule).
 
 % Private API
 

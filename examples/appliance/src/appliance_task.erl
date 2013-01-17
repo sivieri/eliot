@@ -41,7 +41,7 @@ appliance(#state{sm = SM} = State) ->
                             appliance(#state{sm = NodeIP})
                     end;
                 <<?SCHEDULE:8/unsigned-little-integer, Other/binary>> ->
-                    Params = datA:decode_params(Other),
+                    Params = data:decode_params(Other),
                     io:format("Appliance: New schedule ~p has been decided by the SM~n", [Params]);
                 <<?EVAL:8/unsigned-little-integer, CurrentTime:8/unsigned-little-integer, Other/binary>> ->
                     Params = data:decode_params(Other),
