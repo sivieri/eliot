@@ -10,10 +10,10 @@ start_link() ->
     Pid = spawn_link(?MODULE, appliance, []),
     register(appliance, Pid),
     erlang:export(appliance),
-    erlang:export(Pid),
     {ok, Pid}.
 
 appliance() ->
+    erlang:export(self()),
     appliance(#state{}).
 
 % Private API
