@@ -11,7 +11,7 @@ start_link() ->
 
 model() ->
     receive
-        {Sender, {eval, Cur, Params}} ->
+        {Sender, {eval, _Cur, _Params}} ->
             Val = case application:get_env(appliance, type) of
                 {ok, ac} ->
                     1000;
