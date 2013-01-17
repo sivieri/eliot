@@ -36,4 +36,4 @@ add_padding_atom(Atom) ->
 
 remove_padding_atom(Binary) ->
     List = erlang:binary_to_list(Binary),
-    erlang:list_to_atom(string:strip(List), left, $0).
+    erlang:list_to_atom(string:strip(List, left, $0)).
