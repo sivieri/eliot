@@ -438,9 +438,17 @@ export PATH=/some/path/bin:$PATH
 \end_layout
 
 \begin_layout Standard
-from the command line).
- Before compiling the code, there are two files that have to be edited by
- hand (at least for now):
+from the command line); the 
+\emph on
+make
+\emph default
+ command has to be executed also in the 
+\emph on
+udp_dist
+\emph default
+ subdirectory before the main directory.
+ Before compiling the code, there are several files that have to be edited
+ by hand (at least for now):
 \end_layout
 
 \begin_layout Itemize
@@ -476,7 +484,7 @@ ifconfig
 \end_layout
 
 \begin_layout Standard
-There is also a third file:
+There are also:
 \end_layout
 
 \begin_layout Itemize
@@ -491,6 +499,23 @@ This file has, at line 44, a path specifying where the interpreter can find
 priv
 \emph default
  directory), and it has to reflect the full path where Eliot has been downloaded.
+\end_layout
+
+\begin_layout Standard
+Then the two files:
+\end_layout
+
+\begin_layout Itemize
+deps/udp_dist/c_src/Makefile
+\end_layout
+
+\begin_layout Itemize
+deps/udp_dist/c_src/subdir.mk
+\end_layout
+
+\begin_layout Standard
+In them the installation path of Erlang has to be set to the current one
+ (one instance in the first file, two instances in the second file).
 \end_layout
 
 \begin_layout Subsection
@@ -539,8 +564,11 @@ make
 \emph on
 deps
 \emph default
- directory contains a link to the main ELIoT directory); at this point,
- the shell script 
+ directory contains a link to the main ELIoT directory and the 
+\emph on
+udp_dist
+\emph default
+ directory: if not, create them); at this point, the shell script 
 \emph on
 start.sh
 \emph default
