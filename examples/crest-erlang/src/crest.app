@@ -1,0 +1,12 @@
+{application,crest,
+             [{description,"Computational REST framework"},
+              {vsn,"0.7.3"},
+              {modules,[crest,crest_app,crest_deps,crest_json,crest_local,
+                        crest_manager,crest_operations,crest_peer,crest_spawn,
+                        crest_spawn_sup,crest_sup,crest_utils,crest_web,demo,
+                        demo_text_mining,destructure_json,gen_server2,
+                        original,uuid]},
+              {registered,[]},
+              {mod,{crest_app,[]}},
+              {env,[]},
+              {applications,[kernel,stdlib,crypto]}]}.

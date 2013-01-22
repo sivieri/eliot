@@ -9,5 +9,5 @@ CREST_SRC = crest_app.erl crest_sup.erl crest.erl crest_deps.erl crest_json.erl 
 all: deploy
 
 deploy:
-	cp *.app.src ../ebin
+	cp *.app ../ebin
 	$(ERLC) $(ERLC_FLAGS) -o $(EBIN_DIR) $(CREST_SRC)
