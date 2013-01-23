@@ -27,7 +27,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <erl_driver.h>
-#include <erl_interface.h>
 #include <ei.h>
 
 #ifdef DEBUG
@@ -500,8 +499,6 @@ void do_recv(driver_data_t* res) {
     driver_data_t* iterator = head;
     ip_data_t *peer, *iterator2 = peers;
     ack_data_t *iterator3, *prev = NULL;
-    
-    ETERM *t1, *t2;
 
     memset(client, 0, sizeof(struct sockaddr_in));
     erl_drv_mutex_lock(mutex);
@@ -581,11 +578,11 @@ void do_recv(driver_data_t* res) {
                         index = 5;
                         result = ei_decode_version(buf, &index, &version);
                         fprintf(stderr, "DEBUG: first version %d\n", version);
-                        result = ei_decode_term(buf, &index, &t1);
+                        result = ei_decode_term(buf, &index, NULL);
                         fprintf(stderr, "DEBUG: first term decoded %d\n", result);
                         result = ei_decode_version(buf, &index, &version);
                         fprintf(stderr, "DEBUG: second version %d\n", version);
-                        result = ei_decode_term(buf, &index, &t2);
+                        result = ei_decode_term(buf, &index, NULL);
                         fprintf(stderr, "DEBUG: second term decoded %d\n", result);
                     }
                     if (msg_type == DATA_MSG_ACK_REQUIRED) {
