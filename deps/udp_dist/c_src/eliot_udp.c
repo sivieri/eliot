@@ -27,6 +27,8 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <erl_driver.h>
+#include <erl_interface.h>
+#include <ei.h>
 
 #ifdef DEBUG
 #define FPRINTF(...) fprintf(__VA_ARGS__)
@@ -494,10 +496,12 @@ void do_recv(driver_data_t* res) {
     int size, size2;
     uint32_t msg;
     socklen_t clientSize = sizeof(struct sockaddr_in);
-    int existing = 0;
+    int existing = 0, result, index, version;
     driver_data_t* iterator = head;
     ip_data_t *peer, *iterator2 = peers;
     ack_data_t *iterator3, *prev = NULL;
+    
+    ETERM *t1, *t2;
 
     memset(client, 0, sizeof(struct sockaddr_in));
     erl_drv_mutex_lock(mutex);
@@ -569,7 +573,21 @@ void do_recv(driver_data_t* res) {
                         buf[sizeof(uint32_t)] = 'R';
                     }
                     iterator->received += size2;
-                    driver_output(iterator->port, buf + sizeof(uint32_t), msg_type == TICK_MSG ? 0 : size2 - sizeof(uint32_t));
+                    if (msg_type == TICK_MSG) {
+                        driver_output(iterator->port, buf + sizeof(uint32_t), 0);
+                    }
+                    else {
+                        driver_output(iterator->port, buf + sizeof(uint32_t), size2 - sizeof(uint32_t));
+                        index = 5;
+                        result = ei_decode_version(buf, &index, &version);
+                        fprintf(stderr, "DEBUG: first version %d\n", version);
+                        result = ei_decode_term(buf, &index, &t1);
+                        fprintf(stderr, "DEBUG: first term decoded %d\n", result);
+                        result = ei_decode_version(buf, &index, &version);
+                        fprintf(stderr, "DEBUG: second version %d\n", version);
+                        result = ei_decode_term(buf, &index, &t2);
+                        fprintf(stderr, "DEBUG: second term decoded %d\n", result);
+                    }
                     if (msg_type == DATA_MSG_ACK_REQUIRED) {
                         client->sin_port = PORT;
                         do_send_ack(iterator->clientSock, msg, client);
