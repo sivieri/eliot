@@ -580,6 +580,7 @@ void do_recv(driver_data_t* res) {
                     }
                     else {
                         append_header(&buf[sizeof(uint32_t)], size2 - sizeof(uint32_t), 0, iterator->peer.sin_addr.s_addr);
+                        size2 += HDR_SIZE;
                         driver_output(iterator->port, buf + sizeof(uint32_t), size2 - sizeof(uint32_t));
                     }
                     if (msg_type == DATA_MSG_ACK_REQUIRED) {
