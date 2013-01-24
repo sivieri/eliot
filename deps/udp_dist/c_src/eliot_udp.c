@@ -36,6 +36,7 @@
 
 #define PORT 4369
 #define BUF 1472
+#define HDR_SIZE 14
 #define MINIBUF 10
 #define DIST_MAGIC_RECV_TAG 131
 
@@ -125,6 +126,7 @@ void do_send_upstairs(ack_data_t *ack, driver_data_t *res);
 static void put_packet_length(char *b, int len);
 static int report_control_error(char **buffer, int buff_len, 
                 char *error_message);
+static void append_header(char *buf, int len, int rssi, unsigned int ip);
 
 static ErlDrvEntry udp_driver_entry = {
         NULL,
@@ -489,7 +491,11 @@ void do_resend(ack_data_t* ack) {
 }
 
 void do_recv(driver_data_t* res) {
-    char buf[BUF], msg_type;
+    /*
+     * The buffer allocates always space for the message header, 
+     * but ignores it in the rest of the function (so it always remain free).
+     */
+    char buf[BUF + HDR_SIZE], msg_type;
     struct sockaddr_in *client = driver_alloc(sizeof(struct sockaddr_in));
     int size, size2;
     uint32_t msg;
@@ -573,6 +579,7 @@ void do_recv(driver_data_t* res) {
                         driver_output(iterator->port, buf + sizeof(uint32_t), 0);
                     }
                     else {
+                        append_header(&buf[sizeof(uint32_t)], size2 - sizeof(uint32_t), 0, iterator->peer.sin_addr.s_addr);
                         driver_output(iterator->port, buf + sizeof(uint32_t), size2 - sizeof(uint32_t));
                     }
                     if (msg_type == DATA_MSG_ACK_REQUIRED) {
@@ -754,4 +761,128 @@ unsigned long get_secs() {
     driver_free(now);
     
     return res;
+}
+
+/**
+ * In Erlang terms:
+ * input:
+ * 131|Header|Msg
+ * output:
+ * 131|Header|{RSSI, IP, Msg}
+ * 
+ * In byte stream terms:
+ * input:
+ * 131,
+ *      131,
+ *          104, 3,
+ *              97, 2,
+ *              115, 0,
+ *              103,
+ *                  115, x, ...
+ *                  x, x, x, x
+ *                  x, x, x, x,
+ *                  x,
+ *      131,
+ *          x, ...
+ * or:
+ * 131,
+ *      131,
+ *          104, 4,
+ *              97, 6,
+ *              103,
+ *                  115, x, ...
+ *                  x, x, x, x
+ *                  x, x, x, x,
+ *                  x,
+ *              115, 0,
+ *              115, x, ...
+ *      131,
+ *          x, ...
+ * output:
+ * 131,
+ *      131,
+ *          104, 3,
+ *              97, 2,
+ *              115, 0,
+ *              103,
+ *                  115, x, ...
+ *                  x, x, x, x
+ *                  x, x, x, x,
+ *                  x,
+ *      131,
+ *          104, 3,
+ *              97, RSSI,
+ *              104, 4,
+ *                  97, A,
+ *                  97, B,
+ *                  97, C,
+ *                  97, D
+ *              x, ...
+ * or:
+ * 131,
+ *      131,
+ *          104, 4,
+ *              97, 6,
+ *              103,
+ *                  115, x, ...
+ *                  x, x, x, x
+ *                  x, x, x, x,
+ *                  x,
+ *              115, 0,
+ *              115, x, ...
+ *      131,
+ *          104, 3,
+ *              97, RSSI,
+ *              104, 4,
+ *                  97, A,
+ *                  97, B,
+ *                  97, C,
+ *                  97, D
+ *              x, ...
+ */
+void append_header(char *buf, int len, int rssi, unsigned int ip) {
+    char hdr[] = {104, 3,               /* payload tuple: {RSSI, SourceIP, Msg} */
+                                97, 47,          /* RSSI (uint8_t) */
+                                104, 4,          /* IPv4 tuple: {x, y, z, w} */
+                                    97, 192,    /* x (uint8_t) */
+                                    97, 168,    /* y (uint8_t) */
+                                    97, 1,        /* z (uint8_t) */
+                                    97, 2};      /* w (uint8_t) */
+    int i, msg_type, node_len, pre_hdr;
+    uint8_t rssi_fin[4], ip_fin[4];
+    
+    /* step 1: find out how long is the header (plus the leading 131 and the 131 of the message) */
+    msg_type = buf[5];
+    switch (msg_type) {
+        case 2:
+            node_len = buf[10];
+            pre_hdr = node_len + 21;
+            break;
+        case 6:
+            node_len = buf[8];
+            node_len += buf[21 + node_len];
+            pre_hdr = node_len + 23;
+            break;
+        default:
+            /* forget about it */
+            FPRINTF(stderr, "DEBUG: we do not append headers to messages of type %d\n", msg_type);
+            return;
+    }
+    /* step 2: fill in the hdr with the passed values */
+    memcpy(rssi_fin, &rssi, 4);
+    memcpy(ip_fin, &ip, 4);
+    hdr[3] = rssi_fin[0];
+    hdr[7] = ip_fin[0];
+    hdr[9] = ip_fin[1];
+    hdr[11] = ip_fin[2];
+    hdr[13] = ip_fin[3];
+    /* step 3: shift the buffer onwards for HDR_SIZE positions */
+    for (i = BUF + HDR_SIZE - 1; i - HDR_SIZE >= pre_hdr; --i) {
+        buf[i] = buf[i - HDR_SIZE];
+    }
+    /* step 4: fill in the header */
+    for (i = 0; i < HDR_SIZE; ++i) {
+        buf[i + pre_hdr] = hdr[i];
+    }
+    /* voilà! */
 }
