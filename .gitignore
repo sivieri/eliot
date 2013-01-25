@@ -12,3 +12,4 @@ erl_crash.dump
 eliot-gpio
 eliot-rssi
 *~
+*.beam
