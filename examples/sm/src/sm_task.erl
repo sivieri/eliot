@@ -90,14 +90,14 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
                         false ->
                             {Company, Appliances,  Slots, Cap}
                     end;
-%%                 {appliance, code, Name, Code, Hash, Filename} when is_binary(Code) ->
-%%                     case dict:is_key(NodeId, Appliances) of
-%%                         true ->
-%%                             {Pid, Params} = sm_sup:start_model(Name, Code, Hash, Filename),
-%%                             {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP, pid = Pid, params = Params}, Appliances),  Slots, Cap};
-%%                         false ->
-%%                             {Company, Appliances,  Slots, Cap}
-%%                     end;
+                <<?APPLIANCE_LOCAL:8/unsigned-little-integer, Hash:20/binary, Name:20/binary, Code/binary>> ->
+                    case dict:is_key(Source, Appliances) of
+                        true ->
+                            {Pid, Params} = sm_sup:start_model(data:decode_name(Name), Code, Hash),
+                            {Company, dict:store(Source, #appliance{ip = Source, pid = Pid, params = Params}, Appliances),  Slots, Cap};
+                        false ->
+                            {Company, Appliances,  Slots, Cap}
+                    end;
                 Any ->
                     io:format("SM: Unknown device ~p~n", [Any]),
                     {Company, Appliances,  Slots, Cap}

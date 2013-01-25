@@ -96,6 +96,6 @@ print_dict(Dict) ->
     io:format("]~n~n").
 
 code_hash(Binary) ->
-    lists:flatten([io_lib:format("~2.16.0b",[N])||N<-binary_to_list(erlang:md5(Binary))]).
+    lists:flatten([io_lib:format("~2.20.0b",[N])||N<-binary_to_list(crypto:sha(Binary))]).
 
 % Private API

@@ -5,6 +5,7 @@
 -record(slot, {starttime, endtime, priority = 0}).
 -define(BEACON, $B).
 -define(APPLIANCE, $A).
+-define(APPLIANCE_LOCAL, $L).
 -define(COMPANY, $C).
 -define(SM, $M).
 -define(EVAL, $E).
