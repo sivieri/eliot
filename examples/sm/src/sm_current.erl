@@ -17,8 +17,8 @@ start_link(Company) ->
 current(#state{company = Company} = State) ->
     receive
         send ->
-            Dest = utils:join_name(?NODENAME, Company),
-            {company, Dest} ~ eliot_api:msg(<<?CONSUMPTION:8/unsigned-little-integer, 100:16/unsigned-little-integer>>),
+            Dest = eliot_api:ip_to_node(Company),
+            {company, Dest} ~ <<?CONSUMPTION:8/unsigned-little-integer, 100:16/unsigned-little-integer>>,
             erlang:send_after(?TIMER, self(), send);
         Any ->
             io:format("Sm Current: Unknown message ~p~n", [Any])

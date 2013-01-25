@@ -23,25 +23,25 @@ set_cap(Cap) ->
 company(#state{sm = SM, cap = Cap} = State) ->
     receive
         {cap, NewCap} ->
-            Dest = utils:join_name(?NODENAME, SM),
-            {sm, Dest} ~ eliot_api:msg(<<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer>>),
+            Dest = eliot_api:ip_to_node(SM),
+            {sm, Dest} ~ <<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer>>,
             company(State#state{cap = NewCap});
-        {_RSSI, {{_NodeId, NodeIP} = Source, Content}} ->
+        {_RSSI, Source, Content} ->
             case Content of
                 <<?CONSUMPTION:8/unsigned-little-integer, Value:16/unsigned-little-integer>> ->
                     io:format("Company: ~p is consuming ~p KWh~n", [Source, Value]);
                 <<?SM:8/unsigned-little-integer>> ->
                     if
                         SM == none ->
-                            io:format("Company: Registering to SM ~p~n", [NodeIP]),
-                            {sm, utils:join_name(?NODENAME, NodeIP)} ~ eliot_api:msg(<<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer>>),
-                            company(#state{sm = NodeIP});
-                        SM == NodeIP ->
+                            io:format("Company: Registering to SM ~p~n", [Source]),
+                            {sm, eliot_api:ip_to_node(Source)} ~ <<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer>>,
+                            company(#state{sm = Source});
+                        SM == Source ->
                             company(State);
                         true ->
-                            io:format("Company: Already registered to SM ~p, changing to ~p~n", [SM, NodeIP]),
-                            utils:join_name(?NODENAME, NodeIP) ~ eliot_api:msg(<<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer>>),
-                            company(#state{sm = NodeIP})
+                            io:format("Company: Already registered to SM ~p, changing to ~p~n", [SM, Source]),
+                            {sm, eliot_api:ip_to_node(Source)} ~ <<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer>>,
+                            company(#state{sm = Source})
                     end;
                 Any ->
                     io:format("Company: Unknown binary message ~p~n", [Any])

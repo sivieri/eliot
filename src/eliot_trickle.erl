@@ -41,7 +41,7 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
     receive
         transmit when Counter < ?K ->
             Id = eliot_api:nodeid(eliot_api:get_node_name()),
-            {trickle, all} ! eliot_api:msg({version, <<Id:?SRCADDR, Version:?VERSION, Payload/binary>>}),
+            {trickle, all} ! {version, <<Id:?SRCADDR, Version:?VERSION, Payload/binary>>},
             io:format("~p: Sending code ~p~n", [eliot_api:get_node_name(), Version]),
             trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>);
         transmit ->
@@ -67,7 +67,7 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
                     io:format("~p: Local update canceled, version ~p =< ~p~n", [eliot_api:get_node_name(), NewVersion, Version]),
                     trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>)
             end;
-        {RSSI, {SourceId, {version, <<NewSrc:?SRCADDR, NewVersion:?VERSION, NewPayload/binary>>}}} when NewVersion > Version ->
+        {RSSI, SourceId, {version, <<NewSrc:?SRCADDR, NewVersion:?VERSION, NewPayload/binary>>}} when NewVersion > Version ->
             io:format("~p: Received version ~p from ~p (newer) with RSSI ~p~n", [eliot_api:get_node_name(), NewVersion, SourceId, RSSI]),
             erlang:cancel_timer(TRef),
             erlang:cancel_timer(TauRef),
@@ -76,7 +76,7 @@ trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/
             NewTRef = erlang:send_after(T, trickle, transmit),
             NewTauRef = erlang:send_after(NewTau, trickle, restart),
             trickle(NewTau, {NewTauRef, NewTRef}, 0, <<NewSrc:?SRCADDR, NewVersion:?VERSION, NewPayload/binary>>);
-        {_RSSI, {_SourceId, {version, <<_NewSrc:?SRCADDR, _NewVersion:?VERSION, _NewPayload/binary>>}}} ->
+        {_RSSI, _SourceId, {version, <<_NewSrc:?SRCADDR, _NewVersion:?VERSION, _NewPayload/binary>>}} ->
             %io:format("~p: Received code ~p from ~p (same or older)~n", [eliot_api:get_node_name(), NewVersion, SourceId]),
             trickle(Tau, {TauRef, TRef}, Counter, <<Src:?SRCADDR, Version:?VERSION, Payload/binary>>);
         Any ->

@@ -16,6 +16,10 @@ start_task(NodeAddr, Module, Function) ->
     eliot_api:set_node_name(nodeid(NodeAddr)),
     Module:Function().
 
+%% -spec(msg(any()) -> {{atom(), string()}, any()}).
+%% msg(Msg) ->
+%%     {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}.
+
 send({Name, all}, Msg) ->
     bcast_send(Name, Msg);
 send({Name, {NodeName, NodeAddr}}, Msg) ->
@@ -119,12 +123,12 @@ send(Name, {NodeName, NodeAddr}, Msg) ->
 
 bcast_send(Msg) ->
     dispatcher ! {simulation, all, Msg}, % Send to simulated nodes...
-    all ! eliot_api:msg(Msg), % ... and to real ones, in case we are in mixed simulation.
+    all ! Msg, % ... and to real ones, in case we are in mixed simulation.
     ok.
 
 bcast_send(Name, Msg) ->
     dispatcher ! {simulation, Name, Msg},
-    {Name, all} ! eliot_api:msg(Msg),
+    {Name, all} ! Msg,
     ok.
 
 spawn_helper(Name, Fun) ->

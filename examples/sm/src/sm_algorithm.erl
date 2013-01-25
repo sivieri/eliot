@@ -18,10 +18,10 @@ schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
     sm ! {result, NewAppliances}.
 
 notify(Schedule) ->
-    dict:fold(fun(_Name, #appliance{name = _Name, ip = IP, pid = _Pid, params = Params}, _AccIn) ->
-                                Dest = utils:join_name(?NODENAME, IP),
+    dict:fold(fun(_Name, #appliance{ip = IP, pid = _Pid, params = Params}, _AccIn) ->
+                                Dest = eliot_api:ip_to_node(IP),
                                 Bin1 = data:encode_params(Params),
-                                {appliance, Dest} ~ eliot_api:msg(<<?SCHEDULE:8/unsigned-little-integer, Bin1/binary>>) end, 0, Schedule).
+                                {appliance, Dest} ~ <<?SCHEDULE:8/unsigned-little-integer, Bin1/binary>> end, 0, Schedule).
 
 % Private API
 

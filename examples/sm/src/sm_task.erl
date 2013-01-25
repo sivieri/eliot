@@ -38,8 +38,8 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
     receive
         beacon ->
             Msg = <<?SM:8/unsigned-little-integer>>,
-            {company, all} ~ eliot_api:msg(Msg),
-            {appliance, all} ~ eliot_api:msg(Msg),
+            {company, all} ~ Msg,
+            {appliance, all} ~ Msg,
             erlang:send_after(?TIMER, self(), beacon),
             sm(State);
         {Pid, {get, appliances}} ->
@@ -60,34 +60,34 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
             sm(#state{company = Company, appliances = Schedule});
-        {_RSSI, {{NodeId, NodeIP} = Source, Content}} ->
+        {_RSSI, Source, Content} ->
             {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of
                 <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == none ->
                     io:format("SM: Registered a new company ~p~n", [Source]),
-                    sm_sup:add_child(sm_current, [NodeIP]),
-                    {NodeIP, Appliances, Slots, CCap};
-                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == NodeIP andalso CCap == Cap ->
+                    sm_sup:add_child(sm_current, [Source]),
+                    {Source, Appliances, Slots, CCap};
+                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == Source andalso CCap == Cap ->
                     {Company, Appliances, Slots, Cap};
-                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == NodeIP ->
+                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == Source ->
                     self() !{schedule, Slots, CCap},
                     {Company, Appliances, Slots, CCap};
                 <<?COMPANY:8/unsigned-little-integer, _CCap:16/unsigned-little-integer>> ->
-                    io:format("SM: Already registered to the company ~p (new request from ~p)~n", [Company, NodeIP]),
+                    io:format("SM: Already registered to the company ~p (new request from ~p)~n", [Company, Source]),
                     {Company, Appliances,  Slots, Cap};
                 <<?APPLIANCE:8/unsigned-little-integer>> ->
-                    case dict:is_key(NodeId, Appliances) of
+                    case dict:is_key(Source, Appliances) of
                         true ->
                             {Company, Appliances,  Slots, Cap};
                         false ->
                             io:format("SM: Registered a new appliance ~p~n", [Source]),
-                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP}, Appliances), Slots, Cap}
+                            {Company, dict:store(Source, #appliance{ip = Source}, Appliances), Slots, Cap}
                     end;
                 <<?APPLIANCE:8/unsigned-little-integer, 131, 103, 100, Len:16, Name:Len/binary, Id:4/binary, Serial:4/binary, Creation, ParamsBin/binary>>  ->
                     Pid = binary_to_term(<<131, 103, 100, Len:16, Name/binary, Id/binary, Serial/binary, Creation>>),
                     Params = data:decode_params(ParamsBin),
-                    case dict:is_key(NodeId, Appliances) of
+                    case dict:is_key(Source, Appliances) of
                         true ->
-                            {Company, dict:store(NodeId, #appliance{name = NodeId, ip = NodeIP, pid = Pid, params = Params}, Appliances),  Slots, Cap};
+                            {Company, dict:store(Source, #appliance{ip = Source, pid = Pid, params = Params}, Appliances),  Slots, Cap};
                         false ->
                             {Company, Appliances,  Slots, Cap}
                     end;
