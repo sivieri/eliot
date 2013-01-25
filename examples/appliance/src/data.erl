@@ -1,5 +1,5 @@
 -module(data).
--export([encode_params/1, decode_params/1]).
+-export([encode_params/1, decode_params/1, decode_name/1]).
 -define(PADDING, 20).
 -include("scenario.hrl").
 -compile(export_all).
@@ -20,6 +20,9 @@ encode_params(Params) ->
 
 decode_params(Other) ->
     decode_params(Other, []).
+
+decode_name(Name) ->
+    remove_padding_atom(Name).
 
 % Private API
 
