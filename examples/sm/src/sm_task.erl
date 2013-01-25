@@ -82,12 +82,11 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
                             io:format("SM: Registered a new appliance ~p~n", [Source]),
                             {Company, dict:store(Source, #appliance{ip = Source}, Appliances), Slots, Cap}
                     end;
-                <<?APPLIANCE:8/unsigned-little-integer, 131, 103, 100, Len:16, Name:Len/binary, Id:4/binary, Serial:4/binary, Creation, ParamsBin/binary>>  ->
-                    Pid = binary_to_term(<<131, 103, 100, Len:16, Name/binary, Id/binary, Serial/binary, Creation>>),
+                <<?APPLIANCE:8/unsigned-little-integer, ParamsBin/binary>>  ->
                     Params = data:decode_params(ParamsBin),
                     case dict:is_key(Source, Appliances) of
                         true ->
-                            {Company, dict:store(Source, #appliance{ip = Source, pid = Pid, params = Params}, Appliances),  Slots, Cap};
+                            {Company, dict:store(Source, #appliance{ip = Source, pid = none, params = Params}, Appliances),  Slots, Cap};
                         false ->
                             {Company, Appliances,  Slots, Cap}
                     end;
