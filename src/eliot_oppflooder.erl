@@ -37,15 +37,15 @@ oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
     {local, Payload} ->
         Id = eliot_api:nodeid(eliot_api:get_node_name()),
         Msg = <<Id:?SRCADDR, NextMsgNum:?SEQNUM, ?INITIAL_OF_TTL:?TTL, Payload/binary>>,
-        {oppflooder, all} ! eliot_api:msg(Msg),
+        {oppflooder, all} ! Msg,
         oppflooder(record_received({Id, NextMsgNum}, ReceivedMsgs), WaitingMsgs, (NextMsgNum + 1) rem 256);
-    {_RSSI, {_SourceId, {send, Payload}}} ->
+    {_RSSI, _SourceId, {send, Payload}} ->
         PayloadB = term_to_binary(Payload),
         Id = eliot_api:nodeid(eliot_api:get_node_name()),
         Msg = <<Id:?SRCADDR, NextMsgNum:?SEQNUM, ?INITIAL_OF_TTL:?TTL, PayloadB/binary>>,
-        {oppflooder, all} ! eliot_api:msg(Msg),
+        {oppflooder, all} ! Msg,
         oppflooder(record_received({Id, NextMsgNum}, ReceivedMsgs), WaitingMsgs, (NextMsgNum + 1) rem 256);
-    {RSSI, {SourceId,  <<Src:?SRCADDR, Seq:?SEQNUM, TTL:?TTL, Payload/binary>>}} when TTL > 1 ->
+    {RSSI, SourceId,  <<Src:?SRCADDR, Seq:?SEQNUM, TTL:?TTL, Payload/binary>>} when TTL > 1 ->
         io:format("~p: Received message from ~p with RSSI=~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
         case find_waiting(Src, Seq, WaitingMsgs) of
             error ->
@@ -70,13 +70,13 @@ oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum) ->
                 erlang:cancel_timer(TRef),
                 oppflooder(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum)
         end;
-    {RSSI, {SourceId, <<_Src:?SRCADDR, _Seq:?SEQNUM, _TTL:?TTL, _Payload/binary>>}} -> % TTL finished
+    {RSSI, SourceId, <<_Src:?SRCADDR, _Seq:?SEQNUM, _TTL:?TTL, _Payload/binary>>} -> % TTL finished
         io:format("~p: Received message from ~p with RSSI=~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
         oppflooder(ReceivedMsgs, WaitingMsgs, NextMsgNum);
     {Src, Seq} ->
         io:format("~p: Timer expired for message (~p, ~p) sending it~n", [eliot_api:get_node_name(), Src, Seq]),
         Msg = get_waiting(Src, Seq, WaitingMsgs),
-        {oppflooder, all} ! eliot_api:msg(Msg),
+        {oppflooder, all} ! Msg,
         oppflooder(ReceivedMsgs, remove_waiting(Src, Seq, WaitingMsgs), NextMsgNum);
     Any ->
             io:format("~p: Cannot parse ~p~n", [eliot_api:get_node_name(), Any]),

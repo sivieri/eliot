@@ -1,9 +1,0 @@
-{application,miniapp,
-             [{description,[]},
-              {vsn,"1"},
-              {registered,[]},
-              {applications,[kernel,stdlib]},
-              {mod,{miniapp_app,[]}},
-              {env,[]},
-              {modules,[miniapp,miniapp_app,miniapp_handler,miniapp_model,
-                        miniapp_sup,miniapp_task]}]}.

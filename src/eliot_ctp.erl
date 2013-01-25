@@ -30,23 +30,23 @@ ctp(RoutingPid, LinkPid, FwdPid) ->
         {local, Data} ->
             FwdPid ! {collect, Data},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {RSSI, {SourceId, Msg}} when is_record(Msg, ack)  ->
+        {RSSI, SourceId, Msg} when is_record(Msg, ack)  ->
             io:format("~p: Received ack from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
             FwdPid ! {SourceId, RSSI, Msg},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {RSSI, {SourceId, Msg}} when is_record(Msg, routing) ->
+        {RSSI, SourceId, Msg} when is_record(Msg, routing) ->
             %io:format("~p: Received msg ~p from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), Msg, SourceId, RSSI]),
             LinkPid ! {SourceId, RSSI, Msg},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {RSSI, {SourceId, Msg}} when is_record(Msg, data) ->
+        {RSSI, SourceId, Msg} when is_record(Msg, data) ->
             io:format("~p: Received msg ~p from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), Msg, SourceId, RSSI]),
             FwdPid ! {SourceId, RSSI, Msg},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {RSSI, {SourceId, {collect, Data}}} ->
+        {RSSI, SourceId, {collect, Data}} ->
             io:format("~p: Data to be collected from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
             FwdPid ! {collect, Data},
             ctp(RoutingPid, LinkPid, FwdPid);
-        {RSSI, {SourceId, {collect, Data, Timeout}}} ->
+        {RSSI, SourceId, {collect, Data, Timeout}} ->
             io:format("~p: Data to be collected in a while from ~p with RSSI = ~p~n", [eliot_api:get_node_name(), SourceId, RSSI]),
             FwdPid ! {collect, Data, Timeout},
             ctp(RoutingPid, LinkPid, FwdPid);

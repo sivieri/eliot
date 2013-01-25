@@ -2,8 +2,8 @@
 %% @doc Framework.
 -module(eliot_api).
 -include("eliot.hrl").
--export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0, put_data/2, get_data/1, rpc/2, rpc_noacks/2, lpc/2, id/0]).
--export([send_test/3, msg/1]).
+-export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0, put_data/2, get_data/1, rpc/2, rpc_noacks/2, lpc/2, id/0, ip_to_node/1, node_to_ip/1]).
+-export([send_test/3]).
 -export([spawn/2, spawn/3, spawn/4, spawn/5, bcast_spawn/1, bcast_spawn/2, bcast_spawn/3, bcast_spawn/4]).
 
 % Public API
@@ -173,40 +173,30 @@ bcast_spawn(Fun, Condition) ->
 bcast_spawn(Module, Function, Args, Condition) ->
     all ! {spawn, Module, Function, Args, Condition}.
 
-%% Set accompanying fields to a message.
--spec(msg(any()) -> {{atom(), string()}, any()}).
--ifdef(simulation).
-msg(Msg) ->
-    {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}.
--else.
-msg(Msg) ->
-    {0, {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}}.
--endif.
-
 rpc(Dest, Message) when node(Dest) == node() ->
     lpc(Dest, Message);
 rpc(Dest, Message) ->
-    Dest ! eliot_api:msg(term_to_binary(Message)),
+    Dest ! term_to_binary(Message),
     receive
-        {_RSSI, {_Source, Content}} ->
+        {_RSSI, _Source, Content} ->
             binary_to_term(Content)
     end.
 
 rpc_noacks(Dest, Message) when node(Dest) == node() ->
     lpc(Dest, Message);
 rpc_noacks(Dest, Message) when is_binary(Message) ->
-    Dest ~ eliot_api:msg(Message),
+    Dest ~ Message,
     receive
-        {_RSSI, {_Source, Content}} ->
+        {_RSSI, _Source, Content} ->
             Content
     after
         ?RPC_NOACKS ->
             {error, no_answer}
     end;
 rpc_noacks(Dest, Message) ->
-    Dest ~ eliot_api:msg(erlang:term_to_binary(Message)),
+    Dest ~ erlang:term_to_binary(Message),
     receive
-        {_RSSI, {_Source, Content}} ->
+        {_RSSI, _Source, Content} ->
             erlang:binary_to_term(Content)
     after
         ?RPC_NOACKS ->
@@ -219,6 +209,13 @@ lpc(Dest, Message) ->
         {_Dest, Answer} ->
             Answer
     end.
+
+ip_to_node({_A, _B, _C, _D} = IP) ->
+    erlang:list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa(IP)).
+
+node_to_ip(Name) ->
+    {?NODENAME, IP} = string:tokens(erlang:atom_to_list(Name), "@"),
+    inet_parse:address(IP).
 
 % Private API
 

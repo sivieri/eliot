@@ -36,7 +36,7 @@ fwd_engine(DataCounter, FwdList, SentList) ->
                                           (_Element) ->
                                                true end, SentList),
             fwd_engine(DataCounter, FwdList, NewSentList);
-        {_SourceId, _RSSI, Msg} when is_record(Msg, ack)  ->
+        {_RSSI, _SourceId, Msg} when is_record(Msg, ack)  ->
             NewSentList = lists:filter(fun(Block) ->
                                                Msg2 = Block#cache.msg,
                                                case Msg2 of 
@@ -46,11 +46,11 @@ fwd_engine(DataCounter, FwdList, SentList) ->
                                                        true
                                                end end, SentList),
             fwd_engine(DataCounter, FwdList, NewSentList);
-        {SourceId, _RSSI, Msg} when is_record(Msg, data) ->
+        {_RSSI, SourceId, Msg} when is_record(Msg, data) ->
             RoutingPid = get(routing),
             LinkPid = get(link),
             AckMsg = #ack{id = Msg#data.seqno},
-            {ctp, SourceId} ! eliot_api:msg(AckMsg),
+            {ctp, eliot_api:ip_to_node(SourceId)} ! AckMsg,
             % Check ETX
             {_, Etx} = lpc(RoutingPid, lower),
             if
@@ -100,7 +100,7 @@ fwd_engine(DataCounter, FwdList, SentList) ->
                         {Parent, Etx} ->
                             Msg = #data{etx = Etx, payload = Data, seqno = DataCounter},
                             io:format("~p: Routing data to ~p~n", [get(myid), Parent]),
-                            {ctp, Parent} ! eliot_api:msg(Msg),
+                            {ctp, Parent} ! Msg,
                             Block = #cache{msg = Msg, timeout = NewTimeout},
                             erlang:send_after(NewTimeout, self(), {resend, Parent, Block}),
                             fwd_engine(DataCounter + 1, FwdList, [Block|SentList])

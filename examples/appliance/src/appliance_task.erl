@@ -25,25 +25,26 @@ appliance(#state{sm = SM} = State) ->
             erlang:export(self())
     end,
     receive
-        {_RSSI, {{_NodeId, NodeIP} = _Source, Content}} ->
+        {_RSSI, Source, Content} ->
             case Content of
                 <<?SM:8/unsigned-little-integer>> ->
                     if
                         SM == none ->
-                            io:format("Appliance: Registering to SM ~p~n", [NodeIP]),
-                            Dest = {sm, utils:join_name(?NODENAME, NodeIP)},
-                            Dest ~ eliot_api:msg(<<?APPLIANCE:8/unsigned-little-integer>>),
+                            io:format("Appliance: Registering to SM ~p~n", [Source]),
+                            Dest = {sm, eliot_api:ip_to_node(Source)},
+                            Dest ~ <<?APPLIANCE:8/unsigned-little-integer>>,
                             {ok, Params} = application:get_env(appliance, params),
                             Bin1 = erlang:term_to_binary(self()),
                             Bin2 = data:encode_params(Params),
-                            Dest ~ eliot_api:msg(<<?APPLIANCE:8/unsigned-little-integer, Bin1/binary, Bin2/binary>>),
-                            appliance(#state{sm = NodeIP});
-                        SM == NodeIP ->
+                            Dest ~ <<?APPLIANCE:8/unsigned-little-integer, Bin1/binary, Bin2/binary>>,
+                            appliance(#state{sm = Source});
+                        SM == Source ->
                             appliance(State);
                         true ->
-                            io:format("Appliance: Already registered to SM ~p, changing to ~p~n", [SM, NodeIP]),
-                            utils:join_name(?NODENAME, NodeIP) ~ eliot_api:msg(term_to_binary(appliance)),
-                            appliance(#state{sm = NodeIP})
+                            io:format("Appliance: Already registered to SM ~p, changing to ~p~n", [SM, Source]),
+                            Dest = {sm, eliot_api:ip_to_node(Source)},
+                            Dest ~ <<?APPLIANCE:8/unsigned-little-integer>>,
+                            appliance(#state{sm = Source})
                     end;
                 <<?SCHEDULE:8/unsigned-little-integer, Other/binary>> ->
                     Params = data:decode_params(Other),
@@ -52,8 +53,8 @@ appliance(#state{sm = SM} = State) ->
                     Params = data:decode_params(Other),
                     io:format("Appliance: Evaluation of parameters ~p at time ~p~n", [Params, CurrentTime]),
                     Ans = eliot_api:lpc(model, {eval, CurrentTime, Params}),
-                    Dest = utils:join_name(?NODENAME, SM),
-                    {algorithm, Dest} ~ eliot_api:msg(<<?EVAL:8/unsigned-little-integer, Ans:16/unsigned-little-integer>>);
+                    Dest = {sm, eliot_api:ip_to_node(Source)},
+                    {algorithm, Dest} ~ <<?EVAL:8/unsigned-little-integer, Ans:16/unsigned-little-integer>>;
                 Any ->
                     io:format("Appliance: Unknown binary message ~p~n", [Any])
             end,

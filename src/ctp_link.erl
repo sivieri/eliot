@@ -20,7 +20,7 @@ link_engine({NodeId, Collector}, {RoutingEngine, Counter}) ->
     if
         Counter == 1 ->
             Msg = #routing{pull = true},
-            {ctp, all} ! eliot_api:msg(Msg);
+            {ctp, all} ! Msg;
         true ->
             ok
     end,
@@ -47,11 +47,11 @@ link_engine(Tau, TRef, BeaconCounter) ->
                             ok;
                         {Parent, Etx} ->
                             NewMsg = #routing{parent = Parent, etx = Etx, seqno = BeaconCounter},
-                            {ctp, all} ! eliot_api:msg(NewMsg)
+                            {ctp, all} ! NewMsg
                     end;
                 true ->
                     NewMsg = #routing{seqno = BeaconCounter},
-                    {ctp, all} ! eliot_api:msg(NewMsg)
+                    {ctp, all} ! NewMsg
             end,
             link_engine(Tau, TRef, BeaconCounter + 1);
          {transmit, cancel} ->
@@ -68,7 +68,7 @@ link_engine(Tau, TRef, BeaconCounter) ->
             NewTRef = erlang:send_after(T, self(), transmit),
             erlang:send_after(NewTau, self(), restart),
             link_engine(NewTau, NewTRef, BeaconCounter);
-        {SourceId, _RSSI, Msg} ->
+        {_RSSI, SourceId, Msg} ->
             RoutingPid = get(routing),
             % Transmit messages if there is a pull request
             case Msg#routing.pull of

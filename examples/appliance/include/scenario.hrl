@@ -1,6 +1,6 @@
 -define(SRCADDR, 16/unsigned-integer).
 -record(parameter, {name = none, type = none, value = 0, fixed = false}).
--record(appliance, {name, ip, pid = none, params = []}).
+-record(appliance, {ip, pid = none, params = []}).
 -record(billing, {slots, cap}).
 -record(slot, {starttime, endtime, priority = 0}).
 -define(BEACON, $B).
