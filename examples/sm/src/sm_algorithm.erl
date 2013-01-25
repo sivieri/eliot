@@ -45,12 +45,18 @@ calc_single_slot(Start, End, Cur, Cap, Appliances) when Cur < End ->
 calc_single_slot(_Start, _End, _Cur, _Cap, Appliances) ->
     Appliances.
 
-calc_single_app(Cur, CurConsumption, Cap, #appliance{pid = Dest, params = Params} = Appliance) ->
+calc_single_app(Cur, CurConsumption, Cap, #appliance{ip = IP, pid = Pid, params = Params} = Appliance) ->
     #parameter{name = starttime, value = Start} = hd(lists:filter(fun(#parameter{name = starttime}) -> true;
                                                                                                                  (_Parameter) -> false end, Params)),
     #parameter{name = endtime, value = End} = hd(lists:filter(fun(#parameter{name = endtime}) -> true;
                                                                                                                  (_Parameter) -> false end, Params)),
     RealCur = Cur rem 24,
+    Dest = case Pid of
+        none ->
+            eliot_api:ip_to_node(IP);
+        _ ->
+            Pid
+    end,
     if
         RealCur >= Start andalso RealCur < End ->
             Bin1 = data:encode_params(Params),

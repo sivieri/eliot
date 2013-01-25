@@ -18,12 +18,6 @@ appliance() ->
 % Private API
 
 appliance(#state{sm = SM} = State) ->
-    case lists:member(self(), erlang:exported()) of
-        true ->
-            ok;
-        false ->
-            erlang:export(self())
-    end,
     receive
         {_RSSI, Source, Content} ->
             case Content of
@@ -34,9 +28,8 @@ appliance(#state{sm = SM} = State) ->
                             Dest = {sm, eliot_api:ip_to_node(Source)},
                             Dest ~ <<?APPLIANCE:8/unsigned-little-integer>>,
                             {ok, Params} = application:get_env(appliance, params),
-                            Bin1 = erlang:term_to_binary(self()),
-                            Bin2 = data:encode_params(Params),
-                            Dest ~ <<?APPLIANCE:8/unsigned-little-integer, Bin1/binary, Bin2/binary>>,
+                            Bin = data:encode_params(Params),
+                            Dest ~ <<?APPLIANCE:8/unsigned-little-integer, Bin>>,
                             appliance(#state{sm = Source});
                         SM == Source ->
                             appliance(State);
