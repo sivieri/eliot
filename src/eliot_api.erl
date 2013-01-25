@@ -173,7 +173,9 @@ bcast_spawn(Fun, Condition) ->
 bcast_spawn(Module, Function, Args, Condition) ->
     all ! {spawn, Module, Function, Args, Condition}.
 
-rpc(Dest, Message) when node(Dest) == node() ->
+rpc(Dest, Message) when is_atom(Dest) andalso node(Dest) == node() ->
+    lpc(Dest, Message);
+rpc(Dest, Message) when is_pid(Dest) ->
     lpc(Dest, Message);
 rpc(Dest, Message) ->
     Dest ! term_to_binary(Message),
@@ -182,7 +184,9 @@ rpc(Dest, Message) ->
             binary_to_term(Content)
     end.
 
-rpc_noacks(Dest, Message) when node(Dest) == node() ->
+rpc_noacks(Dest, Message) when is_atom(Dest) andalso node(Dest) == node() ->
+    lpc(Dest, Message);
+rpc_noacks(Dest, Message) when is_pid(Dest) ->
     lpc(Dest, Message);
 rpc_noacks(Dest, Message) when is_binary(Message) ->
     Dest ~ Message,
