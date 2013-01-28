@@ -29,7 +29,7 @@ appliance(#state{sm = SM} = State) ->
                             Dest ~ <<?APPLIANCE:8/unsigned-little-integer>>,
                             {ok, Params} = application:get_env(appliance, params),
                             Bin = data:encode_params(Params),
-                            Dest ~ <<?APPLIANCE:8/unsigned-little-integer, Bin>>,
+                            Dest ~ <<?APPLIANCE:8/unsigned-little-integer, Bin/binary>>,
                             appliance(#state{sm = Source});
                         SM == Source ->
                             appliance(State);
@@ -46,8 +46,8 @@ appliance(#state{sm = SM} = State) ->
                     Params = data:decode_params(Other),
                     io:format("Appliance: Evaluation of parameters ~p at time ~p~n", [Params, CurrentTime]),
                     Ans = eliot_api:lpc(model, {eval, CurrentTime, Params}),
-                    Dest = {sm, eliot_api:ip_to_node(Source)},
-                    {algorithm, Dest} ~ <<?EVAL:8/unsigned-little-integer, Ans:16/unsigned-little-integer>>;
+                    Dest = {algorithm, eliot_api:ip_to_node(Source)},
+                    Dest ~ <<?EVAL:8/unsigned-little-integer, Ans:16/unsigned-little-integer>>;
                 Any ->
                     io:format("Appliance: Unknown binary message ~p~n", [Any])
             end,

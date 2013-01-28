@@ -39,7 +39,6 @@ calc_slot({StartHour, _StartMinute}, {EndHour, _EndMinute}, Cap, Appliances) ->
 calc_single_slot(Start, End, Cur, Cap, Appliances) when Cur < End ->
     {NewAppliances, _Total} = dict:fold(fun(Key, Appliance, {CurAppliances, CurConsumption}) ->
                                                                 {NewAppliance, NewVal} = calc_single_app(Cur, CurConsumption, Cap, Appliance),
-                                                                io:format(standard_error, "New consumption: ~p~n", [CurConsumption + NewVal]),
                                                                 {dict:store(Key, NewAppliance, CurAppliances), CurConsumption + NewVal} end, {dict:new(), 0}, Appliances),
     calc_single_slot(Start, End, Cur + 1, Cap, NewAppliances);
 calc_single_slot(_Start, _End, _Cur, _Cap, Appliances) ->
@@ -53,7 +52,7 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{ip = IP, pid = Pid, params 
     RealCur = Cur rem 24,
     Dest = case Pid of
         none ->
-            eliot_api:ip_to_node(IP);
+            {appliance, eliot_api:ip_to_node(IP)};
         _ ->
             Pid
     end,
