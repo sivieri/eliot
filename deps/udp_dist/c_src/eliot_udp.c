@@ -878,7 +878,7 @@ void append_header(char *buf, int len, int rssi, unsigned int ip) {
     hdr[11] = ip_fin[2];
     hdr[13] = ip_fin[3];
     /* step 3: shift the buffer onwards for HDR_SIZE positions */
-    for (i = BUF + HDR_SIZE - 1; i - HDR_SIZE >= pre_hdr; --i) {
+    for (i = BUF + HDR_SIZE - 1 - sizeof(uint32_t); i - HDR_SIZE >= pre_hdr; --i) {
         buf[i] = buf[i - HDR_SIZE];
     }
     /* step 4: fill in the header */
