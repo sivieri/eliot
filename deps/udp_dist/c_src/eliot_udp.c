@@ -493,7 +493,7 @@ void do_resend(ack_data_t* ack) {
 void do_recv(driver_data_t* res) {
     /*
      * The buffer allocates always space for the message header, 
-     * but ignores it in the rest of the function (so it always remain free).
+     * but ignores it in the rest of the function (so it always remains free).
      */
     char buf[BUF + HDR_SIZE], msg_type;
     struct sockaddr_in *client = driver_alloc(sizeof(struct sockaddr_in));
@@ -840,6 +840,8 @@ unsigned long get_secs() {
  *                  97, C,
  *                  97, D
  *              x, ...
+ *  
+ *  TODO support ATOM_EXT together with SMALL_ATOM_EXT (2 bytes of length vs. 1, 100 vs. 115)
  */
 void append_header(char *buf, int len, int rssi, unsigned int ip) {
     char hdr[] = {104, 3,               /* payload tuple: {RSSI, SourceIP, Msg} */
