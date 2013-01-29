@@ -1,10 +1,10 @@
 -module(miniapp1).
--export([start/0]).
+-export([start_link/0]).
 -record(state, {}).
 -define(EVAL, $E).
 
 % Public API
-start() ->
+start_link() ->
     loop(#state{}).
 
 % Private API

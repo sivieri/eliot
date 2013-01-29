@@ -92,10 +92,11 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
                     end;
                 <<?APPLIANCE_LOCAL:8/unsigned-little-integer, Hash:20/binary, Name:20/binary, Code/binary>> ->
                     case dict:is_key(Source, Appliances) of
-                        true ->
+                        false ->
+                            io:format("SM: Registered a new local appliance ~p~n", [Source]),
                             {Pid, Params} = sm_sup:start_model(data:decode_name(Name), Code, Hash),
                             {Company, dict:store(Source, #appliance{ip = Source, pid = Pid, params = Params}, Appliances),  Slots, Cap};
-                        false ->
+                        true ->
                             {Company, Appliances,  Slots, Cap}
                     end;
                 Any ->

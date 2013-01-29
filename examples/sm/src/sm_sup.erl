@@ -36,7 +36,7 @@ start_model(ModuleAtom, ModuleRealBinary, ModuleHash) ->
                     ok_updated
             end;
         false ->
-            code:load_binary(ModuleAtom, Filename, ModuleRealBinary),
+            Res = code:load_binary(ModuleAtom, Filename, ModuleRealBinary),
             ok
     end,
     % Second: spawn a new (supervised) process
