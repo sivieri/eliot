@@ -21,7 +21,7 @@ notify(Schedule) ->
     dict:fold(fun(_Name, #appliance{ip = IP, pid = _Pid, params = Params}, _AccIn) ->
                                 Dest = eliot_api:ip_to_node(IP),
                                 Bin1 = data:encode_params(Params),
-                                {appliance, Dest} ~ <<?SCHEDULE:8/unsigned-little-integer, Bin1/binary>> end, 0, Schedule).
+                                {sm, Dest} ~ <<?SCHEDULE:8/unsigned-little-integer, Bin1/binary>> end, 0, Schedule).
 
 % Private API
 
@@ -52,7 +52,7 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{ip = IP, pid = Pid, params 
     RealCur = Cur rem 24,
     Dest = case Pid of
         none ->
-            {appliance, eliot_api:ip_to_node(IP)};
+            {alg, eliot_api:ip_to_node(IP)};
         _ ->
             Pid
     end,

@@ -8,15 +8,15 @@
 
 start_link() ->
     Pid = spawn_link(?MODULE, company, []),
-    register(company, Pid),
-    erlang:export(company),
+    register(sm, Pid),
+    erlang:export(sm),
     {ok, Pid}.
 
 company() ->
     company(#state{}).
 
 set_cap(Cap) ->
-    company ! {cap, Cap}.
+    sm ! {cap, Cap}.
 
 % Private API
 

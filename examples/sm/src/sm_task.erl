@@ -38,8 +38,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
     receive
         beacon ->
             Msg = <<?SM:8/unsigned-little-integer>>,
-            {company, all} ~ Msg,
-            {appliance, all} ~ Msg,
+            {sm, all} ~ Msg,
             erlang:send_after(?TIMER, self(), beacon),
             sm(State);
         {Pid, {get, appliances}} ->
@@ -69,7 +68,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
                 <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == Source andalso CCap == Cap ->
                     {Company, Appliances, Slots, Cap};
                 <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == Source ->
-                    self() !{schedule, Slots, CCap},
+                    self() ! {schedule, Slots, CCap},
                     {Company, Appliances, Slots, CCap};
                 <<?COMPANY:8/unsigned-little-integer, _CCap:16/unsigned-little-integer>> ->
                     io:format("SM: Already registered to the company ~p (new request from ~p)~n", [Company, Source]),
