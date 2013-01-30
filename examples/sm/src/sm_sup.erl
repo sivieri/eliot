@@ -27,8 +27,8 @@ start_model(ModuleAtom, ModuleRealBinary, ModuleHash) ->
     case code:is_loaded(ModuleAtom) of
         {file, _} ->
             {_, OldModuleBinary, _} = code:get_object_code(ModuleAtom),
-            OldHash = utils:code_hash(OldModuleBinary),
-            case string:equal(OldHash, ModuleHash) of
+            OldHash = crypto:sha(OldModuleBinary),
+            case OldHash == ModuleHash of
                 true ->
                     already_loaded;
                 false ->
