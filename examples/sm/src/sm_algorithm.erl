@@ -52,7 +52,7 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{ip = IP, pid = Pid, params 
     RealCur = Cur rem 24,
     Dest = case Pid of
         none ->
-            {alg, eliot_api:ip_to_node(IP)};
+            {sm, eliot_api:ip_to_node(IP)};
         _ ->
             Pid
     end,

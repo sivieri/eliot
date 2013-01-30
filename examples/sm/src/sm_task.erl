@@ -48,13 +48,13 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
             sm(State#state{appliances = NewAppliances});
         {schedule, NewSlots} ->
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = NewSlots, cap = Cap}, Appliances) end),
-            register(algorithm, Pid),
-            erlang:export(algorithm),
+            register(alg, Pid),
+            erlang:export(alg),
             sm(State#state{slots = NewSlots});
         {schedule, NewSlots, NewCap} ->
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = NewSlots, cap = NewCap}, Appliances) end),
-            register(algorithm, Pid),
-            erlang:export(algorithm),
+            register(alg, Pid),
+            erlang:export(alg),
             sm(State#state{slots = NewSlots, cap = NewCap});
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
