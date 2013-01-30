@@ -28,15 +28,17 @@ decode_name(Name) ->
 
 decode_params(<<>>, AccIn) ->
     lists:reverse(AccIn);
-decode_params(<<NameBin:20/binary, TypeBin:20/binary, Value:8/unsigned-little-integer, 1:8/unsigned-little-integer, Other/binary>>, AccIn) ->
+decode_params(<<L1:8, NameBin:L1/binary, L2:8, TypeBin:L2/binary, Value:8/unsigned-little-integer, 1:8/unsigned-little-integer, Other/binary>>, AccIn) ->
     decode_params(Other, [#parameter{name = remove_padding_atom(NameBin), type = remove_padding_atom(TypeBin), value = Value, fixed = true}|AccIn]);
-decode_params(<<NameBin:20/binary, TypeBin:20/binary, Value:8/unsigned-little-integer, 0:8/unsigned-little-integer, Other/binary>>, AccIn) ->
+decode_params(<<L1:8, NameBin:L1/binary, L2:8, TypeBin:L2/binary, Value:8/unsigned-little-integer, 0:8/unsigned-little-integer, Other/binary>>, AccIn) ->
     decode_params(Other, [#parameter{name = remove_padding_atom(NameBin), type = remove_padding_atom(TypeBin), value = Value, fixed = false}|AccIn]).
 
 add_padding_atom(Atom) ->
     String = erlang:atom_to_list(Atom),
-    erlang:list_to_binary(string:right(String, ?PADDING, $0)).
+    Length = length(String),
+    Bin = erlang:list_to_binary(String),
+    <<Length:8, Bin/binary>>.
 
 remove_padding_atom(Binary) ->
-    List = erlang:binary_to_list(Binary),
-    erlang:list_to_atom(string:strip(List, left, $0)).
+    erlang:list_to_atom(erlang:binary_to_list(Binary)).
+
