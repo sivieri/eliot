@@ -8,37 +8,35 @@
 
 encode_params(Params) ->
     lists:foldl(fun(#parameter{name = Name, type = Type, value = Value, fixed = true}, AccIn) -> 
-                            Bin1 = add_padding_atom(Name),
-                            Bin2 = add_padding_atom(Type),
-                            Cur = <<Bin1/binary, Bin2/binary, Value:8/unsigned-little-integer, 1:8/unsigned-little-integer>>,
+                            Bin1 = add_atom(Name),
+                            Cur = <<Bin1/binary, Type:8/unsigned-little-integer, Value:8/unsigned-little-integer, 1:8/unsigned-little-integer>>,
                             <<AccIn/binary, Cur/binary>>;
                          (#parameter{name = Name, type = Type, value = Value, fixed = false}, AccIn) ->
-                            Bin1 = add_padding_atom(Name),
-                            Bin2 = add_padding_atom(Type),
-                            Cur = <<Bin1/binary, Bin2/binary, Value:8/unsigned-little-integer, 0:8/unsigned-little-integer>>,
+                            Bin1 = add_atom(Name),
+                            Cur = <<Bin1/binary, Type:8/unsigned-little-integer, Value:8/unsigned-little-integer, 0:8/unsigned-little-integer>>,
                             <<AccIn/binary, Cur/binary>> end, <<>>, Params).
 
 decode_params(Other) ->
     decode_params(Other, []).
 
 decode_name(Name) ->
-    remove_padding_atom(Name).
+    remove_atom(Name).
 
 % Private API
 
 decode_params(<<>>, AccIn) ->
     lists:reverse(AccIn);
-decode_params(<<L1:8, NameBin:L1/binary, L2:8, TypeBin:L2/binary, Value:8/unsigned-little-integer, 1:8/unsigned-little-integer, Other/binary>>, AccIn) ->
-    decode_params(Other, [#parameter{name = remove_padding_atom(NameBin), type = remove_padding_atom(TypeBin), value = Value, fixed = true}|AccIn]);
-decode_params(<<L1:8, NameBin:L1/binary, L2:8, TypeBin:L2/binary, Value:8/unsigned-little-integer, 0:8/unsigned-little-integer, Other/binary>>, AccIn) ->
-    decode_params(Other, [#parameter{name = remove_padding_atom(NameBin), type = remove_padding_atom(TypeBin), value = Value, fixed = false}|AccIn]).
+decode_params(<<L1:8, NameBin:L1/binary, Type:8/unsigned-little-integer, Value:8/unsigned-little-integer, 1:8/unsigned-little-integer, Other/binary>>, AccIn) ->
+    decode_params(Other, [#parameter{name = remove_atom(NameBin), type = Type, value = Value, fixed = true}|AccIn]);
+decode_params(<<L1:8, NameBin:L1/binary, Type:8/unsigned-little-integer, Value:8/unsigned-little-integer, 0:8/unsigned-little-integer, Other/binary>>, AccIn) ->
+    decode_params(Other, [#parameter{name = remove_atom(NameBin), type = Type, value = Value, fixed = false}|AccIn]).
 
-add_padding_atom(Atom) ->
+add_atom(Atom) ->
     String = erlang:atom_to_list(Atom),
     Length = length(String),
     Bin = erlang:list_to_binary(String),
     <<Length:8, Bin/binary>>.
 
-remove_padding_atom(Binary) ->
+remove_atom(Binary) ->
     erlang:list_to_atom(erlang:binary_to_list(Binary)).
 

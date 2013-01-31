@@ -3,6 +3,7 @@
 -record(appliance, {ip, pid = none, params = []}).
 -record(billing, {slots, cap}).
 -record(slot, {starttime, endtime, priority = 0}).
+% Message type
 -define(BEACON, $B).
 -define(APPLIANCE, $A).
 -define(APPLIANCE_LOCAL, $L).
@@ -11,3 +12,6 @@
 -define(EVAL, $E).
 -define(SCHEDULE, $S).
 -define(CONSUMPTION, $O).
+% Parameter type
+-define(PARAM_TEMPERATURE, $E).
+-define(PARAM_TIME, $T).
