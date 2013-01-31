@@ -784,9 +784,8 @@ unsigned long get_secs() {
  * input:
  * 131,
  *      131,
- *          104, 3,
+ *          104, 2,
  *              97, 2,
- *              115, 0,
  *              103,
  *                  115, x, ...
  *                  x, x, x, x
@@ -797,23 +796,16 @@ unsigned long get_secs() {
  * or:
  * 131,
  *      131,
- *          104, 4,
+ *          104, 2,
  *              97, 6,
- *              103,
- *                  115, x, ...
- *                  x, x, x, x
- *                  x, x, x, x,
- *                  x,
- *              115, 0,
  *              115, x, ...
  *      131,
  *          x, ...
  * output:
  * 131,
  *      131,
- *          104, 3,
+ *          104, 2,
  *              97, 2,
- *              115, 0,
  *              103,
  *                  115, x, ...
  *                  x, x, x, x
@@ -831,14 +823,8 @@ unsigned long get_secs() {
  * or:
  * 131,
  *      131,
- *          104, 4,
+ *          104, 2,
  *              97, 6,
- *              103,
- *                  115, x, ...
- *                  x, x, x, x
- *                  x, x, x, x,
- *                  x,
- *              115, 0,
  *              115, x, ...
  *      131,
  *          104, 3,
@@ -849,8 +835,6 @@ unsigned long get_secs() {
  *                  97, C,
  *                  97, D
  *              x, ...
- *  
- *  TODO support ATOM_EXT together with SMALL_ATOM_EXT (2 bytes of length vs. 1, 100 vs. 115)
  */
 void append_header(char *buf, int len, int rssi, unsigned int ip) {
     char hdr[] = {104, 3,               /* payload tuple: {RSSI, SourceIP, Msg} */
@@ -867,13 +851,12 @@ void append_header(char *buf, int len, int rssi, unsigned int ip) {
     msg_type = buf[5];
     switch (msg_type) {
         case 2:
-            node_len = buf[10];
-            pre_hdr = node_len + 21;
+            node_len = buf[8];
+            pre_hdr = node_len + 19;
             break;
         case 6:
-            node_len = buf[8];
-            node_len += buf[21 + node_len];
-            pre_hdr = node_len + 23;
+            node_len = buf[7];
+            pre_hdr = node_len + 9;
             break;
         default:
             /* forget about it */
