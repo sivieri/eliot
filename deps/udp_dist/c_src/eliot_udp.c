@@ -89,7 +89,7 @@ typedef struct ack_data
      struct sockaddr_in peer;
      char buf[BUF];
      int len;
-     uint32_t msg;
+     uint16_t msg;
      int resend;
      unsigned long last;
      ErlDrvTermData caller;
@@ -498,12 +498,12 @@ void do_recv(driver_data_t* res) {
     char buf[BUF + HDR_SIZE], msg_type;
     struct sockaddr_in *client = driver_alloc(sizeof(struct sockaddr_in));
     int size, size2;
-    uint32_t msg;
     socklen_t clientSize = sizeof(struct sockaddr_in);
     int existing = 0;
     driver_data_t* iterator = head;
     ip_data_t *peer, *iterator2 = peers;
     ack_data_t *iterator3, *prev = NULL;
+    uint16_t type, number, hdr;
 
     memset(client, 0, sizeof(struct sockaddr_in));
     erl_drv_mutex_lock(mutex);
@@ -511,7 +511,10 @@ void do_recv(driver_data_t* res) {
     size = recvfrom(sock, buf, BUF, MSG_PEEK, (struct sockaddr*)client, &clientSize);
     erl_drv_mutex_unlock(mutex);
     if (size > 0) {
-        msg_type = buf[0];
+        memcpy(&hdr, buf, 2);
+        type = hdr >> 12;
+        number = hdr &0x0FFF;
+        msg_type = type;
         FPRINTF(stderr, "DEBUG: Peeking %d bytes of type %c from %d:%d through UDP\n", size, msg_type, client->sin_addr.s_addr, client->sin_port);
         // ignore it if it comes from us (but remove it from the socket)
         if (myaddress == client->sin_addr.s_addr) {
@@ -543,14 +546,13 @@ void do_recv(driver_data_t* res) {
                 FPRINTF(stderr, "DEBUG: Received sizes are different: %d vs. %d\n", size, size2);
             }
             else {
-                memcpy((char*) &msg, buf + 1, sizeof(uint32_t));
                 if (msg_type == ACK_MSG) {
-                    FPRINTF(stderr, "DEBUG: ACK for message %d\n", msg);
+                    FPRINTF(stderr, "DEBUG: ACK for message %d\n", number);
                     erl_drv_mutex_lock(ack_mutex);
                     iterator3 = acks;
                     while (iterator3 != NULL) {
                         // pointers comparison is fine
-                        if (iterator3->res == iterator && iterator3->msg == msg) {
+                        if (iterator3->res == iterator && iterator3->msg == number) {
                             if (prev == NULL) {
                                 acks = iterator3->next;
                             }
@@ -566,26 +568,26 @@ void do_recv(driver_data_t* res) {
                     erl_drv_mutex_unlock(ack_mutex);
                 }
                 else {
-                    FPRINTF(stderr, "DEBUG: Message %d\n", msg);
+                    FPRINTF(stderr, "DEBUG: Message %d\n", number);
                     // overwrite the message internal header
                     if (iterator->curstate == HANDSHAKED) {
-                        buf[sizeof(uint32_t)] = DIST_MAGIC_RECV_TAG;
+                        buf[1] = DIST_MAGIC_RECV_TAG;
                     }
                     else {
-                        buf[sizeof(uint32_t)] = 'R';
+                        buf[1] = 'R';
                     }
                     iterator->received += size2;
                     if (msg_type == TICK_MSG) {
-                        driver_output(iterator->port, buf + sizeof(uint32_t), 0);
+                        driver_output(iterator->port, buf + 1, 0);
                     }
                     else {
-                        append_header(&buf[sizeof(uint32_t)], size2 - sizeof(uint32_t), 0, iterator->peer.sin_addr.s_addr);
+                        append_header(&buf[1], size2 - 1, 0, iterator->peer.sin_addr.s_addr);
                         size2 += HDR_SIZE;
-                        driver_output(iterator->port, buf + sizeof(uint32_t), size2 - sizeof(uint32_t));
+                        driver_output(iterator->port, buf + 1, size2 - 1);
                     }
                     if (msg_type == DATA_MSG_ACK_REQUIRED) {
                         client->sin_port = PORT;
-                        do_send_ack(iterator->clientSock, msg, client);
+                        do_send_ack(iterator->clientSock, number, client);
                     }
                 }
             }
@@ -640,19 +642,26 @@ int do_send(driver_data_t* res, char* buf, int len, int reliable) {
     return size;
 }
 
+/*
+ * Message header is 2 bytes, structured as follows:
+ * 
+ * xxxxyyyy yyyyyyyy
+ * 
+ * where xxxx is the type (from the enum, max 16 types)
+ * and yyyy yyyyyyyy is the sequence number for acks (max 4096).
+ * This implies some bit shifting, of course.
+ */
 int do_send2(driver_data_t* res, char* buf, int len, int reliable) {
     int size;
     ack_data_t* ack;
+    uint16_t type, number, hdr;
 
-    /*for (i = 0; i < len; ++i) {
-        fprintf(stderr, "%d ", (uint8_t) buf[i]);
-    }
-    fprintf(stderr, "\n");*/
     ack = driver_alloc(sizeof(ack_data_t));
-    ack->buf[0] = buf[0];
-    size = 1;
-    memcpy(ack->buf + size, (char*) &res->msg_number, sizeof(uint32_t));
-    size += sizeof(uint32_t);
+    type = buf[0] & 0x000F;
+    number = res->msg_number & 0x0FFF;
+    hdr = type << 12 | number;
+    size = 2;
+    memcpy(ack->buf, (char*) &hdr, size);
     FPRINTF(stderr, "DEBUG: Minibuf %d, buf %d\n", size, len);
     memcpy(ack->buf + size, buf + 1, len - 1); // drop the initial character, already inserted at the beginning
     size = sendto(res->clientSock, ack->buf, size + len - 1, 0, (struct sockaddr*)&res->peer,
@@ -880,7 +889,7 @@ void append_header(char *buf, int len, int rssi, unsigned int ip) {
     hdr[11] = ip_fin[2];
     hdr[13] = ip_fin[3];
     /* step 3: shift the buffer onwards for HDR_SIZE positions */
-    for (i = BUF + HDR_SIZE - 1 - sizeof(uint32_t); i - HDR_SIZE >= pre_hdr; --i) {
+    for (i = BUF + HDR_SIZE - 2; i - HDR_SIZE >= pre_hdr; --i) {
         buf[i] = buf[i - HDR_SIZE];
     }
     /* step 4: fill in the header */
