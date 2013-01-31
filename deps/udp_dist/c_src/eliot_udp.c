@@ -473,13 +473,13 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
  * Helper functions
  */
 
-void do_send_ack(int socket, uint32_t msg, struct sockaddr_in* client) {
+void do_send_ack(int socket, uint16_t msg, struct sockaddr_in* client) {
     char buf[MINIBUF];
     int size;
     
     buf[0] = ACK_MSG;
-    memcpy(buf + 1, (char*) &msg, sizeof(uint32_t));
-    size = sendto(socket, buf, 1 + sizeof(uint32_t), 0, (struct sockaddr*) client, sizeof(struct sockaddr_in));
+    memcpy(buf + 1, (char*) &msg, sizeof(uint16_t));
+    size = sendto(socket, buf, 1 + sizeof(uint16_t), 0, (struct sockaddr*) client, sizeof(struct sockaddr_in));
     if (size > 0) FPRINTF(stderr, "DEBUG: Sent ACK for message %d by %d\n", msg, client->sin_addr.s_addr);
     else FPRINTF(stderr, "DEBUG: Unable to send ACK for message %d to %d\n", msg, client->sin_addr.s_addr);
 }
