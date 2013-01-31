@@ -40,10 +40,13 @@
 #define MINIBUF 10
 #define DIST_MAGIC_RECV_TAG 131
 
-#define DATA_MSG 'D'
-#define DATA_MSG_ACK_REQUIRED 'R'
-#define TICK_MSG 'T'
-#define ACK_MSG 'A'
+typedef enum hdr
+{
+    DATA_MSG,
+    DATA_MSG_ACK_REQUIRED,
+    TICK_MSG,
+    ACK_MSG
+} hdr_t;
 
 typedef enum state
 {
@@ -113,7 +116,7 @@ void free_entry(driver_data_t* element);
 void do_recv(driver_data_t* res);
 int do_send(driver_data_t* res, char* buf, int len, int reliable);
 int do_send2(driver_data_t* res, char* buf, int len, int reliable);
-void do_send_ack(int socket, uint32_t msg, struct sockaddr_in* client);
+void do_send_ack(int socket, uint16_t msg, struct sockaddr_in* client);
 void do_resend(ack_data_t* ack);
 void *do_beacon(void *data);
 int check_expired(unsigned long now, unsigned long last, int resend);
