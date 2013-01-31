@@ -89,7 +89,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
                         false ->
                             {Company, Appliances,  Slots, Cap}
                     end;
-                <<?APPLIANCE_LOCAL:8/unsigned-little-integer, Hash:20/binary, Name:20/binary, Code/binary>> ->
+                <<?APPLIANCE_LOCAL:8/unsigned-little-integer, Hash:20/binary, L1:8, Name:L1/binary, Code/binary>> ->
                     case dict:is_key(Source, Appliances) of
                         false ->
                             io:format("SM: Registered a new local appliance ~p~n", [Source]),
