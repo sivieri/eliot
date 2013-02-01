@@ -33,10 +33,11 @@ set_appliances(Appliances) ->
     sm ! {set, appliances, Appliances}.
 
 test1() ->
-    timer:sleep(30),
-    lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10) end, [1, 2, 3]),
+    timer:sleep(30 * 1000),
+    lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10 * 1000) end, [1, 2, 3]),
     test_schedule(),
-    lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10) end, [1, 2, 3]).
+    lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10 * 1000) end, [1, 2, 3]),
+    erlang:exit(demo1).
 
 % Private API
 
