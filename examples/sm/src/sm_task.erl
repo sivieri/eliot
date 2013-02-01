@@ -37,7 +37,7 @@ test1() ->
     lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10 * 1000) end, [1, 2, 3]),
     test_schedule(),
     lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10 * 1000) end, [1, 2, 3]),
-    erlang:exit(demo1).
+    init:stop().
 
 % Private API
 
