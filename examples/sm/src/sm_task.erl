@@ -33,7 +33,7 @@ set_appliances(Appliances) ->
     sm ! {set, appliances, Appliances}.
 
 test1() ->
-    timer:sleep(30 * 1000),
+    timer:sleep(10 * 1000),
     lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10 * 1000) end, [1, 2, 3]),
     test_schedule(),
     lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10 * 1000) end, [1, 2, 3]),
