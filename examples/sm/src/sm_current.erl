@@ -18,7 +18,7 @@ current(#state{company = Company} = State) ->
     receive
         send ->
             Dest = eliot_api:ip_to_node(Company),
-            {company, Dest} ~ <<?CONSUMPTION:8/unsigned-little-integer, 100:16/unsigned-little-integer>>,
+            {sm, Dest} ~ <<?CONSUMPTION:8/unsigned-little-integer, 100:16/unsigned-little-integer>>,
             erlang:send_after(?TIMER, self(), send);
         Any ->
             io:format("Sm Current: Unknown message ~p~n", [Any])
