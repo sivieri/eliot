@@ -1,5 +1,5 @@
 -module(sm_task).
--export([start_link/0, sm/0, schedule/1, schedule/2, get_appliances/0, set_appliances/1, test_schedule/0]).
+-export([start_link/0, sm/0, schedule/1, schedule/2, get_appliances/0, set_appliances/1, test_schedule/0, test1/0]).
 -include("scenario.hrl").
 -define(TIMER, 10 * 1000).
 -record(state, {company = none, appliances = dict:new(), slots = [], cap = 0}).
@@ -10,7 +10,7 @@ start_link() ->
     Pid = spawn_link(?MODULE, sm, []),
     register(sm, Pid),
     erlang:export(sm),
-    erlang:send_after(?TIMER, Pid, beacon),
+    %erlang:send_after(?TIMER, Pid, beacon),
     {ok, Pid}.
 
 sm() ->
@@ -32,6 +32,12 @@ get_appliances() ->
 set_appliances(Appliances) ->
     sm ! {set, appliances, Appliances}.
 
+test1() ->
+    timer:sleep(30),
+    lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10) end, [1, 2, 3]),
+    test_schedule(),
+    lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10) end, [1, 2, 3]).
+
 % Private API
 
 sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} = State) ->
@@ -39,7 +45,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
         beacon ->
             Msg = <<?SM:8/unsigned-little-integer>>,
             {sm, all} ~ Msg,
-            erlang:send_after(?TIMER, self(), beacon),
+            %erlang:send_after(?TIMER, self(), beacon),
             sm(State);
         {Pid, {get, appliances}} ->
             Pid ! {self(), Appliances},
