@@ -75,7 +75,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
                             {Company, Appliances, Slots, Cap};
                         false ->
                             io:format("SM: Registered a new appliance ~p~n", [Source]),
-                            {Company, dict:store(Source, #appliance{ip = Source, pid = none, params = Params}), Slots, Cap}
+                            {Company, dict:store(Source, #appliance{ip = Source, pid = none, params = Params}, Appliances), Slots, Cap}
                     end;
                 <<?APPLIANCE_LOCAL:8/unsigned-little-integer, Hash:20/binary, L1:8, Name:L1/binary, Code/binary>> ->
                     case dict:is_key(Source, Appliances) of
