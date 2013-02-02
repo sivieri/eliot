@@ -80,21 +80,14 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
                 <<?COMPANY:8/unsigned-little-integer, _CCap:16/unsigned-little-integer>> ->
                     io:format("SM: Already registered to the company ~p (new request from ~p)~n", [Company, Source]),
                     {Company, Appliances,  Slots, Cap};
-                <<?APPLIANCE:8/unsigned-little-integer>> ->
-                    case dict:is_key(Source, Appliances) of
-                        true ->
-                            {Company, Appliances,  Slots, Cap};
-                        false ->
-                            io:format("SM: Registered a new appliance ~p~n", [Source]),
-                            {Company, dict:store(Source, #appliance{ip = Source}, Appliances), Slots, Cap}
-                    end;
                 <<?APPLIANCE:8/unsigned-little-integer, ParamsBin/binary>>  ->
                     Params = data:decode_params(ParamsBin),
                     case dict:is_key(Source, Appliances) of
                         true ->
-                            {Company, dict:store(Source, #appliance{ip = Source, pid = none, params = Params}, Appliances),  Slots, Cap};
+                            {Company, Appliances, Slots, Cap};
                         false ->
-                            {Company, Appliances,  Slots, Cap}
+                            io:format("SM: Registered a new appliance ~p~n", [Source]),
+                            {Company, dict:store(Source, #appliance{ip = Source, pid = none, params = Params}), Slots, Cap}
                     end;
                 <<?APPLIANCE_LOCAL:8/unsigned-little-integer, Hash:20/binary, L1:8, Name:L1/binary, Code/binary>> ->
                     case dict:is_key(Source, Appliances) of

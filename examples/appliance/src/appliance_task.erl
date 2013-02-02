@@ -26,7 +26,6 @@ appliance(#state{sm = SM} = State) ->
                         SM == none ->
                             io:format("Appliance: Registering to SM ~p~n", [Source]),
                             Dest = {sm, eliot_api:ip_to_node(Source)},
-                            Dest ~ <<?APPLIANCE:8/unsigned-little-integer>>,
                             {ok, Params} = application:get_env(appliance, params),
                             Bin = data:encode_params(Params),
                             Dest ~ <<?APPLIANCE:8/unsigned-little-integer, Bin/binary>>,
