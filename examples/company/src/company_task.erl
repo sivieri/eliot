@@ -2,7 +2,8 @@
 -export([start_link/0, company/0, set_cap/1]).
 -include("eliot.hrl").
 -include("scenario.hrl").
--record(state, {sm = none, cap = 3000}).
+-record(state, {sm = none, cap = 3000, slots = [#slot{starttime = {7, 00}, endtime = {20, 00}, priority = 0},
+                     #slot{starttime = {20, 00}, endtime = {7, 00}, priority = 1}]}).
 
 % Public API
 
@@ -20,7 +21,7 @@ set_cap(Cap) ->
 
 % Private API
 
-company(#state{sm = SM, cap = Cap} = State) ->
+company(#state{sm = SM, cap = Cap, slots = Slots} = State) ->
     receive
         {cap, NewCap} ->
             Dest = eliot_api:ip_to_node(SM),
@@ -34,13 +35,15 @@ company(#state{sm = SM, cap = Cap} = State) ->
                     if
                         SM == none ->
                             io:format("Company: Registering to SM ~p~n", [Source]),
-                            {sm, eliot_api:ip_to_node(Source)} ~ <<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer>>,
+                            Bin1 = data:encode_slots(Slots),
+                            {sm, eliot_api:ip_to_node(Source)} ~ <<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer, Bin1/binary>>,
                             company(#state{sm = Source});
                         SM == Source ->
                             company(State);
                         true ->
                             io:format("Company: Already registered to SM ~p, changing to ~p~n", [SM, Source]),
-                            {sm, eliot_api:ip_to_node(Source)} ~ <<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer>>,
+                            Bin1 = data:encode_slots(Slots),
+                            {sm, eliot_api:ip_to_node(Source)} ~ <<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer, Bin1/binary>>,
                             company(#state{sm = Source})
                     end;
                 Any ->

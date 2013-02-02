@@ -1,5 +1,5 @@
 -module(sm_task).
--export([start_link/0, sm/0, schedule/1, schedule/2, get_appliances/0, set_appliances/1, test_schedule/0, test1/0]).
+-export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0]).
 -include("scenario.hrl").
 -define(TIMER, 10 * 1000).
 -record(state, {company = none, appliances = dict:new(), slots = [], cap = 0}).
@@ -16,15 +16,8 @@ start_link() ->
 sm() ->
     sm(#state{}).
 
-test_schedule() ->
-    schedule([#slot{starttime = {7, 00}, endtime = {20, 00}, priority = 0},
-                     #slot{starttime = {20, 00}, endtime = {7, 00}, priority = 1}]).
-
-schedule(Slots) ->
-    sm ! {schedule, Slots}.
-
-schedule(Slots, Cap) ->
-    sm ! {schedule, Slots, Cap}.
+schedule() ->
+    sm ! schedule.
 
 get_appliances() ->
     eliot_api:lpc(sm, {get, appliances}).
@@ -35,7 +28,7 @@ set_appliances(Appliances) ->
 test1() ->
     timer:sleep(10 * 1000),
     lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10 * 1000) end, [1, 2, 3]),
-    test_schedule(),
+    schedule(),
     lists:foreach(fun(_) -> sm ! beacon, timer:sleep(10 * 1000) end, [1, 2, 3]),
     init:stop().
 
@@ -53,31 +46,26 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
             sm(State);
         {set, appliances, NewAppliances} ->
             sm(State#state{appliances = NewAppliances});
-        {schedule, NewSlots} ->
-            Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = NewSlots, cap = Cap}, Appliances) end),
+        schedule ->
+            Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
             register(alg, Pid),
             erlang:export(alg),
-            sm(State#state{slots = NewSlots});
-        {schedule, NewSlots, NewCap} ->
-            Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = NewSlots, cap = NewCap}, Appliances) end),
-            register(alg, Pid),
-            erlang:export(alg),
-            sm(State#state{slots = NewSlots, cap = NewCap});
+            sm(State);
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
             sm(#state{company = Company, appliances = Schedule});
         {_RSSI, Source, Content} ->
             {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of
-                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == none ->
+                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer, Other/binary>> when Company == none ->
                     io:format("SM: Registered a new company ~p~n", [Source]),
                     sm_sup:add_child(sm_current, [Source]),
-                    {Source, Appliances, Slots, CCap};
-                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == Source andalso CCap == Cap ->
-                    {Company, Appliances, Slots, Cap};
-                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer>> when Company == Source ->
-                    self() ! {schedule, Slots, CCap},
-                    {Company, Appliances, Slots, CCap};
-                <<?COMPANY:8/unsigned-little-integer, _CCap:16/unsigned-little-integer>> ->
+                    SSlots = data:decode_slots(Other),
+                    {Source, Appliances, SSlots, CCap};
+                <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer, Other/binary>> when Company == Source ->
+                    SSlots = data:decode_slots(Other),
+                    self() ! {schedule, SSlots, CCap},
+                    {Company, Appliances, SSlots, CCap};
+                <<?COMPANY:8/unsigned-little-integer, _CCap:16/unsigned-little-integer, _Other/binary>> ->
                     io:format("SM: Already registered to the company ~p (new request from ~p)~n", [Company, Source]),
                     {Company, Appliances,  Slots, Cap};
                 <<?APPLIANCE:8/unsigned-little-integer, ParamsBin/binary>>  ->
