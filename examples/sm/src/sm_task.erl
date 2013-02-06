@@ -30,8 +30,8 @@ test1() ->
     lists:foreach(fun(_) -> sm ! beacon, timer:sleep(5 * 1000) end, [1, 2, 3]),
     schedule(),
     lists:foreach(fun(_) -> sm ! beacon, timer:sleep(5 * 1000) end, [1, 2, 3]),
-    clocks:update(SW),
-    io:format("~p~n", [SW]),
+    SW2 = clocks:update(SW),
+    io:format("~p~n", [SW2]),
     init:stop().
 
 % Private API
