@@ -26,12 +26,23 @@ set_appliances(Appliances) ->
     sm ! {set, appliances, Appliances}.
 
 test1() ->
-    SW = clocks:start(clock),
-    lists:foreach(fun(_) -> sm ! beacon, timer:sleep(5 * 1000) end, [1, 2, 3]),
-    schedule(),
-    lists:foreach(fun(_) -> sm ! beacon, timer:sleep(5 * 1000) end, [1, 2, 3]),
-    SW2 = clocks:update(SW),
-    io:format("~p~n", [SW2]),
+    SW1 = clocks:start(gettimeofday),
+    SW2 = clocks:start(clock_gettime),
+    SW3 = clocks:start(clock),
+    SW4 = clocks:start(times),
+    lists:foldl(fun(I, [W1, W2, W3, W4]) ->
+                        lists:foreach(fun(_) -> sm ! beacon, timer:sleep(?TIMER) end, lists:seq(1, 6)),
+                        sm ! schedule,
+                        NW1 = clocks:update(W1),
+                        NW2 = clocks:update(W2),
+                        NW3 = clocks:update(W3),
+                        NW4 = clocks:update(W4),
+                        io:format("Update min. ~p~n", [I]),
+                        io:format("GETTIMEOFDAY: ~p~n", [NW1]),
+                        io:format("CLOCK_GETTIME: ~p~n", [NW2]),
+                        io:format("CLOCK: ~p~n", [NW3]),
+                        io:format("TIMES: ~p~n", [NW4]),
+                        [NW1, NW2, NW3, NW4] end, [SW1, SW2, SW3, SW4], lists:seq(1, 10)),
     init:stop().
 
 % Private API
