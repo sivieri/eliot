@@ -1,7 +1,9 @@
 -module(sm_task).
 -export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0, reset/0]).
 -include("scenario.hrl").
+-include("eliot.hrl").
 -define(TIMER, 10 * 1000).
+-define(FNAME, "/home/crest/tests.txt").
 -record(state, {company = none, appliances = dict:new(), slots = [], cap = 0}).
 
 % Public API
@@ -45,9 +47,15 @@ test1() ->
                         NW2 end, SW2, lists:seq(1, 10)),
     NW3 = clocks:update(SW3),
     NW4 = clocks:update(SW4),
-    io:format("Accumulator: ~p~n", [RW2]),
-    io:format("CLOCK: ~p~n", [NW3]),
-    io:format("TIMES: ~p~n", [NW4]),
+    case file:open(?FNAME, [append]) of
+        {ok, Dev} ->
+            io:format(Dev, "ELIOT~cACC~c~p~n", [9, 9, RW2#stopwatch.acc]),
+            io:format(Dev, "ELIOT~cCLOCK~c~p~n", [9, 9, NW3#stopwatch.cur]),
+            io:format(Dev, "ELIOT~cTIMES~c~p~n", [9, 9, NW4#stopwatch.cur]),
+            file:close(Dev);
+        {error, Reason} ->
+            io:format("Unable to append to file: ~p~n", [Reason])
+    end,
     reset(), % send the reset...
     timer:sleep(5), % wait for it...
     init:stop(). % quit.

@@ -5,3 +5,5 @@
 -define(NODENAME, "eliot").
 -define(INTERFACE, "eth1").
 -define(RPC_NOACKS, 30000).
+-type swtype() :: gettimeofday | clock_gettime | clock | times.
+-record(stopwatch, {type = gettimeofday :: swtype(), start = none, cur = none, startacc = none, acc = none}).

@@ -1,8 +1,6 @@
 -module(clocks).
 -export([start/1, update/1, acc_start/1, acc_stop/1]).
--type swtype() :: gettimeofday | clock_gettime | clock | times.
--record(stopwatch, {type = gettimeofday :: swtype(), start = none, cur = none, startacc = none, acc = none}).
--export_type([swtype/0]).
+-include("eliot.hrl").
 
 % Public API
 
