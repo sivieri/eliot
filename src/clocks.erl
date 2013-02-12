@@ -36,20 +36,20 @@ update(#stopwatch{type = clock_gettime, start = Start} = SW) ->
     Val = Secs * 1000000000 + NSecs,
     SW#stopwatch{cur = Val - Start}.
 
-acc_start(times) ->
+acc_start(#stopwatch{type = times} = SW) ->
     Val = unixtime:times(),
-    #stopwatch{type = times, startacc = Val, acc = {0, 0}};
-acc_start(clock) ->
+    SW#stopwatch{startacc = Val, acc = {0, 0}};
+acc_start(#stopwatch{type = clock} = SW) ->
     Val = unixtime:clock(),
-    #stopwatch{type = clock, startacc = Val, acc = 0};
-acc_start(gettimeofday) ->
+    SW#stopwatch{startacc = Val, acc = 0};
+acc_start(#stopwatch{type = gettimeofday} = SW) ->
     {Secs, USecs} = unixtime:gettimeofday(),
     Val = Secs * 1000000 + USecs,
-    #stopwatch{type = gettimeofday, startacc = Val, acc = 0};
-acc_start(clock_gettime) ->
+    SW#stopwatch{startacc = Val, acc = 0};
+acc_start(#stopwatch{type = clock_gettime} = SW) ->
     {Secs, NSecs} = unixtime:clock_gettime(),
     Val = Secs * 1000000000 + NSecs,
-    #stopwatch{type = clock_gettime, startacc = Val, acc = 0}.
+    SW#stopwatch{startacc = Val, acc = 0}.
 
 acc_stop(#stopwatch{type = clock, startacc = Start, acc = Acc} = SW) ->
     Val = unixtime:clock(),
