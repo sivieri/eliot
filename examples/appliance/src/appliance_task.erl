@@ -29,14 +29,14 @@ appliance(#state{sm = SM} = State) ->
                             {ok, Params} = application:get_env(appliance, params),
                             Bin = data:encode_params(Params),
                             Dest ~ <<?APPLIANCE:8/unsigned-little-integer, Bin/binary>>,
-                            appliance(#state{sm = Source});
+                            appliance(State#state{sm = Source});
                         SM == Source ->
                             appliance(State);
                         true ->
                             io:format("Appliance: Already registered to SM ~p, changing to ~p~n", [SM, Source]),
                             Dest = {sm, eliot_api:ip_to_node(Source)},
                             Dest ~ <<?APPLIANCE:8/unsigned-little-integer>>,
-                            appliance(#state{sm = Source})
+                            appliance(State#state{sm = Source})
                     end;
                 <<?SCHEDULE:8/unsigned-little-integer, Other/binary>> ->
                     Params = data:decode_params(Other),
@@ -47,6 +47,8 @@ appliance(#state{sm = SM} = State) ->
                     Ans = eliot_api:lpc(model, {eval, CurrentTime, Params}),
                     Dest = {alg, eliot_api:ip_to_node(Source)},
                     Dest ~ <<?EVAL:8/unsigned-little-integer, Ans:16/unsigned-little-integer>>;
+                <<?RESET:8/unsigned-little-integer>> ->
+                    appliance(State#state{sm = none}); 
                 Any ->
                     io:format("Appliance: Unknown binary message ~p~n", [Any])
             end,

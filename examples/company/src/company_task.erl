@@ -37,15 +37,17 @@ company(#state{sm = SM, cap = Cap, slots = Slots} = State) ->
                             io:format("Company: Registering to SM ~p~n", [Source]),
                             Bin1 = data:encode_slots(Slots),
                             {sm, eliot_api:ip_to_node(Source)} ~ <<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer, Bin1/binary>>,
-                            company(#state{sm = Source});
+                            company(State#state{sm = Source});
                         SM == Source ->
                             company(State);
                         true ->
                             io:format("Company: Already registered to SM ~p, changing to ~p~n", [SM, Source]),
                             Bin1 = data:encode_slots(Slots),
                             {sm, eliot_api:ip_to_node(Source)} ~ <<?COMPANY:8/unsigned-little-integer, Cap:16/unsigned-little-integer, Bin1/binary>>,
-                            company(#state{sm = Source})
+                            company(State#state{sm = Source})
                     end;
+                <<?RESET:8/unsigned-little-integer>> ->
+                    company(State#state{sm = none});
                 Any ->
                     io:format("Company: Unknown binary message ~p~n", [Any])
             end,

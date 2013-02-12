@@ -12,6 +12,7 @@
 -define(EVAL, $E).
 -define(SCHEDULE, $S).
 -define(CONSUMPTION, $O).
+-define(RESET, $R).
 % Parameter type
 -define(PARAM_TEMPERATURE, $E).
 -define(PARAM_TIME, $T).

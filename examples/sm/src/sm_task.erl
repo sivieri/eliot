@@ -1,5 +1,5 @@
 -module(sm_task).
--export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0]).
+-export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0, reset/0]).
 -include("scenario.hrl").
 -define(TIMER, 10 * 1000).
 -record(state, {company = none, appliances = dict:new(), slots = [], cap = 0}).
@@ -25,25 +25,32 @@ get_appliances() ->
 set_appliances(Appliances) ->
     sm ! {set, appliances, Appliances}.
 
+reset() ->
+    sm ! reset.
+
 test1() ->
-    SW1 = clocks:start(gettimeofday),
     SW2 = clocks:start(clock_gettime),
     SW3 = clocks:start(clock),
     SW4 = clocks:start(times),
-    lists:foldl(fun(I, [W1, W2, W3, W4]) ->
-                        lists:foreach(fun(_) -> sm ! beacon, timer:sleep(?TIMER) end, lists:seq(1, 6)),
+    RW2 = lists:foldl(fun(_, W2) ->
+                        TTNW2 = lists:foldl(fun(_, WW2) ->
+                                                    TW2 = clocks:acc_start(WW2),
+                                                    sm ! beacon,
+                                                    TWW2 = clocks:acc_stop(TW2),
+                                                    timer:sleep(?TIMER),
+                                                    TWW2 end, W2, lists:seq(1, 6)),
+                        TNW2 = clocks:acc_start(TTNW2),
                         sm ! schedule,
-                        NW1 = clocks:update(W1),
-                        NW2 = clocks:update(W2),
-                        NW3 = clocks:update(W3),
-                        NW4 = clocks:update(W4),
-                        io:format("Update min. ~p~n", [I]),
-                        io:format("GETTIMEOFDAY: ~p~n", [NW1]),
-                        io:format("CLOCK_GETTIME: ~p~n", [NW2]),
-                        io:format("CLOCK: ~p~n", [NW3]),
-                        io:format("TIMES: ~p~n", [NW4]),
-                        [NW1, NW2, NW3, NW4] end, [SW1, SW2, SW3, SW4], lists:seq(1, 10)),
-    init:stop().
+                        NW2 = clocks:acc_stop(TNW2),
+                        NW2 end, SW2, lists:seq(1, 10)),
+    NW3 = clocks:update(SW3),
+    NW4 = clocks:update(SW4),
+    io:format("Accumulator: ~p~n", [RW2]),
+    io:format("CLOCK: ~p~n", [NW3]),
+    io:format("TIMES: ~p~n", [NW4]),
+    reset(), % send the reset...
+    timer:sleep(5), % wait for it...
+    init:stop(). % quit.
 
 % Private API
 
@@ -63,6 +70,10 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
             register(alg, Pid),
             erlang:export(alg),
+            sm(State);
+        reset ->
+            Msg = <<?RESET:8/unsigned-little-integer>>,
+            {sm, all} ~ Msg,
             sm(State);
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
