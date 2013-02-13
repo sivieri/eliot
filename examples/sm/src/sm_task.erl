@@ -51,8 +51,8 @@ test1() ->
                         NW2 end, SW2, lists:seq(1, 10)),
     NW3 = clocks:update(SW3),
     NW4 = clocks:update(SW4),
-    NSW1 = application:get_env(sm, task),
-    NSW5 = application:get_env(sm, alg),
+    {ok, NSW1} = application:get_env(sm, task),
+    {ok, NSW5} = application:get_env(sm, alg),
     case file:open(?FNAME, [append]) of
         {ok, Dev} ->
             io:format(Dev, "ELIOT~cACC~c~p~n", [9, 9, RW2#stopwatch.acc + NSW1#stopwatch.acc + NSW5#stopwatch.acc]),
@@ -71,7 +71,7 @@ test1() ->
 sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} = State) ->
     receive
         beacon ->
-            SW = application:get_env(sm, task),
+            {ok, SW} = application:get_env(sm, task),
             SW2 = clocks:acc_start(SW),
             Msg = <<?SM:8/unsigned-little-integer>>,
             {sm, all} ~ Msg,
@@ -85,7 +85,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
         {set, appliances, NewAppliances} ->
             sm(State#state{appliances = NewAppliances});
         schedule ->
-            SW = application:get_env(sm, task),
+            {ok, SW} = application:get_env(sm, task),
             SW2 = clocks:acc_start(SW),
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
             register(alg, Pid),
@@ -98,7 +98,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
             {sm, all} ~ Msg,
             sm(State);
         {result, Schedule} ->
-            SW = application:get_env(sm, task),
+            {ok, SW} = application:get_env(sm, task),
             SW2 = clocks:acc_start(SW),
             sm_algorithm:notify(Schedule),
             SW3 = clocks:acc_stop(SW2),

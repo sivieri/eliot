@@ -6,7 +6,7 @@
 % Public API
 
 schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
-    SW = application:get_env(sm, alg),
+    {ok, SW} = application:get_env(sm, alg),
     SW2 = clocks:acc_start(SW),
     io:format("SM Algorithm: Billing ~p~n", [Billing]),
     io:format("SM Algorithm: Appliances~n"),
