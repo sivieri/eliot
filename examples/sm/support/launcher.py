@@ -71,14 +71,14 @@ def mean(vals):
     sum = 0.0
     for i in vals:
         sum = sum + i
-    sum / len(vals)
+    return sum / len(vals)
 
 def stddev(vals):
     avg = mean(vals)
     sum = 0.0
     for i in vals:
         sum = sum + (i - avg) * (i - avg)
-    sum / (len(vals) - 1)
+    return sum / (len(vals) - 1)
 
 def confidence(vals):
     mu = mean(vals)
@@ -89,13 +89,70 @@ def confidence(vals):
     else:
         L = 61
     T = ttest[L][8]
-    (mu - T * sigma, mu + T * sigma)
+    return (mu - T * E, mu + T * E)
+
+def parse(fname):
+    f = open(fname)
+    lines = f.readlines()
+    f.close
+    lines2 = map(lambda x: x.split("\t"), lines)
+    alts = filter(lambda x: x[0] == "ALT", lines2)
+    eliots = filter(lambda x: x[0] == "ELIOT", lines2)
+    if len(alts) != len(eliots):
+        print "Unable to compute: different lengths!"
+        return ([], [], [], [])
+    altacc = filter(lambda x: x[1] == "ACC", alts)
+    altclock = filter(lambda x: x[1] == "CLOCK", alts)
+    altimes = filter(lambda x: x[1] == "TIMES", alts)
+    eliotacc = filter(lambda x: x[1] == "ACC", eliots)
+    eliotclock = filter(lambda x: x[1] == "CLOCK", eliots)
+    eliotimes = filter(lambda x: x[1] == "TIMES", eliots)
+    acc = []
+    clock = []
+    usert = []
+    systemt = []
+    for i in range(len(altacc)):
+        acc.append((int(eliotacc[i][2]) * 100) / int(altacc[i][2]) - 100)
+    for i in range(len(altclock)):
+        clock.append((int(eliotclock[i][2]) * 100) / int(altclock[i][2]) - 100)
+    for i in range(len(altimes)):
+        parts1 = eliotimes[i][2].strip("{}\n").split(",")
+        parts2 = altimes[i][2].strip("{}\n").split(",")
+        if int(parts2[0]) == 0:
+            usert.append(int(parts1[0]) * 100)
+        else:
+            usert.append((int(parts1[0]) * 100) / int(parts2[0]) - 100)
+        if int(parts2[1]) == 0:
+            systemt.append(int(parts1[1]) * 100)
+        else:
+            systemt.append((int(parts1[1]) * 100) / int(parts2[1]) - 100)
+    return (acc, clock, usert, systemt)
+
+def save(fname, data):
+    f = open(fname, "a")
+    types = ["ACC", "CLOCK", "USERT", "SYSTEMT"]
+    i = 0
+    for d in data:
+        f.write("PY\t" + types[i] + "\t" + str(d[0]) + "\t" + str(d[1]) + "\t" + str(d[2]) + "\n")
+        i = i + 1
+    f.close()
 
 def main():
-    n = [4.87, 5.06, 2.8, 5.32]
-    print mean(n)
-    print stddev(n)
-    print confidence(n)
+    # n = [-4.26549, -4.50909, 1.26475, 1.42241, 2.73875, 11.954, 3.61592, -9.68883, -2.96558, -3.48133]
+    fname = "/home/crest/tests.txt"
+    # fname = "tests.txt"
+    while True:
+        os.system("bash /home/crest/alt.sh")
+        os.system("bash /home/crest/eliot.sh")
+        lists = parse(fname)
+        data = []
+        for i in lists:
+            d = []
+            d.append(mean(i))
+            d.append(stddev(i))
+            d.append(confidence(i))
+            data.append(d)
+        save(fname, data)
 
 if __name__ == "__main__":
     main()
