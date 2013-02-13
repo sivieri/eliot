@@ -31,9 +31,13 @@ reset() ->
     sm ! reset.
 
 test1() ->
+    SW1 = clocks:start(clock_gettime),
     SW2 = clocks:start(clock_gettime),
     SW3 = clocks:start(clock),
     SW4 = clocks:start(times),
+    SW5 = clocks:start(clock_gettime),
+    application:set_env(sm, task, SW1),
+    application:set_env(sm, alg, SW5),
     RW2 = lists:foldl(fun(_, W2) ->
                         TTNW2 = lists:foldl(fun(_, WW2) ->
                                                     TW2 = clocks:acc_start(WW2),
@@ -47,9 +51,11 @@ test1() ->
                         NW2 end, SW2, lists:seq(1, 10)),
     NW3 = clocks:update(SW3),
     NW4 = clocks:update(SW4),
+    NSW1 = application:get_env(sm, task),
+    NSW5 = application:get_env(sm, alg),
     case file:open(?FNAME, [append]) of
         {ok, Dev} ->
-            io:format(Dev, "ELIOT~cACC~c~p~n", [9, 9, RW2#stopwatch.acc]),
+            io:format(Dev, "ELIOT~cACC~c~p~n", [9, 9, RW2#stopwatch.acc + NSW1#stopwatch.acc + NSW5#stopwatch.acc]),
             io:format(Dev, "ELIOT~cCLOCK~c~p~n", [9, 9, NW3#stopwatch.cur]),
             io:format(Dev, "ELIOT~cTIMES~c~p~n", [9, 9, NW4#stopwatch.cur]),
             file:close(Dev);
@@ -65,9 +71,13 @@ test1() ->
 sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} = State) ->
     receive
         beacon ->
+            SW = application:get_env(sm, task),
+            SW2 = clocks:acc_start(SW),
             Msg = <<?SM:8/unsigned-little-integer>>,
             {sm, all} ~ Msg,
             %erlang:send_after(?TIMER, self(), beacon),
+            SW3 = clocks:acc_stop(SW2),
+            application:set_env(sm, task, SW3),
             sm(State);
         {Pid, {get, appliances}} ->
             Pid ! {self(), Appliances},
@@ -75,16 +85,24 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
         {set, appliances, NewAppliances} ->
             sm(State#state{appliances = NewAppliances});
         schedule ->
+            SW = application:get_env(sm, task),
+            SW2 = clocks:acc_start(SW),
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
             register(alg, Pid),
             erlang:export(alg),
+            SW3 = clocks:acc_stop(SW2),
+            application:set_env(sm, task, SW3),
             sm(State);
         reset ->
             Msg = <<?RESET:8/unsigned-little-integer>>,
             {sm, all} ~ Msg,
             sm(State);
         {result, Schedule} ->
+            SW = application:get_env(sm, task),
+            SW2 = clocks:acc_start(SW),
             sm_algorithm:notify(Schedule),
+            SW3 = clocks:acc_stop(SW2),
+            application:set_env(sm, task, SW3),
             sm(#state{company = Company, appliances = Schedule});
         {_RSSI, Source, Content} ->
             {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of

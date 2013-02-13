@@ -1,8 +1,13 @@
 -module(clocks).
--export([start/1, update/1, acc_start/1, acc_stop/1]).
+-export([start/1, update/1, acc_start/1, acc_stop/1, start_parallel/1]).
 -include("eliot.hrl").
 
 % Public API
+
+start_parallel(Type) ->
+    Pid = spawn(fun() -> loop(none) end),
+    Pid ! {start, Type},
+    Pid.
 
 start(times) ->
     Val = unixtime:times(),
@@ -79,3 +84,21 @@ acc_stop(#stopwatch{type = clock_gettime, startacc = Start, acc = Acc} = SW) ->
     SW#stopwatch{acc = Acc + Val - Start}.
 
 % Private API
+
+loop(SW) ->
+    receive
+        {start, Type} ->
+            loop(start(Type));
+        update ->
+            loop(update(SW));
+        acc_start ->
+            loop(acc_start(SW));
+        acc_stop ->
+            loop(acc_stop(SW));
+        {get, Pid} ->
+            Pid ! SW,
+            loop(SW);
+        Any ->
+            io:format("CLOCK: unknown message ~p~n", [Any]),
+            loop(SW)
+    end.

@@ -6,6 +6,8 @@
 % Public API
 
 schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
+    SW = application:get_env(sm, alg),
+    SW2 = clocks:acc_start(SW),
     io:format("SM Algorithm: Billing ~p~n", [Billing]),
     io:format("SM Algorithm: Appliances~n"),
     utils:print_dict(Appliances),
@@ -15,7 +17,9 @@ schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
     NewAppliances = calc(SortedSlots, Cap, Appliances),
     io:format("SM Algorithm: New schedule~n"),
     utils:print_dict(NewAppliances),
-    sm ! {result, NewAppliances}.
+    sm ! {result, NewAppliances},
+    SW3 = clocks:acc_stop(SW2),
+    application:set_env(sm, alg, SW3).
 
 notify(Schedule) ->
     dict:fold(fun(_Name, #appliance{ip = IP, pid = _Pid, params = Params}, _AccIn) ->
