@@ -74,6 +74,8 @@ def mean(vals):
     return sum / len(vals)
 
 def stddev(vals):
+    if len(vals) == 1:
+        return 0
     avg = mean(vals)
     sum = 0.0
     for i in vals:
@@ -81,6 +83,8 @@ def stddev(vals):
     return sum / (len(vals) - 1)
 
 def confidence(vals):
+    if len(vals) == 1:
+        return (0, 0)
     mu = mean(vals)
     sigma = stddev(vals)
     E = math.sqrt(sigma) / math.sqrt(len(vals))
