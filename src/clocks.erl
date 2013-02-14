@@ -70,18 +70,18 @@ acc_start(#stopwatch{type = clock_gettime} = SW) ->
 
 acc_stop(#stopwatch{type = clock, startacc = Start, acc = Acc} = SW) ->
     Val = unixtime:clock(),
-    SW#stopwatch{acc = Acc + Val - Start};
+    SW#stopwatch{acc = Acc + Val - Start, last = Val - Start};
 acc_stop(#stopwatch{type = times, startacc = {S1, S2}, acc = {Acc1, Acc2}} = SW) ->
     {Cur1, Cur2} = unixtime:times(),
-    SW#stopwatch{acc = {Acc1 + Cur1 - S1, Acc2 + Cur2 - S2}};
+    SW#stopwatch{acc = {Acc1 + Cur1 - S1, Acc2 + Cur2 - S2}, last = {Cur1 - S1, Cur2 - S2}};
 acc_stop(#stopwatch{type = gettimeofday, startacc = Start, acc = Acc} = SW) ->
     {Secs, USecs} = unixtime:gettimeofday(),
     Val = Secs * 1000000 + USecs,
-    SW#stopwatch{acc = Acc + Val - Start};
+    SW#stopwatch{acc = Acc + Val - Start, last = Val - Start};
 acc_stop(#stopwatch{type = clock_gettime, startacc = Start, acc = Acc} = SW) ->
     {Secs, NSecs} = unixtime:clock_gettime(),
     Val = Secs * 1000000000 + NSecs,
-    SW#stopwatch{acc = Acc + Val - Start}.
+    SW#stopwatch{acc = Acc + Val - Start, last = Val - Start}.
 
 % Private API
 

@@ -92,7 +92,7 @@ def confidence(vals):
         L = len(vals) - 1
     else:
         L = 61
-    T = ttest[L][8]
+    T = ttest[L - 1][8]
     return (mu - T * E, mu + T * E)
 
 def parse(fname):

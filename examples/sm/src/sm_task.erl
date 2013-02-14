@@ -2,8 +2,8 @@
 -export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0, reset/0]).
 -include("scenario.hrl").
 -include("eliot.hrl").
--define(TIMER, 10 * 1000).
--define(FNAME, "/home/crest/tests.txt").
+-define(TIMER, 5 * 1000).
+-define(FNAME, "/home/crest/tests-eliot.txt").
 -record(state, {company = none, appliances = dict:new(), slots = [], cap = 0}).
 
 % Public API
@@ -31,6 +31,8 @@ reset() ->
     sm ! reset.
 
 test1() ->
+    {ok, Dev} = file:open(?FNAME, [append]),
+    application:set_env(sm, logger, Dev),
     SW1 = clocks:start(clock_gettime),
     SW2 = clocks:start(clock_gettime),
     SW3 = clocks:start(clock),
@@ -38,35 +40,40 @@ test1() ->
     SW5 = clocks:start(clock_gettime),
     application:set_env(sm, task, SW1),
     application:set_env(sm, alg, SW5),
-    RW2 = lists:foldl(fun(_, W2) ->
-                        TTNW2 = lists:foldl(fun(_, WW2) ->
-                                                    TW2 = clocks:acc_start(WW2),
-                                                    sm ! beacon,
-                                                    TWW2 = clocks:acc_stop(TW2),
-                                                    timer:sleep(?TIMER),
-                                                    TWW2 end, W2, lists:seq(1, 6)),
-                        TNW2 = clocks:acc_start(TTNW2),
-                        sm ! schedule,
-                        NW2 = clocks:acc_stop(TNW2),
-                        NW2 end, SW2, lists:seq(1, 10)),
-    NW3 = clocks:update(SW3),
-    NW4 = clocks:update(SW4),
-    {ok, NSW1} = application:get_env(sm, task),
-    {ok, NSW5} = application:get_env(sm, alg),
-    case file:open(?FNAME, [append]) of
-        {ok, Dev} ->
-            io:format(Dev, "ELIOT~cACC~c~p~n", [9, 9, RW2#stopwatch.acc + NSW1#stopwatch.acc + NSW5#stopwatch.acc]),
-            io:format(Dev, "ELIOT~cCLOCK~c~p~n", [9, 9, NW3#stopwatch.cur]),
-            io:format(Dev, "ELIOT~cTIMES~c~p~n", [9, 9, NW4#stopwatch.cur]),
-            file:close(Dev);
-        {error, Reason} ->
-            io:format("Unable to append to file: ~p~n", [Reason])
-    end,
+    test1real(SW2, SW3, SW4),
+    file:close(Dev),
     reset(), % send the reset...
     timer:sleep(5), % wait for it...
     init:stop(). % quit.
 
 % Private API
+
+test1real(SW2, SW3, SW4) ->
+    {ok, Dev} = application:get_env(sm, logger),
+    RW2 = lists:foldl(fun(_, W2) ->
+                        TTNW2 = lists:foldl(fun(_, WW2) ->
+                                                    TW2 = clocks:acc_start(WW2),
+                                                    sm ! beacon,
+                                                    TWW2 = clocks:acc_stop(TW2),
+                                                    {ok, TMP1} = application:get_env(sm, task),
+                                                    io:format(Dev, "BCON~c~p~n", [9, TWW2#stopwatch.last + TMP1#stopwatch.last]),
+                                                    timer:sleep(?TIMER),
+                                                    TWW2 end, W2, lists:seq(1, 6)),
+                        TNW2 = clocks:acc_start(TTNW2),
+                        application:set_env(sm, acc, 0),
+                        sm ! schedule,
+                        NW2 = clocks:acc_stop(TNW2),
+                        {ok, Acc} = application:get_env(sm, acc),
+                        io:format(Dev, "SCHED~c~p~n", [9, Acc + NW2#stopwatch.last]),
+                        NW2 end, SW2, lists:seq(1, 5)),
+    NW3 = clocks:update(SW3),
+    NW4 = clocks:update(SW4),
+    {ok, NSW1} = application:get_env(sm, task),
+    {ok, NSW5} = application:get_env(sm, alg),
+    io:format(Dev, "ACC~c~p~n", [9, RW2#stopwatch.acc + NSW1#stopwatch.acc + NSW5#stopwatch.acc]),
+    io:format(Dev, "CLOCK~c~p~n", [9, NW3#stopwatch.cur]),
+    io:format(Dev, "TIMES~c~p~n", [9, NW4#stopwatch.cur]),
+    test1real(SW2, SW3, SW4).
 
 sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} = State) ->
     receive
@@ -92,6 +99,8 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
             erlang:export(alg),
             SW3 = clocks:acc_stop(SW2),
             application:set_env(sm, task, SW3),
+            {ok, Acc} = application:get_env(sm, acc),
+            application:set_env(sm, acc, SW3#stopwatch.last + Acc),
             sm(State);
         reset ->
             Msg = <<?RESET:8/unsigned-little-integer>>,
@@ -103,6 +112,8 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
             sm_algorithm:notify(Schedule),
             SW3 = clocks:acc_stop(SW2),
             application:set_env(sm, task, SW3),
+            {ok, Acc} = application:get_env(sm, acc),
+            application:set_env(sm, acc, SW3#stopwatch.last + Acc),
             sm(#state{company = Company, appliances = Schedule});
         {_RSSI, Source, Content} ->
             {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of

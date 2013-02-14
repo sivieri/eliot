@@ -8,6 +8,7 @@
 schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
     {ok, SW} = application:get_env(sm, alg),
     SW2 = clocks:acc_start(SW),
+    application:set_env(sm, alg, SW2),
     io:format("SM Algorithm: Billing ~p~n", [Billing]),
     io:format("SM Algorithm: Appliances~n"),
     utils:print_dict(Appliances),
@@ -18,8 +19,9 @@ schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
     io:format("SM Algorithm: New schedule~n"),
     utils:print_dict(NewAppliances),
     sm ! {result, NewAppliances},
-    SW3 = clocks:acc_stop(SW2),
-    application:set_env(sm, alg, SW3).
+    {ok, SW3} = application:get_env(sm, alg),
+    SW4 = clocks:acc_stop(SW3),
+    application:set_env(sm, alg, SW4).
 
 notify(Schedule) ->
     dict:fold(fun(_Name, #appliance{ip = IP, pid = _Pid, params = Params}, _AccIn) ->
@@ -64,10 +66,16 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{ip = IP, pid = Pid, params 
         RealCur >= Start andalso RealCur < End ->
             Bin1 = data:encode_params(Params),
             Message = <<?EVAL:8/unsigned-little-integer, RealCur:8/unsigned-little-integer, Bin1/binary>>,
+            {ok, SW} = application:get_env(sm, alg),
+            SW2 = clocks:acc_stop(SW),
             case eliot_api:rpc_noacks(Dest, Message) of
                 <<?EVAL:8/unsigned-little-integer, Consumption:16/unsigned-little-integer>> when Consumption + CurConsumption =< Cap ->
+                    SW3 = clocks:acc_start(SW2),
+                    application:set_env(sm, alg, SW3),
                     {Appliance, Consumption};
                 _Other ->
+                    SW3 = clocks:acc_start(SW2),
+                    application:set_env(sm, alg, SW3),
                     NewParams = lists:map(fun(#parameter{name = starttime, value = Value} = Param) -> Param#parameter{value= Value + 1 rem 24};
                                                                   (#parameter{name = endtime, value = Value} = Param) -> Param#parameter{value= Value + 1 rem 24};
                                                                   (Param) -> Param end, Params),
