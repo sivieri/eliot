@@ -6,9 +6,6 @@
 % Public API
 
 schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
-    {ok, SW} = application:get_env(sm, alg),
-    SW2 = clocks:acc_start(SW),
-    application:set_env(sm, alg, SW2),
     io:format("SM Algorithm: Billing ~p~n", [Billing]),
     io:format("SM Algorithm: Appliances~n"),
     utils:print_dict(Appliances),
@@ -18,10 +15,7 @@ schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
     NewAppliances = calc(SortedSlots, Cap, Appliances),
     io:format("SM Algorithm: New schedule~n"),
     utils:print_dict(NewAppliances),
-    sm ! {result, NewAppliances},
-    {ok, SW3} = application:get_env(sm, alg),
-    SW4 = clocks:acc_stop(SW3),
-    application:set_env(sm, alg, SW4).
+    sm ! {result, NewAppliances}.
 
 notify(Schedule) ->
     dict:fold(fun(_Name, #appliance{ip = IP, pid = _Pid, params = Params}, _AccIn) ->
@@ -43,8 +37,13 @@ calc_slot({StartHour, _StartMinute}, {EndHour, _EndMinute}, Cap, Appliances) ->
     calc_single_slot(StartHour, EndHour, StartHour, Cap, Appliances).
 
 calc_single_slot(Start, End, Cur, Cap, Appliances) when Cur < End ->
+    {ok, Dev} = application:get_env(sm, logger),
     {NewAppliances, _Total} = dict:fold(fun(Key, Appliance, {CurAppliances, CurConsumption}) ->
+                                                                SW = clocks:start(clock_gettime),
+                                                                SW2 = clocks:acc_start(SW),
                                                                 {NewAppliance, NewVal} = calc_single_app(Cur, CurConsumption, Cap, Appliance),
+                                                                SW3 = clocks:acc_stop(SW2),
+                                                                io:format(Dev, "EVAL~c~p~n", [9, SW3#stopwatch.last]),
                                                                 {dict:store(Key, NewAppliance, CurAppliances), CurConsumption + NewVal} end, {dict:new(), 0}, Appliances),
     calc_single_slot(Start, End, Cur + 1, Cap, NewAppliances);
 calc_single_slot(_Start, _End, _Cur, _Cap, Appliances) ->
@@ -66,16 +65,10 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{ip = IP, pid = Pid, params 
         RealCur >= Start andalso RealCur < End ->
             Bin1 = data:encode_params(Params),
             Message = <<?EVAL:8/unsigned-little-integer, RealCur:8/unsigned-little-integer, Bin1/binary>>,
-            {ok, SW} = application:get_env(sm, alg),
-            SW2 = clocks:acc_stop(SW),
             case eliot_api:rpc_noacks(Dest, Message) of
                 <<?EVAL:8/unsigned-little-integer, Consumption:16/unsigned-little-integer>> when Consumption + CurConsumption =< Cap ->
-                    SW3 = clocks:acc_start(SW2),
-                    application:set_env(sm, alg, SW3),
                     {Appliance, Consumption};
                 _Other ->
-                    SW3 = clocks:acc_start(SW2),
-                    application:set_env(sm, alg, SW3),
                     NewParams = lists:map(fun(#parameter{name = starttime, value = Value} = Param) -> Param#parameter{value= Value + 1 rem 24};
                                                                   (#parameter{name = endtime, value = Value} = Param) -> Param#parameter{value= Value + 1 rem 24};
                                                                   (Param) -> Param end, Params),
