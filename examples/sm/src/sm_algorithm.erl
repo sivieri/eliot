@@ -37,13 +37,8 @@ calc_slot({StartHour, _StartMinute}, {EndHour, _EndMinute}, Cap, Appliances) ->
     calc_single_slot(StartHour, EndHour, StartHour, Cap, Appliances).
 
 calc_single_slot(Start, End, Cur, Cap, Appliances) when Cur < End ->
-    {ok, Dev} = application:get_env(sm, logger),
     {NewAppliances, _Total} = dict:fold(fun(Key, Appliance, {CurAppliances, CurConsumption}) ->
-                                                                SW = clocks:start(clock_gettime),
-                                                                SW2 = clocks:acc_start(SW),
                                                                 {NewAppliance, NewVal} = calc_single_app(Cur, CurConsumption, Cap, Appliance),
-                                                                SW3 = clocks:acc_stop(SW2),
-                                                                io:format(Dev, "EVAL~c~p~n", [9, SW3#stopwatch.last]),
                                                                 {dict:store(Key, NewAppliance, CurAppliances), CurConsumption + NewVal} end, {dict:new(), 0}, Appliances),
     calc_single_slot(Start, End, Cur + 1, Cap, NewAppliances);
 calc_single_slot(_Start, _End, _Cur, _Cap, Appliances) ->
@@ -63,9 +58,12 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{ip = IP, pid = Pid, params 
     end,
     if
         RealCur >= Start andalso RealCur < End ->
+            {ok, Dev} = application:get_env(sm, logger),
+            SW = clocks:start(clock_gettime),
+            SW2 = clocks:acc_start(SW),
             Bin1 = data:encode_params(Params),
             Message = <<?EVAL:8/unsigned-little-integer, RealCur:8/unsigned-little-integer, Bin1/binary>>,
-            case eliot_api:rpc_noacks(Dest, Message) of
+            Res = case eliot_api:rpc_noacks(Dest, Message) of
                 <<?EVAL:8/unsigned-little-integer, Consumption:16/unsigned-little-integer>> when Consumption + CurConsumption =< Cap ->
                     {Appliance, Consumption};
                 _Other ->
@@ -73,7 +71,10 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{ip = IP, pid = Pid, params 
                                                                   (#parameter{name = endtime, value = Value} = Param) -> Param#parameter{value= Value + 1 rem 24};
                                                                   (Param) -> Param end, Params),
                     {Appliance#appliance{params = NewParams}, 0}
-            end;
+            end,
+            SW3 = clocks:acc_stop(SW2),
+            io:format(Dev, "EVAL~c~p~n", [9, SW3#stopwatch.last]),
+            Res;
         true ->
             {Appliance, 0}
     end.
