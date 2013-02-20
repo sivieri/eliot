@@ -34,11 +34,16 @@ reset() ->
 test1() ->
     {ok, Dev} = file:open(?FNAME, [append]),
     application:set_env(sm, logger, Dev),
-    SW2 = clocks:start(clock_gettime),
     SW3 = clocks:start(clock),
     SW4 = clocks:start(times),
     {ok, Dev} = application:get_env(sm, logger),
     lists:foreach(fun(_) ->
+                        W1 = clocks:start(clock),
+                        W2 = clocks:start(times),
+                        SW1 = clocks:acc_start(W1),
+                        SW2 = clocks:acc_start(W2),
+                        application:set_env(sm, sw1, SW1),
+                        application:set_env(sm, sw2, SW2),
                         lists:foreach(fun(_) ->
                                                     sm ! beacon,
                                                     timer:sleep(?TIMER) end, lists:seq(1, 6)),
@@ -79,7 +84,13 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
             SW2 = clocks:acc_stop(SW),
+            {ok, W1} = application:get_env(sm, sw1),
+            {ok, W2} = application:get_env(sm, sw2),
+            WW1 = clocks:acc_stop(W1),
+            WW2 = clocks:acc_stop(W2),
             {ok, Dev} = application:get_env(sm, logger),
+            io:format(Dev, "CLOCK~c~p~n", [9, WW1#stopwatch.last]),
+            io:format(Dev, "TIMES~c~p~n", [9, WW2#stopwatch.last]),
             io:format(Dev, "SCHED~c~p~n", [9, SW2#stopwatch.last]),
             sm(State#state{company = Company, appliances = Schedule, sw = SW2});
         {_RSSI, Source, Content} ->
