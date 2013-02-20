@@ -148,15 +148,15 @@ def main():
     while True:
         os.system("bash /home/crest/alt.sh")
         os.system("bash /home/crest/eliot.sh")
-        lists = parse(fname)
-        data = []
-        for i in lists:
-            d = []
-            d.append(mean(i))
-            d.append(stddev(i))
-            d.append(confidence(i))
-            data.append(d)
-        save(fname, data)
+#        lists = parse(fname)
+#        data = []
+#        for i in lists:
+#            d = []
+#            d.append(mean(i))
+#            d.append(stddev(i))
+#            d.append(confidence(i))
+#            data.append(d)
+#        save(fname, data)
 
 if __name__ == "__main__":
     main()
