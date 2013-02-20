@@ -85,7 +85,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
             SW2 = clocks:acc_stop(SW),
             {ok, Dev} = application:get_env(sm, logger),
             io:format(Dev, "SCHED~c~p~n", [9, SW2#stopwatch.last]),
-            sm(#state{company = Company, appliances = Schedule});
+            sm(#state{company = Company, appliances = Schedule, sw = SW2});
         {_RSSI, Source, Content} ->
             {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of
                 <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer, Other/binary>> when Company == none ->
