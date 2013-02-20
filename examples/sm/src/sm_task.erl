@@ -52,6 +52,7 @@ test1() ->
     NW4 = clocks:update(SW4),
     io:format(Dev, "CLOCK~c~p~n", [9, NW3#stopwatch.cur]),
     io:format(Dev, "TIMES~c~p~n", [9, NW4#stopwatch.cur]),
+    io:format(Dev, "-------------------------------------------------------~n", []),
     file:close(Dev),
     reset(), % send the reset...
     timer:sleep(5), % wait for it...
