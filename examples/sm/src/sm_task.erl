@@ -4,7 +4,7 @@
 -include("eliot.hrl").
 -define(TIMER, 10 * 1000).
 -define(FNAME, "/home/crest/tests-eliot.txt").
--record(state, {company = none, appliances = dict:new(), slots = [], cap = 0}).
+-record(state, {company = none, appliances = dict:new(), slots = [], cap = 0, sw = none}).
 
 % Public API
 
@@ -57,16 +57,12 @@ test1() ->
 
 % Private API
 
-sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} = State) ->
+sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, sw = SW} = State) ->
     receive
         beacon ->
-            {ok, SW} = application:get_env(sm, task),
-            SW2 = clocks:acc_start(SW),
             Msg = <<?SM:8/unsigned-little-integer>>,
             {sm, all} ~ Msg,
             %erlang:send_after(?TIMER, self(), beacon),
-            SW3 = clocks:acc_stop(SW2),
-            application:set_env(sm, task, SW3),
             sm(State);
         {Pid, {get, appliances}} ->
             Pid ! {self(), Appliances},
@@ -74,28 +70,21 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap} 
         {set, appliances, NewAppliances} ->
             sm(State#state{appliances = NewAppliances});
         schedule ->
-            {ok, SW} = application:get_env(sm, task),
+            SW = clocks:start(clock_gettime),
             SW2 = clocks:acc_start(SW),
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
             register(alg, Pid),
             erlang:export(alg),
-            SW3 = clocks:acc_stop(SW2),
-            application:set_env(sm, task, SW3),
-            {ok, Acc} = application:get_env(sm, acc),
-            application:set_env(sm, acc, SW3#stopwatch.last + Acc),
-            sm(State);
+            sm(State#state{sw = SW2});
         reset ->
             Msg = <<?RESET:8/unsigned-little-integer>>,
             {sm, all} ~ Msg,
             sm(State);
         {result, Schedule} ->
-            {ok, SW} = application:get_env(sm, task),
-            SW2 = clocks:acc_start(SW),
             sm_algorithm:notify(Schedule),
-            SW3 = clocks:acc_stop(SW2),
-            application:set_env(sm, task, SW3),
-            {ok, Acc} = application:get_env(sm, acc),
-            application:set_env(sm, acc, SW3#stopwatch.last + Acc),
+            SW2 = clocks:acc_stop(SW),
+            {ok, Dev} = application:get_env(sm, logger),
+            io:format(Dev, "SCHED~c~p~n", [9, SW2#stopwatch.last]),
             sm(#state{company = Company, appliances = Schedule});
         {_RSSI, Source, Content} ->
             {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of
