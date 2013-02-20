@@ -16,7 +16,8 @@ start_link() ->
     {ok, Pid}.
 
 sm() ->
-    sm(#state{}).
+    SW = clocks:start(clock_gettime),
+    sm(#state{sw = SW}).
 
 schedule() ->
     sm ! schedule.
@@ -70,7 +71,6 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
         {set, appliances, NewAppliances} ->
             sm(State#state{appliances = NewAppliances});
         schedule ->
-            SW = clocks:start(clock_gettime),
             SW2 = clocks:acc_start(SW),
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
             register(alg, Pid),
