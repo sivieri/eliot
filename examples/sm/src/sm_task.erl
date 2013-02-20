@@ -38,15 +38,11 @@ test1() ->
     SW3 = clocks:start(clock),
     SW4 = clocks:start(times),
     {ok, Dev} = application:get_env(sm, logger),
-    lists:foldl(fun(_, W2) ->
+    lists:foreach(fun(_) ->
                         lists:foreach(fun(_) ->
                                                     sm ! beacon,
                                                     timer:sleep(?TIMER) end, lists:seq(1, 6)),
-                        TNW2 = clocks:acc_start(W2),
-                        sm ! schedule,
-                        NW2 = clocks:acc_stop(TNW2),
-                        io:format(Dev, "SCHED~c~p~n", [9, NW2#stopwatch.last]),
-                        NW2 end, SW2, lists:seq(1, 60)),
+                        sm ! schedule end, lists:seq(1, 60)),
     NW3 = clocks:update(SW3),
     NW4 = clocks:update(SW4),
     io:format(Dev, "CLOCK~c~p~n", [9, NW3#stopwatch.cur]),
