@@ -58,9 +58,6 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{ip = IP, pid = Pid, params 
     end,
     if
         RealCur >= Start andalso RealCur < End ->
-            {ok, Dev} = application:get_env(sm, logger),
-            SW = clocks:start(clock_gettime),
-            SW2 = clocks:acc_start(SW),
             Bin1 = data:encode_params(Params),
             Message = <<?EVAL:8/unsigned-little-integer, RealCur:8/unsigned-little-integer, Bin1/binary>>,
             Res = case eliot_api:rpc_noacks(Dest, Message) of
@@ -72,8 +69,6 @@ calc_single_app(Cur, CurConsumption, Cap, #appliance{ip = IP, pid = Pid, params 
                                                                   (Param) -> Param end, Params),
                     {Appliance#appliance{params = NewParams}, 0}
             end,
-            SW3 = clocks:acc_stop(SW2),
-            io:format(Dev, "EVAL~c~p~n", [9, SW3#stopwatch.last]),
             Res;
         true ->
             {Appliance, 0}

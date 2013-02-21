@@ -4,7 +4,7 @@
 -include("eliot.hrl").
 -define(TIMER, 10 * 1000).
 -define(FNAME, "/home/crest/tests-eliot.txt").
--record(state, {company = none, appliances = dict:new(), slots = [], cap = 0, sw = none}).
+-record(state, {company = none, appliances = dict:new(), slots = [], cap = 0, sw = none, cur = 0}).
 
 % Public API
 
@@ -34,22 +34,38 @@ reset() ->
 test1() ->
     {ok, Dev} = file:open(?FNAME, [append]),
     application:set_env(sm, logger, Dev),
+    SW2 = clocks:start(clock_gettime),
     SW3 = clocks:start(clock),
     SW4 = clocks:start(times),
     {ok, Dev} = application:get_env(sm, logger),
-    lists:foreach(fun(_) ->
+    lists:foldl(fun(_, Idx) ->
                         W1 = clocks:start(clock),
                         W2 = clocks:start(times),
-                        SW1 = clocks:acc_start(W1),
-                        SW2 = clocks:acc_start(W2),
-                        application:set_env(sm, sw1, SW1),
-                        application:set_env(sm, sw2, SW2),
+                        W3 = clocks:start(clock_gettime),
+                        WW1 = clocks:acc_start(W1),
+                        WW2 = clocks:acc_start(W2),
+                        WW3 = clocks:acc_start(W3),
+                        Res = if
+                            Idx == 0 ->
+                                application:set_env(sm, sw11, WW1),
+                                application:set_env(sm, sw21, WW2),
+                                application:set_env(sm, sw31, WW3),
+                                1;
+                            true ->
+                                application:set_env(sm, sw12, WW1),
+                                application:set_env(sm, sw22, WW2),
+                                application:set_env(sm, sw32, WW3),
+                                0
+                        end,
                         lists:foreach(fun(_) ->
                                                     sm ! beacon,
                                                     timer:sleep(?TIMER) end, lists:seq(1, 6)),
-                        sm ! schedule end, lists:seq(1, 60)),
+                        sm ! {schedule, Idx},
+                        Res end, 0, lists:seq(1, 60)),
+    NW2 = clocks:update(SW2),
     NW3 = clocks:update(SW3),
     NW4 = clocks:update(SW4),
+    io:format(Dev, "WALL~c~p~n", [9, NW2#stopwatch.cur]),
     io:format(Dev, "CLOCK~c~p~n", [9, NW3#stopwatch.cur]),
     io:format(Dev, "TIMES~c~p~n", [9, NW4#stopwatch.cur]),
     io:format(Dev, "-------------------------------------------------------~n", []),
@@ -60,7 +76,7 @@ test1() ->
 
 % Private API
 
-sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, sw = SW} = State) ->
+sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, sw = SW, cur = Cur} = State) ->
     receive
         beacon ->
             Msg = <<?SM:8/unsigned-little-integer>>,
@@ -78,6 +94,12 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
             register(alg, Pid),
             erlang:export(alg),
             sm(State#state{sw = SW2});
+        {schedule, Cur} ->
+            SW2 = clocks:acc_start(SW),
+            Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
+            register(alg, Pid),
+            erlang:export(alg),
+            sm(State#state{sw = SW2, cur = Cur});
         reset ->
             Msg = <<?RESET:8/unsigned-little-integer>>,
             {sm, all} ~ Msg,
@@ -85,14 +107,31 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
             SW2 = clocks:acc_stop(SW),
-            {ok, W1} = application:get_env(sm, sw1),
-            {ok, W2} = application:get_env(sm, sw2),
+            {ok, W1} = if
+                Cur == 0 ->
+                     application:get_env(sm, sw11);
+                true ->
+                    application:get_env(sm, sw12)
+            end,
+            {ok, W2} = if
+                Cur == 0 ->
+                     application:get_env(sm, sw21);
+                true ->
+                    application:get_env(sm, sw22)
+            end,
+            {ok, W3} = if
+                Cur == 0 ->
+                     application:get_env(sm, sw31);
+                true ->
+                    application:get_env(sm, sw32)
+            end,
             WW1 = clocks:acc_stop(W1),
             WW2 = clocks:acc_stop(W2),
+            WW3 = clocks:acc_stop(W3),
             {ok, Dev} = application:get_env(sm, logger),
             io:format(Dev, "CLOCK~c~p~n", [9, WW1#stopwatch.last]),
             io:format(Dev, "TIMES~c~p~n", [9, WW2#stopwatch.last]),
-            io:format(Dev, "SCHED~c~p~n", [9, SW2#stopwatch.last]),
+            io:format(Dev, "WALL~c~p~n", [9, WW3#stopwatch.last]),
             sm(State#state{company = Company, appliances = Schedule, sw = SW2});
         {_RSSI, Source, Content} ->
             {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of
