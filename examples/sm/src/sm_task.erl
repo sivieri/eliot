@@ -94,12 +94,12 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
             register(alg, Pid),
             erlang:export(alg),
             sm(State#state{sw = SW2});
-        {schedule, Cur} ->
+        {schedule, Cur2} ->
             SW2 = clocks:acc_start(SW),
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
             register(alg, Pid),
             erlang:export(alg),
-            sm(State#state{sw = SW2, cur = Cur});
+            sm(State#state{sw = SW2, cur = Cur2});
         reset ->
             Msg = <<?RESET:8/unsigned-little-integer>>,
             {sm, all} ~ Msg,
