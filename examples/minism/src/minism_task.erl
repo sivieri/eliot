@@ -3,7 +3,7 @@
 -include("scenario.hrl").
 -include("eliot.hrl").
 -define(TIMER, 10 * 1000).
--define(NAME, 'minsm_algorithm').
+-define(NAME, 'minism_algorithm').
 -record(state, {sm = none}).
 
 % Public API
