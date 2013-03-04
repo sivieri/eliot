@@ -34,14 +34,17 @@ minism(#state{sm = SM} = State) ->
                             Name = data:encode_name(?NAME),
                             {_, ModuleBinary, _} = code:get_object_code(?NAME),
                             Hash = crypto:sha(ModuleBinary),
-                            Dest ~ <<?APPLIANCE:8/unsigned-little-integer, Hash:20/binary, Name/binary, ModuleBinary/binary>>,
+                            Dest ~ <<?APPLIANCE_LOCAL:8/unsigned-little-integer, Hash:20/binary, Name/binary, ModuleBinary/binary>>,
                             minism(State#state{sm = Source});
                         SM == Source ->
                             minism(State);
                         true ->
                             io:format("Appliance: Already registered to SM ~p, changing to ~p~n", [SM, Source]),
                             Dest = {sm, eliot_api:ip_to_node(Source)},
-                            Dest ~ <<?APPLIANCE:8/unsigned-little-integer>>,
+                            Name = data:encode_name(?NAME),
+                            {_, ModuleBinary, _} = code:get_object_code(?NAME),
+                            Hash = crypto:sha(ModuleBinary),
+                            Dest ~ <<?APPLIANCE_LOCAL:8/unsigned-little-integer, Hash:20/binary, Name/binary, ModuleBinary/binary>>,
                             minism(State#state{sm = Source})
                     end;
                 <<?RESET:8/unsigned-little-integer>> ->
