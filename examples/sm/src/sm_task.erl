@@ -1,9 +1,10 @@
 -module(sm_task).
--export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0, reset/0]).
+-export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0, test2/0, reset/0]).
 -include("scenario.hrl").
 -include("eliot.hrl").
 -define(TIMER, 10 * 1000).
 -define(FNAME, "/home/crest/tests-eliot.txt").
+-define(NAME, 'minsm_algorithm').
 -record(state, {company = none, appliances = dict:new(), slots = [], cap = 0, sw = none, cur = 0}).
 
 % Public API
@@ -73,6 +74,18 @@ test1() ->
     reset(), % send the reset...
     timer:sleep(5), % wait for it...
     init:stop(). % quit.
+
+test2() ->
+    {ok, Dev} = file:open(?FNAME, [append]),
+    lists:foreach(fun(_) ->
+                          timer:sleep(?TIMER),
+                          sm ! beacon,
+                          timer:sleep(?TIMER),
+                          reset(),
+                          code:purge(?NAME),
+                          code:delete(?NAME) end, lists:seq(1, 60)),
+    file:close(Dev),
+    init:stop().
 
 % Private API
 

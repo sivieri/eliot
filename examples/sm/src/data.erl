@@ -1,5 +1,5 @@
 -module(data).
--export([encode_params/1, decode_params/1, decode_name/1, encode_slots/1, decode_slots/1]).
+-export([encode_params/1, decode_params/1, encode_name/1, decode_name/1, encode_slots/1, decode_slots/1]).
 -define(PADDING, 20).
 -include("scenario.hrl").
 -compile(export_all).
@@ -29,6 +29,9 @@ decode_slots(Other) ->
 
 decode_name(Name) ->
     remove_atom(Name).
+
+encode_name(Name) ->
+    add_atom(Name).
 
 % Private API
 
