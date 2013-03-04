@@ -79,6 +79,8 @@ test2() ->
     {ok, Dev} = file:open(?FNAME, [append]),
     lists:foreach(fun(_) ->
                           timer:sleep(?TIMER),
+                          Time = unixtime:clock_gettime(),
+                          io:format(Dev, "START~c~p~n", [9, Time]),
                           sm ! beacon,
                           timer:sleep(?TIMER),
                           reset(),
