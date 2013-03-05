@@ -1,5 +1,5 @@
 -module(sm_task).
--export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0, test2/0, reset/0]).
+-export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0, test2/0, test3/0, reset/0]).
 -include("scenario.hrl").
 -include("eliot.hrl").
 -define(TIMER, 10 * 1000).
@@ -89,6 +89,16 @@ test2() ->
     file:close(Dev),
     init:stop().
 
+test3() ->
+    lists:foreach(fun(_) ->
+                        lists:foreach(fun(_) ->
+                                                    sm ! beacon,
+                                                    timer:sleep(?TIMER) end, lists:seq(1, 6)),
+                        sm ! schedule end, lists:seq(1, 2)),
+    reset(), % send the reset...
+    timer:sleep(5), % wait for it...
+    init:stop(). % quit.
+
 % Private API
 
 sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, sw = SW, cur = Cur} = State) ->
@@ -104,11 +114,11 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
         {set, appliances, NewAppliances} ->
             sm(State#state{appliances = NewAppliances});
         schedule ->
-            SW2 = clocks:acc_start(SW),
+            %SW2 = clocks:acc_start(SW),
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
             register(alg, Pid),
             erlang:export(alg),
-            sm(State#state{sw = SW2});
+            sm(State);
         {schedule, Cur2} ->
             SW2 = clocks:acc_start(SW),
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
@@ -121,33 +131,33 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
             sm(State);
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
-            SW2 = clocks:acc_stop(SW),
-            {ok, W1} = if
-                Cur == 0 ->
-                     application:get_env(sm, sw11);
-                true ->
-                    application:get_env(sm, sw12)
-            end,
-            {ok, W2} = if
-                Cur == 0 ->
-                     application:get_env(sm, sw21);
-                true ->
-                    application:get_env(sm, sw22)
-            end,
-            {ok, W3} = if
-                Cur == 0 ->
-                     application:get_env(sm, sw31);
-                true ->
-                    application:get_env(sm, sw32)
-            end,
-            WW1 = clocks:acc_stop(W1),
-            WW2 = clocks:acc_stop(W2),
-            WW3 = clocks:acc_stop(W3),
-            {ok, Dev} = application:get_env(sm, logger),
-            io:format(Dev, "CLOCK~c~p~n", [9, WW1#stopwatch.last]),
-            io:format(Dev, "TIMES~c~p~n", [9, WW2#stopwatch.last]),
-            io:format(Dev, "WALL~c~p~n", [9, WW3#stopwatch.last]),
-            sm(State#state{company = Company, appliances = Schedule, sw = SW2});
+            %SW2 = clocks:acc_stop(SW),
+            %{ok, W1} = if
+            %    Cur == 0 ->
+            %         application:get_env(sm, sw11);
+            %    true ->
+            %        application:get_env(sm, sw12)
+            %end,
+            %{ok, W2} = if
+            %    Cur == 0 ->
+            %         application:get_env(sm, sw21);
+            %    true ->
+            %        application:get_env(sm, sw22)
+            %end,
+            %{ok, W3} = if
+            %    Cur == 0 ->
+            %         application:get_env(sm, sw31);
+            %    true ->
+            %        application:get_env(sm, sw32)
+            %end,
+            %WW1 = clocks:acc_stop(W1),
+            %WW2 = clocks:acc_stop(W2),
+            %WW3 = clocks:acc_stop(W3),
+            %{ok, Dev} = application:get_env(sm, logger),
+            %io:format(Dev, "CLOCK~c~p~n", [9, WW1#stopwatch.last]),
+            %io:format(Dev, "TIMES~c~p~n", [9, WW2#stopwatch.last]),
+            %io:format(Dev, "WALL~c~p~n", [9, WW3#stopwatch.last]),
+            sm(State#state{company = Company, appliances = Schedule});
         {_RSSI, Source, Content} ->
             {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of
                 <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer, Other/binary>> when Company == none ->
