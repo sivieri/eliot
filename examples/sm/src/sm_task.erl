@@ -1,5 +1,5 @@
 -module(sm_task).
--export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0, test2/0, test3/0, reset/0]).
+-export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0, test2/0, test3/0, test4/0, reset/0]).
 -include("scenario.hrl").
 -include("eliot.hrl").
 -define(TIMER, 10 * 1000).
@@ -99,6 +99,31 @@ test3() ->
     timer:sleep(5), % wait for it...
     init:stop(). % quit.
 
+test4() ->
+    {ok, Dev} = file:open(?FNAME, [append]),
+    application:set_env(sm, logger, Dev),
+    lists:foldl(fun(_, Idx) ->
+                        W2 = clocks:start(times),
+                        WW2 = clocks:acc_start(W2),
+                        Res = if
+                            Idx == 0 ->
+                                application:set_env(sm, sw21, WW2),
+                                1;
+                            true ->
+                                application:set_env(sm, sw22, WW2),
+                                0
+                        end,
+                        lists:foreach(fun(_) ->
+                                                    timer:sleep(?TIMER),
+                                                    sm ! beacon end, lists:seq(1, 6)),
+                        sm ! {schedule, Idx},
+                        Res end, 0, lists:seq(1, 300)),
+    io:format(Dev, "-------------------------------------------------------~n", []),
+    file:close(Dev),
+    reset(), % send the reset...
+    timer:sleep(5), % wait for it...
+    init:stop(). % quit.
+
 % Private API
 
 sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, sw = SW, cur = Cur} = State) ->
@@ -120,11 +145,10 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
             erlang:export(alg),
             sm(State);
         {schedule, Cur2} ->
-            SW2 = clocks:acc_start(SW),
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
             register(alg, Pid),
             erlang:export(alg),
-            sm(State#state{sw = SW2, cur = Cur2});
+            sm(State#state{cur = Cur2});
         reset ->
             Msg = <<?RESET:8/unsigned-little-integer>>,
             {sm, all} ~ Msg,
@@ -138,12 +162,12 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
             %    true ->
             %        application:get_env(sm, sw12)
             %end,
-            %{ok, W2} = if
-            %    Cur == 0 ->
-            %         application:get_env(sm, sw21);
-            %    true ->
-            %        application:get_env(sm, sw22)
-            %end,
+            {ok, W2} = if
+                Cur == 0 ->
+                     application:get_env(sm, sw21);
+                true ->
+                    application:get_env(sm, sw22)
+            end,
             %{ok, W3} = if
             %    Cur == 0 ->
             %         application:get_env(sm, sw31);
@@ -151,12 +175,13 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
             %        application:get_env(sm, sw32)
             %end,
             %WW1 = clocks:acc_stop(W1),
-            %WW2 = clocks:acc_stop(W2),
+            WW2 = clocks:acc_stop(W2),
             %WW3 = clocks:acc_stop(W3),
-            %{ok, Dev} = application:get_env(sm, logger),
+            {ok, Dev} = application:get_env(sm, logger),
             %io:format(Dev, "CLOCK~c~p~n", [9, WW1#stopwatch.last]),
-            %io:format(Dev, "TIMES~c~p~n", [9, WW2#stopwatch.last]),
+            io:format(Dev, "TIMES~c~p~n", [9, WW2#stopwatch.last]),
             %io:format(Dev, "WALL~c~p~n", [9, WW3#stopwatch.last]),
+            reset(),
             sm(State#state{company = Company, appliances = Schedule});
         {_RSSI, Source, Content} ->
             {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of
