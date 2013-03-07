@@ -152,7 +152,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
         reset ->
             Msg = <<?RESET:8/unsigned-little-integer>>,
             {sm, all} ~ Msg,
-            sm(State);
+            sm(State#state{company = none, appliances = dict:new(), slots = [], cap = 0});
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
             %SW2 = clocks:acc_stop(SW),
