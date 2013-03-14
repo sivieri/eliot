@@ -4,6 +4,7 @@
 -export([init/1]).
 -define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
 -define(CHILDARGS(I, Type, Args), {I, {I, start_link, Args}, permanent, 5000, Type, [I]}).
+-define(CAZZILLO(I, Type, Args), {I, {I, start_link, Args}, permanent, 5000, Type, [I]}).
 
 % Public API
 
@@ -15,6 +16,7 @@ init([]) ->
 
 add_child(Child, Args) ->
     ChildSpec = ?CHILDARGS(Child, worker, Args),
+    io:format("Child ~p~n", [ChildSpec]),
     supervisor:start_child(?MODULE, ChildSpec).
 
 stop_child(Child) ->
@@ -41,8 +43,6 @@ start_model(ModuleAtom, ModuleRealBinary, ModuleHash) ->
     end,
     % Second: spawn a new (supervised) process
     {ok, Pid} = add_child(ModuleAtom, []),
-    % Third: get information and return them
-    Data = eliot_api:lpc(Pid, data),
-    {Pid, Data}.
+    Pid.
 
 % Private API

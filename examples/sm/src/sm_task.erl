@@ -2,9 +2,9 @@
 -export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0, test2/0, test3/0, test4/0, reset/0]).
 -include("scenario.hrl").
 -include("eliot.hrl").
--define(TIMER, 10 * 1000).
--define(FNAME, "/home/crest/tests-eliot.txt").
--define(NAME, 'minsm_algorithm').
+-define(TIMER, 5 * 1000).
+-define(FNAME, "/home/alex/tests-eliot.txt").
+-define(NAME, 'sm_stuff').
 -record(state, {company = none, appliances = dict:new(), slots = [], cap = 0, sw = none, cur = 0}).
 
 % Public API
@@ -77,13 +77,13 @@ test1() ->
 
 test2() ->
     {ok, Dev} = file:open(?FNAME, [append]),
-    lists:foreach(fun(_) ->
-                          timer:sleep(?TIMER),
-                          SW = clocks:start(clock_gettime),
-                          SW2 = clocks:acc_start(SW),
-                          application:set_env(sm, sw, SW2),
-                          sm ! beacon,
-                          reset() end, lists:seq(1, 300)),
+    application:set_env(sm, logger, Dev),
+    timer:sleep(?TIMER),
+    SW = clocks:start(clock_gettime),
+    SW2 = clocks:acc_start(SW),
+    application:set_env(sm, sw, SW2),
+    send_fun(),
+    timer:sleep(?TIMER),
     file:close(Dev),
     init:stop().
 
@@ -199,6 +199,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
                     Params = data:decode_params(ParamsBin),
                     case dict:is_key(Source, Appliances) of
                         true ->
+                            io:format("SM: Already registered appliance ~p~n", [Source]),
                             {Company, Appliances, Slots, Cap};
                         false ->
                             io:format("SM: Registered a new appliance ~p~n", [Source]),
@@ -208,9 +209,10 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
                     case dict:is_key(Source, Appliances) of
                         false ->
                             io:format("SM: Registered a new local appliance ~p~n", [Source]),
-                            {Pid, Params} = sm_sup:start_model(data:decode_name(Name), Code, Hash),
-                            {Company, dict:store(Source, #appliance{ip = Source, pid = Pid, params = Params}, Appliances),  Slots, Cap};
+                            Pid = sm_sup:start_model(data:decode_name(Name), Code, Hash),
+                            {Company, dict:store(Source, #appliance{ip = Source, pid = Pid}, Appliances),  Slots, Cap};
                         true ->
+                            io:format("SM: Already registered appliance ~p~n", [Source]),
                             {Company, Appliances,  Slots, Cap}
                     end;
                 Any ->
@@ -222,3 +224,9 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
             io:format("SM: Unknown message ~p~n", [Any]),
             sm(State)
     end.
+
+send_fun() ->
+    Name = data:encode_name(?NAME),
+    {_, ModuleBinary, _} = code:get_object_code(?NAME),
+    Hash = crypto:sha(ModuleBinary),
+    sm ! {0, {192,168,1,2}, <<?APPLIANCE_LOCAL:8/unsigned-little-integer, Hash:20/binary, Name/binary, ModuleBinary/binary>>}.
