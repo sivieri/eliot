@@ -2,6 +2,7 @@
 -export([start_link/0]).
 -record(state, {}).
 -define(EVAL, $E).
+-include("eliot.hrl").
 
 % Public API
 start_link() ->
@@ -28,5 +29,6 @@ model(_Cur, _Params) ->
 
 register_myself() ->
     {ok, Dev} = application:get_env(sm, logger),
-    Time = unixtime:clock_gettime(),
-    io:format(Dev, "END~c~p~n", [9, Time]).
+    {ok, SW} = application:get_env(sm, sw),
+    SW2 = clocks:acc_stop(SW),
+    io:format(Dev, "SLOT~c~p~n", [9, SW2#stopwatch.last]).

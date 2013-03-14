@@ -79,13 +79,11 @@ test2() ->
     {ok, Dev} = file:open(?FNAME, [append]),
     lists:foreach(fun(_) ->
                           timer:sleep(?TIMER),
-                          Time = unixtime:clock_gettime(),
-                          io:format(Dev, "START~c~p~n", [9, Time]),
+                          SW = clocks:start(clock_gettime),
+                          SW2 = clocks:acc_start(SW),
+                          application:set_env(sm, sw, SW2),
                           sm ! beacon,
-                          timer:sleep(?TIMER),
-                          reset(),
-                          code:purge(?NAME),
-                          code:delete(?NAME) end, lists:seq(1, 60)),
+                          reset() end, lists:seq(1, 300)),
     file:close(Dev),
     init:stop().
 
