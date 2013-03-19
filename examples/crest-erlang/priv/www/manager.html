@@ -9,6 +9,7 @@
 	CREST-Erlang is licensed under the "GNU Lesser General Public License",
 	more details at http://www.gnu.org/licenses/.
 -->
+<!-- method="POST" enctype="application/x-www-form-urlencoded"-->
 <script language="javascript" type="text/javascript" src="jquery-1.4.2.min.js"></script>
 <script language="javascript" type="text/javascript" src="jquery.dataTables.min.js"></script>
 <script language="javascript" type="text/javascript" src="manager.js"></script>
@@ -20,6 +21,15 @@
 <div id="main">
 	<h1>CREST - Manager</h1>
 	<div id="manager">
+		<div id="updatediv">
+			<p>Insert FILE:
+	   		<form id="updateform" method="POST" action="/crest/manager/spawn/" enctype="multipart/form-data">
+				<label for="path">Fun Path: </label><input type="file" size="50" name="path" value="" maxlength="255" />
+				<label for="funname">Fun Name: </label><input type="text" size="20" name="funname" value="modulo:funzione" maxlength="255" /><br />
+		   		<input type="submit" name="upsubmit" value="Upload" />
+		   	</form>
+			</p>
+		</div>
 		<div id="refreshdiv">
 			<form id="refreshform" action="" onsubmit="return false;">
 				<p><input type="submit" name="Submit" value="Refresh"/></p>
@@ -49,6 +59,7 @@
 			<div id="installed">
 				<h2>Installed processes</h2>
 				<h3>(click to invoke)</h3>
+				<div id="newprocess"></div>
 				<table id="processestable" cellpadding="20" cellspacing="0" border="0" class="display">
 					<thead>
 						<tr>

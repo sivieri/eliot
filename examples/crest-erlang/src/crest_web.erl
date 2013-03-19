@@ -49,12 +49,10 @@ loop(Req, DocRoot) ->
             case string:tokens(Path, "/") of
                 ["crest", "manager", "installed"] ->
                     Req:respond({200, [{"Content-Type", "application/json"}], [mochijson2:encode(crest_manager:get_installed_data())]});
-				["crest", "manager", "local"] ->
+		["crest", "manager", "local"] ->
                     Req:respond({200, [{"Content-Type", "application/json"}], [mochijson2:encode(crest_manager:get_local_data())]});
-				["crest", "spawn"] ->
-					Req:respond({404, [], []});
-				["crest", "remote"] ->
-					Req:respond({404, [], []});
+		["crest", "remote"] ->
+		    Req:respond({404, [], []});
                 ["crest", "url"|T] ->
                     case crest_peer:spawn_exec(T, Req:parse_qs()) of
                         {ok, {CT, Message}} ->
@@ -76,10 +74,6 @@ loop(Req, DocRoot) ->
             end;
         'POST' ->
             case string:tokens(Path, "/") of
-		%%["crest", "spawn"] ->
-		%%	Req:respond({404, [], []});
-		%%["crest", "remote"] ->
-		%%	Req:respond({404, [], []});
  		["crest", "spawn"] ->
 		    Key = crest_peer:spawn_install(Req:parse_post()),
                     Req:respond({200, [{"Content-Type", "application/json"}], [mochijson2:encode(crest_utils:pack_key(Key))]});
@@ -90,6 +84,13 @@ loop(Req, DocRoot) ->
                         {error} ->
                             	Req:respond({404, [], []})
                     end;
+                ["crest", "manager", "spawn"] ->
+		    FileHandler = fun(Filename, ContentType) -> handle_file(Filename, ContentType) end,
+		    Res = mochiweb_multipart:parse_form(Req, FileHandler),
+		    [{ _,{ _,{ _, _},_}},{ _,Fun},{ _, _}] = Res,
+		    [Mod,F] = string:tokens(Fun, ":"),
+		    crest_operations:invoke_spawn("localhost", list_to_atom(Mod), fun() -> erlang:apply(list_to_atom(Mod), list_to_atom(F), []) end),
+		    Req:respond({302, [{"Location", "http://localhost:8080/manager.html" }], ""});
                 ["crest", "url"|T] ->
 		    case crest_peer:spawn_exec(T, Req:parse_post(), Req:recv_body()) of
                         {ok, {CT, Message}} ->
@@ -107,6 +108,23 @@ loop(Req, DocRoot) ->
     end.
 
 %% Internal API
+
+handle_file(Filename, ContentType) ->
+    TempFilename = "/home/gioele/eliot/examples/crest-erlang/ebin/" ++ Filename,
+    {ok, File} = file:open(TempFilename, [raw, write]),
+    chunk_handler(Filename, ContentType, TempFilename, File).
+
+chunk_handler(Filename, ContentType, TempFilename, File) ->
+    fun(Next) ->
+        case Next of
+            eof ->
+                file:close(File),
+                {Filename, ContentType, TempFilename};
+            Data ->
+                file:write(File, Data),
+                chunk_handler(Filename, ContentType, TempFilename, File)
+        end
+    end.
 
 get_option(Option, Options) ->
     {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.

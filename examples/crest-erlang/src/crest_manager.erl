@@ -30,11 +30,11 @@
 %% installed computations in this CREST peer.
 %% @spec get_installed_data() -> json()
 get_installed_data() ->
-    NameDict = crest_peer:get_list("name"),
+    	NameDict = crest_peer:get_list("name"),
 	OperationDict = crest_peer:get_list("operation"),
 	ParamsDict = crest_peer:get_list("parameters"),
 	Temp1 = dict:merge(fun(_Key, Value1, Value2) -> {Value1, Value2} end, NameDict, OperationDict),
-    Temp2 = dict:merge(fun(_Key, Value1, Value2) -> {Value1, compat(Value2)} end, Temp1, ParamsDict),
+    	Temp2 = dict:merge(fun(_Key, Value1, Value2) -> {Value1, compat(Value2)} end, Temp1, ParamsDict),
 	ResultList = dict:fold(fun(Key, {{Name, Operation}, Params}, AccIn) ->
 								   ElemList = [erlang:iolist_to_binary(make_url_link(Key)),
 											   erlang:iolist_to_binary(Name),

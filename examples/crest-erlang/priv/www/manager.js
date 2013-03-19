@@ -30,6 +30,12 @@ $(document).ready(function(){
 		});
 		return false;
 	});
+	$("#processtable a").bind("click", function(event){
+		$.get($(this).attr("href"), {}, function(response){
+			$("#newprocess").html(response.key); //{ok, {CT, Message}} come è fatto message così inserisco i campi
+		});
+		return false;
+	});
 });
 
 function createTableInstalled()
