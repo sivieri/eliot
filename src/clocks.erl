@@ -12,6 +12,9 @@ start_parallel(Type) ->
 start(times) ->
     Val = unixtime:times(),
     #stopwatch{type = times, start = Val};
+start(getrusage) ->
+    Val = unixtime:getrusage(),
+    #stopwatch{type = getrusage, start = Val};
 start(clock) ->
     Val = unixtime:clock(),
     #stopwatch{type = clock, start = Val};
@@ -30,6 +33,9 @@ update(#stopwatch{type = clock, start = Start} = SW) ->
 update(#stopwatch{type = times, start = {S1, S2}} = SW) ->
     {Cur1, Cur2} = unixtime:times(),
     SW#stopwatch{cur = {Cur1 - S1, Cur2 - S2}};
+update(#stopwatch{type = getrusage, start = {S1, S2}} = SW) ->
+    {Cur1, Cur2} = unixtime:getrusage(),
+    SW#stopwatch{cur = {Cur1 - S1, Cur2 - S2}};
 update(#stopwatch{type = gettimeofday, start = Start} = SW) ->
     {Secs, USecs} = unixtime:gettimeofday(),
     Val = Secs * 1000000 + USecs,
@@ -44,6 +50,12 @@ acc_start(#stopwatch{type = times, acc = none} = SW) ->
     SW#stopwatch{startacc = Val, acc = {0, 0}};
 acc_start(#stopwatch{type = times} = SW) ->
     Val = unixtime:times(),
+    SW#stopwatch{startacc = Val};
+acc_start(#stopwatch{type = getrusage, acc = none} = SW) ->
+    Val = unixtime:getrusage(),
+    SW#stopwatch{startacc = Val, acc = {0, 0}};
+acc_start(#stopwatch{type = getrusage} = SW) ->
+    Val = unixtime:getrusage(),
     SW#stopwatch{startacc = Val};
 acc_start(#stopwatch{type = clock, acc = none} = SW) ->
     Val = unixtime:clock(),
@@ -73,6 +85,9 @@ acc_stop(#stopwatch{type = clock, startacc = Start, acc = Acc} = SW) ->
     SW#stopwatch{acc = Acc + Val - Start, last = Val - Start};
 acc_stop(#stopwatch{type = times, startacc = {S1, S2}, acc = {Acc1, Acc2}} = SW) ->
     {Cur1, Cur2} = unixtime:times(),
+    SW#stopwatch{acc = {Acc1 + Cur1 - S1, Acc2 + Cur2 - S2}, last = {Cur1 - S1, Cur2 - S2}};
+acc_stop(#stopwatch{type = getrusage, startacc = {S1, S2}, acc = {Acc1, Acc2}} = SW) ->
+    {Cur1, Cur2} = unixtime:getrusage(),
     SW#stopwatch{acc = {Acc1 + Cur1 - S1, Acc2 + Cur2 - S2}, last = {Cur1 - S1, Cur2 - S2}};
 acc_stop(#stopwatch{type = gettimeofday, startacc = Start, acc = Acc} = SW) ->
     {Secs, USecs} = unixtime:gettimeofday(),

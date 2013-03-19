@@ -3,7 +3,7 @@
 if [ $# -eq 4 ]; then
     if [ $1 = "simulate" ]; then
         cd `dirname $0`
-        exec erl -pa $PWD/simbin $PWD/deps/*/simbin -proto_dist udp -no_epmd -boot start_sasl -name eliot@$2 -setcookie abc -s udp start -s appliances start $3 $4
+        exec erl -pa $PWD/simbin $PWD/deps/*/simbin -proto_dist udp -no_epmd -boot start_sasl -name eliot@$2 -setcookie abc -s udp start -s appliance start $3
     else
         cd `dirname $0`
         exec erl -pa $PWD/ebin $PWD/deps/*/ebin -proto_dist udp -no_epmd -boot start_sasl -name eliot@$2 -setcookie abc -s udp start -s appliances start $3 $4

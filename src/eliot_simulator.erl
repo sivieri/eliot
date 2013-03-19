@@ -16,20 +16,16 @@ start_task(NodeAddr, Module, Function) ->
     eliot_api:set_node_name(nodeid(NodeAddr)),
     Module:Function().
 
-%% -spec(msg(any()) -> {{atom(), string()}, any()}).
-%% msg(Msg) ->
-%%     {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}.
-
 send({Name, all}, Msg) ->
-    bcast_send(Name, Msg);
+    bcast_send(Name, msg(Msg));
 send({Name, {NodeName, NodeAddr}}, Msg) ->
     send(Name, {get_simname(Name, NodeName), NodeAddr}, Msg);
 send(all, Msg) ->
-    bcast_send(Msg);
+    bcast_send(msg(Msg));
 send(Dest, Msg) when is_atom(Dest) ->
-    erlang:send(get_simname(Dest), Msg);
+    erlang:send(get_simname(Dest), msg(Msg));
 send(Dest, Msg) ->
-    erlang:send(Dest, Msg).
+    erlang:send(Dest, msg(Msg)).
 
 send_after(Time, Dest, Msg) when is_atom(Dest) ->
     erlang:send_after(Time, get_simname(Dest), Msg);
@@ -111,6 +107,10 @@ get_name(Name) ->
     list_to_atom(FinalString).
 
 % Private API
+
+-spec(msg(any()) -> {{atom(), string()}, any()}).
+msg(Msg) ->
+    {{eliot_api:get_node_name(), utils:get_host_ip()}, Msg}.
 
 send(Name, {NodeName, NodeAddr}, Msg) ->
     case utils:get_host_ip() == NodeAddr of
