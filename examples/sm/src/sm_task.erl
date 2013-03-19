@@ -2,8 +2,8 @@
 -export([start_link/0, sm/0, schedule/0, get_appliances/0, set_appliances/1, test1/0, test2/0, test3/0, test4/0, reset/0]).
 -include("scenario.hrl").
 -include("eliot.hrl").
--define(TIMER, 5 * 1000).
--define(FNAME, "/home/alex/tests-eliot.txt").
+-define(TIMER, 2 * 1000).
+-define(FNAME, "tests-boot-eliot.txt").
 -define(NAME, 'sm_stuff').
 -record(state, {company = none, appliances = dict:new(), slots = [], cap = 0, sw = none, cur = 0}).
 
@@ -100,6 +100,7 @@ test3() ->
 test4() ->
     {ok, Dev} = file:open(?FNAME, [append]),
     application:set_env(sm, logger, Dev),
+    SW1 = clocks:start(getrusage),
     lists:foldl(fun(_, Idx) ->
                         W2 = clocks:start(times),
                         WW2 = clocks:acc_start(W2),
@@ -116,7 +117,8 @@ test4() ->
                                                     sm ! beacon end, lists:seq(1, 6)),
                         sm ! {schedule, Idx},
                         Res end, 0, lists:seq(1, 300)),
-    io:format(Dev, "-------------------------------------------------------~n", []),
+    FinalSW1 = clocks:update(SW1),
+    io:format(Dev, "FINAL~c~p~n", [9, FinalSW1#stopwatch.last]),
     file:close(Dev),
     reset(), % send the reset...
     timer:sleep(5), % wait for it...
@@ -177,7 +179,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
             %WW3 = clocks:acc_stop(W3),
             {ok, Dev} = application:get_env(sm, logger),
             %io:format(Dev, "CLOCK~c~p~n", [9, WW1#stopwatch.last]),
-            io:format(Dev, "TIMES~c~p~n", [9, WW2#stopwatch.last]),
+            io:format(Dev, "GETRUSAGE~c~p~n", [9, WW2#stopwatch.last]),
             %io:format(Dev, "WALL~c~p~n", [9, WW3#stopwatch.last]),
             reset(),
             sm(State#state{company = Company, appliances = Schedule});
