@@ -3,7 +3,7 @@
 -include("scenario.hrl").
 -include("eliot.hrl").
 -define(TIMER, 2 * 1000).
--define(FNAME, "tests-boot-eliot.txt").
+-define(FNAME, "tests-schedule-eliot.txt").
 -define(NAME, 'sm_stuff').
 -record(state, {company = none, appliances = dict:new(), slots = [], cap = 0, sw = none, cur = 0}).
 
@@ -138,7 +138,6 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
             sm(State#state{company = none, appliances = dict:new(), slots = [], cap = 0});
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
-            reset(),
             sm(State#state{company = Company, appliances = Schedule});
         {_RSSI, Source, Content} ->
             {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of
