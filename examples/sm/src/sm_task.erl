@@ -201,7 +201,7 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
             %io:format(Dev, "WALL~c~p~n", [9, WW3#stopwatch.last]),
             {ok, Index} = application:get_env(sm, index),
             if
-                Index rem ?DIVISION == 0 ->
+                Index /= 0 andalso Index rem ?DIVISION == 0 ->
                     {ok, W3} = if
                         Cur2 == 0 ->
                              application:get_env(sm, sw31);
@@ -218,7 +218,6 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
         {_RSSI, Source, Content} ->
             {NewCompany, NewAppliances, NewSlots, NewCap} = case Content of
                 <<?COMPANY:8/unsigned-little-integer, CCap:16/unsigned-little-integer, Other/binary>> when Company == none ->
-                    io:format("SM: Registered a new company ~p~n", [Source]),
                     sm_sup:add_child(sm_current, [Source]),
                     SSlots = data:decode_slots(Other),
                     {Source, Appliances, SSlots, CCap};
@@ -227,35 +226,28 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
                     self() ! {schedule, SSlots, CCap},
                     {Company, Appliances, SSlots, CCap};
                 <<?COMPANY:8/unsigned-little-integer, _CCap:16/unsigned-little-integer, _Other/binary>> ->
-                    io:format("SM: Already registered to the company ~p (new request from ~p)~n", [Company, Source]),
                     {Company, Appliances,  Slots, Cap};
                 <<?APPLIANCE:8/unsigned-little-integer, ParamsBin/binary>>  ->
                     Params = data:decode_params(ParamsBin),
                     case dict:is_key(Source, Appliances) of
                         true ->
-                            io:format("SM: Already registered appliance ~p~n", [Source]),
                             {Company, Appliances, Slots, Cap};
                         false ->
-                            io:format("SM: Registered a new appliance ~p~n", [Source]),
                             {Company, dict:store(Source, #appliance{ip = Source, pid = none, params = Params}, Appliances), Slots, Cap}
                     end;
                 <<?APPLIANCE_LOCAL:8/unsigned-little-integer, Hash:20/binary, L1:8, Name:L1/binary, Code/binary>> ->
                     case dict:is_key(Source, Appliances) of
                         false ->
-                            io:format("SM: Registered a new local appliance ~p~n", [Source]),
                             Pid = sm_sup:start_model(data:decode_name(Name), Code, Hash),
                             {Company, dict:store(Source, #appliance{ip = Source, pid = Pid}, Appliances),  Slots, Cap};
                         true ->
-                            io:format("SM: Already registered appliance ~p~n", [Source]),
                             {Company, Appliances,  Slots, Cap}
                     end;
                 Any ->
-                    io:format("SM: Unknown device ~p~n", [Any]),
                     {Company, Appliances,  Slots, Cap}
             end,
             sm(State#state{company = NewCompany, appliances = NewAppliances, slots = NewSlots, cap = NewCap});
         Any ->
-            io:format("SM: Unknown message ~p~n", [Any]),
             sm(State)
     end.
 

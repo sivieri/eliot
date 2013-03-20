@@ -21,6 +21,6 @@ current(#state{company = Company} = State) ->
             {sm, Dest} ~ <<?CONSUMPTION:8/unsigned-little-integer, 100:16/unsigned-little-integer>>,
             erlang:send_after(?TIMER, self(), send);
         Any ->
-            io:format("Sm Current: Unknown message ~p~n", [Any])
+            ok
     end,
     current(State).
