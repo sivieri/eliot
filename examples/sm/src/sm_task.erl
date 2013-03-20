@@ -5,7 +5,6 @@
 -define(TIMER, 2 * 1000).
 -define(FNAME, "tests-boot-eliot.txt").
 -define(NAME, 'sm_stuff').
--define(DIVISION, 50).
 -record(state, {company = none, appliances = dict:new(), slots = [], cap = 0, sw = none, cur = 0}).
 
 % Public API
@@ -102,40 +101,13 @@ test4() ->
     {ok, Dev} = file:open(?FNAME, [append]),
     application:set_env(sm, logger, Dev),
     SW1 = clocks:start(getrusage),
-    lists:foldl(fun(I, {Idx1, Idx2}) ->
-                        application:set_env(sm, index, I),
-                        W2 = clocks:start(getrusage),
-                        WW2 = clocks:acc_start(W2),
-                        W3 = clocks:start(getrusage),
-                        NewIdx1 = if
-                            Idx1 == 0 ->
-                                application:set_env(sm, sw21, WW2),
-                                1;
-                            true ->
-                                application:set_env(sm, sw22, WW2),
-                                0
-                        end,
-                        NewIdx2 = case {Idx2, I} of
-                                      {0, N} when N rem ?DIVISION == 0 ->
-                                          WW3 = clocks:acc_start(W3),
-                                          application:set_env(sm, sw31, WW3),
-                                          1;
-                                      {0, _N} ->
-                                          0;
-                                      {1, N} when N rem ?DIVISION == 0 ->
-                                          WW3 = clocks:acc_start(W3),
-                                          application:set_env(sm, sw32, WW3),
-                                          0;
-                                      {1, _N} ->
-                                          1
-                        end,
+    lists:foreach(fun(_) ->
                         lists:foreach(fun(_) ->
                                                     timer:sleep(?TIMER),
                                                     sm ! beacon end, lists:seq(1, 6)),
-                        sm ! {schedule, {Idx1, Idx2}},
-                        {NewIdx1, NewIdx2} end, {0,0}, lists:seq(1, 30 * ?DIVISION)),
+                        sm ! schedule end, lists:seq(1, 50)),
     FinalSW1 = clocks:update(SW1),
-    io:format(Dev, "FINAL~c~p~n", [9, FinalSW1#stopwatch.cur]),
+    io:format(Dev, "GETRUSAGE50~c~p~n", [9, FinalSW1#stopwatch.cur]),
     file:close(Dev),
     reset(), % send the reset...
     timer:sleep(5), % wait for it...
@@ -156,63 +128,16 @@ sm(#state{company = Company, appliances = Appliances, slots = Slots, cap = Cap, 
         {set, appliances, NewAppliances} ->
             sm(State#state{appliances = NewAppliances});
         schedule ->
-            %SW2 = clocks:acc_start(SW),
             Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
             register(alg, Pid),
             erlang:export(alg),
             sm(State);
-        {schedule, Cur2} ->
-            Pid = spawn_link(fun() -> sm_algorithm:schedule(#billing{slots = Slots, cap = Cap}, Appliances) end),
-            register(alg, Pid),
-            erlang:export(alg),
-            sm(State#state{cur = Cur2});
         reset ->
             Msg = <<?RESET:8/unsigned-little-integer>>,
             {sm, all} ~ Msg,
             sm(State#state{company = none, appliances = dict:new(), slots = [], cap = 0});
         {result, Schedule} ->
             sm_algorithm:notify(Schedule),
-            %SW2 = clocks:acc_stop(SW),
-            %{ok, W1} = if
-            %    Cur == 0 ->
-            %         application:get_env(sm, sw11);
-            %    true ->
-            %        application:get_env(sm, sw12)
-            %end,
-            {Cur1, Cur2} = Cur,
-            {ok, W2} = if
-                Cur1 == 0 ->
-                     application:get_env(sm, sw21);
-                true ->
-                    application:get_env(sm, sw22)
-            end,
-            %{ok, W3} = if
-            %    Cur == 0 ->
-            %         application:get_env(sm, sw31);
-            %    true ->
-            %        application:get_env(sm, sw32)
-            %end,
-            %WW1 = clocks:acc_stop(W1),
-            WW2 = clocks:acc_stop(W2),
-            %WW3 = clocks:acc_stop(W3),
-            {ok, Dev} = application:get_env(sm, logger),
-            %io:format(Dev, "CLOCK~c~p~n", [9, WW1#stopwatch.last]),
-            io:format(Dev, "GETRUSAGE~c~p~n", [9, WW2#stopwatch.last]),
-            %io:format(Dev, "WALL~c~p~n", [9, WW3#stopwatch.last]),
-            {ok, Index} = application:get_env(sm, index),
-            if
-                Index /= 0 andalso Index rem ?DIVISION == 0 ->
-                    {ok, W3} = if
-                        Cur2 == 0 ->
-                             application:get_env(sm, sw31);
-                        true ->
-                            application:get_env(sm, sw32)
-                    end,
-                    WW3 = clocks:acc_stop(W3),
-                    io:format(Dev, "GETRUSAGE50~c~p~n", [9, WW3#stopwatch.last]);
-                true ->
-                    ok
-            end,
             reset(),
             sm(State#state{company = Company, appliances = Schedule});
         {_RSSI, Source, Content} ->
