@@ -114,5 +114,6 @@ loop(SW) ->
             Pid ! SW,
             loop(SW);
         Any ->
+            io:format("CLOCK: unknown message ~p~n", [Any]),
             loop(SW)
     end.

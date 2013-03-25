@@ -16,6 +16,7 @@ init([]) ->
 
 add_child(Child, Args) ->
     ChildSpec = ?CHILDARGS(Child, worker, Args),
+    io:format("Child ~p~n", [ChildSpec]),
     supervisor:start_child(?MODULE, ChildSpec).
 
 stop_child(Child) ->

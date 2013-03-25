@@ -53,6 +53,7 @@ loop() ->
             end,
             loop();
 		Any ->
+            io:format("eliot dispatcher: unable to parse ~p~n", [Any]),
 			loop()
 	end.
 

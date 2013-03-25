@@ -9,7 +9,7 @@ ERLC_SIM_FLAGS := $(ERLC_SIM_BASE_FLAGS) -Dsimulation
 ERLC_SIM_PARSER_FLAGS := $(ERLC_SIM_FLAGS) +'{parse_transform, eliot_parser}'
 ERLC := erlc
 
-SM_SRC = sm_algorithm.erl sm_app.erl sm_current.erl sm_sup.erl sm_task.erl sm.erl data.erl sm_stuff.erl
+SM_SRC = sm_algorithm.erl sm_app.erl sm_current.erl sm_sup.erl sm_task.erl sm.erl data.erl
 
 all: deploy
 

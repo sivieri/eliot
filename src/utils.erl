@@ -29,6 +29,7 @@ consistency([{_IP, I}|T], Acc, N) ->
 echo() ->
     receive
         Any ->
+            io:format("~p~n", [Any]),
             echo()
     end.
 

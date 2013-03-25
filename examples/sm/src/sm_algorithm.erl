@@ -6,11 +6,14 @@
 % Public API
 
 schedule(#billing{slots = Slots, cap = Cap} = Billing, Appliances) ->
+    io:format("SM Algorithm: Billing ~p~n", [Billing]),
+    io:format("SM Algorithm: Appliances~n"),
     utils:print_dict(Appliances),
     SortedSlots = lists:sort(fun(#slot{priority = Priority1},
                                                   #slot{priority = Priority2}) when Priority2 >= Priority1 -> false;
                                                  (_Slot1, _Slot2) -> true end , Slots),
     NewAppliances = calc(SortedSlots, Cap, Appliances),
+    io:format("SM Algorithm: New schedule~n"),
     utils:print_dict(NewAppliances),
     sm ! {result, NewAppliances}.
 
