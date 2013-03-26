@@ -41,11 +41,8 @@ invoke_local_spawn(Function) ->
 %% in the Erlang path.
 %% @spec invoke_spawn(string(), atom(), fun()) -> {ok, Key} | {error}
 invoke_spawn(Host, Module, Function) ->
-    %%ssl:start(),
     ibrowse:start(),
     Res = ibrowse:send_req("http://" ++ Host ++ ":8080/crest/spawn", [{"Content-Type", "application/x-www-form-urlencoded"}], post, crest_utils:get_lambda_params(Module, Function, [])),
-
-%%crest_utils:ssl_options()
 
     case Res of
         {ok, "200", _, Obj} ->
@@ -61,11 +58,8 @@ invoke_spawn(Host, Module, Function) ->
 %% in the Erlang path.
 %% @spec invoke_spawn(string(), integer(), atom(), fun()) -> {ok, Key} | {error}
 invoke_spawn(Host, Port, Module, Function) ->
-    %%ssl:start(),
     ibrowse:start(),
     Res = ibrowse:send_req("http://" ++ Host ++ ":" ++ integer_to_list(Port) ++ "/crest/spawn", [{"Content-Type", "application/x-www-form-urlencoded"}], post, crest_utils:get_lambda_params(Module, Function, [])),
-
-%% crest_utils:ssl_options()
 
     case Res of
         {ok, "200", _, Obj} ->
@@ -81,11 +75,8 @@ invoke_spawn(Host, Port, Module, Function) ->
 %% the function module needs to be in the Erlang path.
 %% @spec invoke_remote(string(), atom(), fun(), [{string(), string()}]) -> {ok, Body} | {error}
 invoke_remote(Host, Module, Function, Params) ->
-	%%ssl:start(),
 	ibrowse:start(),
 	Res = ibrowse:send_req("http://" ++ Host ++ ":8080/crest/remote", [{"Content-Type", "application/x-www-form-urlencoded"}], post, crest_utils:get_lambda_params(Module, Function, Params)),
-
-%%crest_utils:ssl_options()
 
 	io:format("~p~n", [Res]),
     case Res of
@@ -101,11 +92,8 @@ invoke_remote(Host, Module, Function, Params) ->
 %% the function module needs to be in the Erlang path.
 %% @spec invoke_remote(string(), integer(), atom(), fun(), [{string(), string()}]) -> {ok, Body} | {error}
 invoke_remote(Host, Port, Module, Function, Params) ->
-	%%ssl:start(),
 	ibrowse:start(),
 	Res = ibrowse:send_req("http://" ++ Host ++ ":" ++ integer_to_list(Port) ++ "/crest/remote", [{"Content-Type", "application/x-www-form-urlencoded"}], post, crest_utils:get_lambda_params(Module, Function, Params)),
-
-%%crest_utils:ssl_options()
 
 	io:format("~p~n", [Res]),
     case Res of

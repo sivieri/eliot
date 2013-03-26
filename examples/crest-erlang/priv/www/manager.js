@@ -20,6 +20,7 @@
 $(document).ready(function(){
 	createTableInstalled();
 	createTableLocal();
+
 	$("#refreshform").submit(function(){
 		createTableInstalled();
 		createTableLocal();
@@ -29,6 +30,7 @@ $(document).ready(function(){
 			$("#newlocal").html(response.key);
 		});
 		return false;
+
 	});
 });
 

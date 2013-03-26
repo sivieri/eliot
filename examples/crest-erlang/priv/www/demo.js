@@ -27,7 +27,7 @@ $(document).ready(function()
 			$("#form2div form input[name='Submit']").attr("value", "Launch");
 		}
 		$("#submit").attr("disabled", "true");
-        $("#form2div").show("slow");
+            $("#form2div").show("slow");
 	    $.ajax({
     		url:"crest/local/" + $("input[name='demo']:checked").val(),
     		type:"GET",

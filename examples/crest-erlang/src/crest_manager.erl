@@ -22,7 +22,7 @@
 %% @copyright 2010,2011 Alessandro Sivieri
 
 -module(crest_manager).
--export([get_installed_data/0, get_local_data/0]).
+-export([get_installed_data/0, get_installed_form/0, get_local_data/0]).
 
 %% External API
 
@@ -30,11 +30,11 @@
 %% installed computations in this CREST peer.
 %% @spec get_installed_data() -> json()
 get_installed_data() ->
-    NameDict = crest_peer:get_list("name"),
+    	NameDict = crest_peer:get_list("name"),
 	OperationDict = crest_peer:get_list("operation"),
 	ParamsDict = crest_peer:get_list("parameters"),
 	Temp1 = dict:merge(fun(_Key, Value1, Value2) -> {Value1, Value2} end, NameDict, OperationDict),
-    Temp2 = dict:merge(fun(_Key, Value1, Value2) -> {Value1, compat(Value2)} end, Temp1, ParamsDict),
+    	Temp2 = dict:merge(fun(_Key, Value1, Value2) -> {Value1, compat(Value2)} end, Temp1, ParamsDict),
 	ResultList = dict:fold(fun(Key, {{Name, Operation}, Params}, AccIn) ->
 								   ElemList = [erlang:iolist_to_binary(make_url_link(Key)),
 											   erlang:iolist_to_binary(Name),
@@ -43,6 +43,19 @@ get_installed_data() ->
 								   [ElemList|AccIn]
 								   end, [], Temp2),
 	{struct, [{erlang:iolist_to_binary("aaData"), ResultList}]}.
+
+%% @doc Function to get names, operations and parameters for all the
+%% installed computations in this CREST peer to create a dynamic form.
+%% @spec get_installed_data() -> []
+get_installed_form() ->
+    	NameDict = crest_peer:get_list("name"),
+	[{Key,Title}] = dict:to_list(NameDict),
+	OperationDict = crest_peer:get_list("operation"),
+       	[{_,Operation}] = dict:to_list(OperationDict),
+	ParamsDict = crest_peer:get_list("parameters"),
+	[{_,Body}] = dict:to_list(ParamsDict),
+	[Key,Title,Operation,Body].
+
 
 %% @doc Function to get names, operations and parameters for all the
 %% local computations in this CREST peer.
@@ -59,7 +72,7 @@ get_local_data() ->
 %% Internal API
 
 make_url_link(Value) ->
-	"<a href=\"crest/url/" ++ Value ++ "\" title=\"" ++ Value ++ "\">" ++ Value ++ "</a>".
+	"<a href=\"crest/url/form/" ++ Value ++ "\" title=\"" ++ Value ++ "\">" ++ Value ++ "</a>".
 
 make_local_link(Value) ->
 	"<a href=\"crest/local/" ++ Value ++ "\" title=\"" ++ Value ++ "\">" ++ Value ++ "</a>".
