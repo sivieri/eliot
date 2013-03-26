@@ -7,10 +7,10 @@
 temp_mean() ->
         receive
             {Pid, {"param", "name"}} ->
-                Pid ! {self(), "Temperature Mean"},
+                Pid ! {self(), ["Temperature Mean"]},
                 temp_mean();
             {Pid, {"param", "operation"}} ->
-                Pid ! {self(), "POST"},
+                Pid ! {self(), ["POST"]},
                 temp_mean();
 	    {Pid, {"param", "parameters"}} ->
                 Pid ! {self(), [{"valori", "integer()"}]},

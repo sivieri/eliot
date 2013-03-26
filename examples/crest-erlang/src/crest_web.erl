@@ -53,6 +53,10 @@ loop(Req, DocRoot) ->
                     Req:respond({200, [{"Content-Type", "application/json"}], [mochijson2:encode(crest_manager:get_local_data())]});
 		["crest", "remote"] ->
 		    Req:respond({404, [], []});
+		["crest", "url", "form"|Key] ->
+		    Form = crest_manager:get_installed_form(),		
+		    Html = crest_html:create_html_form(Form),
+		    Req:ok({"text/html",Html});
                 ["crest", "url"|T] ->
                     case crest_peer:spawn_exec(T, Req:parse_qs()) of
                         {ok, {CT, Message}} ->
@@ -92,7 +96,7 @@ loop(Req, DocRoot) ->
 		    crest_operations:invoke_spawn("localhost", list_to_atom(Mod), fun() -> erlang:apply(list_to_atom(Mod), list_to_atom(F), []) end),
 		    Req:respond({302, [{"Location", "http://localhost:8080/manager.html" }], ""});
                 ["crest", "url"|T] ->
-		    case crest_peer:spawn_exec(T, Req:parse_post(), Req:recv_body()) of
+		    case crest_peer:spawn_exec(T, lists:delete({"launchsubmit","Launch Computation"},mochiweb_multipart:parse_form(Req))) of
                         {ok, {CT, Message}} ->
                             Req:respond({200, [{"Content-Type", CT}], [Message]});
                         {ok} ->

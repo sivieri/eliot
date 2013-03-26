@@ -22,7 +22,7 @@
 %% @copyright 2010,2011 Alessandro Sivieri
 
 -module(crest_manager).
--export([get_installed_data/0, get_local_data/0]).
+-export([get_installed_data/0, get_installed_form/0, get_local_data/0]).
 
 %% External API
 
@@ -45,6 +45,19 @@ get_installed_data() ->
 	{struct, [{erlang:iolist_to_binary("aaData"), ResultList}]}.
 
 %% @doc Function to get names, operations and parameters for all the
+%% installed computations in this CREST peer to create a dynamic form.
+%% @spec get_installed_data() -> []
+get_installed_form() ->
+    	NameDict = crest_peer:get_list("name"),
+	[{Key,Title}] = dict:to_list(NameDict),
+	OperationDict = crest_peer:get_list("operation"),
+       	[{_,Operation}] = dict:to_list(OperationDict),
+	ParamsDict = crest_peer:get_list("parameters"),
+	[{_,Body}] = dict:to_list(ParamsDict),
+	[Key,Title,Operation,Body].
+
+
+%% @doc Function to get names, operations and parameters for all the
 %% local computations in this CREST peer.
 %% @spec get_local_data() -> json()
 get_local_data() ->
@@ -59,7 +72,7 @@ get_local_data() ->
 %% Internal API
 
 make_url_link(Value) ->
-	"<a href=\"crest/url/" ++ Value ++ "\" title=\"" ++ Value ++ "\">" ++ Value ++ "</a>".
+	"<a href=\"crest/url/form/" ++ Value ++ "\" title=\"" ++ Value ++ "\">" ++ Value ++ "</a>".
 
 make_local_link(Value) ->
 	"<a href=\"crest/local/" ++ Value ++ "\" title=\"" ++ Value ++ "\">" ++ Value ++ "</a>".
