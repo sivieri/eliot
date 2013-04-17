@@ -479,10 +479,15 @@ static ErlDrvSSizeT drv_control(ErlDrvData handle, unsigned int cmd, char* buf, 
 void do_send_ack(int socket, uint16_t msg, struct sockaddr_in* client) {
     char buf[MINIBUF];
     int size;
+    uint16_t type, number, hdr;
     
     buf[0] = ACK_MSG;
-    memcpy(buf + 1, (char*) &msg, sizeof(uint16_t));
-    size = sendto(socket, buf, 1 + sizeof(uint16_t), 0, (struct sockaddr*) client, sizeof(struct sockaddr_in));
+    type = buf[0] & 0x000F;
+    number = msg & 0x0FFF;
+    hdr = type << 12 | number;
+    size = 2;
+    memcpy(buf, (char*) &hdr, sizeof(uint16_t));
+    size = sendto(socket, buf, sizeof(uint16_t), 0, (struct sockaddr*) client, sizeof(struct sockaddr_in));
     if (size > 0) FPRINTF(stderr, "DEBUG: Sent ACK for message %d by %d\n", msg, client->sin_addr.s_addr);
     else FPRINTF(stderr, "DEBUG: Unable to send ACK for message %d to %d\n", msg, client->sin_addr.s_addr);
 }
