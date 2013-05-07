@@ -46,6 +46,7 @@ start(Key, F) ->
 %% problems with shutting down children.
 %% @spec init({string(), fun()}) -> {ok, pid(), pid()}
 init({Key, F}) ->
+    io:format(standard_error, "~p~n~p~n", [Key, F]),
     ChildPid = proc_lib:spawn_link(fun() -> F() end),
     crest_peer:add_child(list_to_binary(Key), ChildPid),
     {ok, ChildPid, ChildPid}.
