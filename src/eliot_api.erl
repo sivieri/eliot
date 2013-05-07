@@ -4,7 +4,6 @@
 -include("eliot.hrl").
 -export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0, put_data/2, get_data/1, rpc/2, rpc_noacks/2, lpc/2, id/0, ip_to_node/1, node_to_ip/1]).
 -export([send_test/3]).
--export([spawn/2, spawn/3, spawn/4, spawn/5, bcast_spawn/1, bcast_spawn/2, bcast_spawn/3, bcast_spawn/4]).
 
 % Public API
 
@@ -122,56 +121,6 @@ get_data(Key) ->
 -spec(send_test(atom() | pid(), {atom(), node()}, any()) -> ok).
 send_test(Name, {NodeName, _NodeAddr}, Msg) ->
     dispatcher ! {simulation, {eliot_simulator:get_simname(Name, NodeName), NodeName}, msg_test(Msg)}.
-
-%% Spawn a process executing the given function on the given node.
--spec(spawn(node(), fun()) -> ok).
-spawn(NodeAddr, Fun) ->
-    {dispatcher, NodeAddr} ! {spawn, Fun},
-	ok.
-
-%% Spawn a process executing the given function on the given node.
--spec(spawn(node(), atom(), atom(), list()) -> ok).
-spawn(NodeAddr, Module, Function, Args) ->
-    {dispatcher, NodeAddr} ! {spawn, Module, Function, Args},
-	ok.
-
-%% Spawn a process executing the given function on the given node,
-%% if the condition evaluates to true in the node itself.
--spec(spawn(node(), fun(), fun()) -> ok).
-spawn(NodeAddr, Fun, Condition) ->
-    {dispatcher, NodeAddr} ! {spawn, Fun, Condition},
-    ok.
-
-%% Spawn a process executing the given function on the given node,
-%% if the condition evaluates to true in the node itself.
--spec(spawn(node(), atom(), atom(), list(), fun()) -> ok).
-spawn(NodeAddr, Module, Function, Args, Condition) ->
-    {dispatcher, NodeAddr} ! {spawn, Module, Function, Args, Condition},
-    ok.
-
-%% Spawn a process executing the given function on all the nodes
-%% reachable from the current one.
--spec(bcast_spawn(fun()) -> ok).
-bcast_spawn(Fun) ->
-    all ! {spawn, Fun}.
-
-%% Spawn a process executing the given function on all the nodes
-%% reachable from the current one.
--spec(bcast_spawn(atom(), atom(), list()) -> ok).
-bcast_spawn(Module, Function, Args) ->
-    all ! {spawn, Module, Function, Args}.
-
-%% Spawn a process executing the given function on all the nodes
-%% reachable from the current one, if the condition evaluates to true in the nodes themselves.
--spec(bcast_spawn(fun(), fun()) -> ok).
-bcast_spawn(Fun, Condition) ->
-    all ! {spawn, Fun, Condition}.
-
-%% Spawn a process executing the given function on all the nodes
-%% reachable from the current one, if the condition evaluates to true in the nodes themselves.
--spec(bcast_spawn(atom(), atom(), list(), fun()) -> ok).
-bcast_spawn(Module, Function, Args, Condition) ->
-    all ! {spawn, Module, Function, Args, Condition}.
 
 rpc(Dest, Message) when is_atom(Dest) andalso node(Dest) == node() ->
     lpc(Dest, Message);
