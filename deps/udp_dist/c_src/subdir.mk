@@ -17,7 +17,7 @@ C_DEPS += \
 %.o: %.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -DDEBUG -I/opt/lib/erlang/erts-5.9.3.1/include -I/opt/lib/erlang/lib/erl_interface-3.7.9/include -fPIC -g -Wall -c -fmessage-length=0 -fno-common -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	gcc -I/opt/lib/erlang/erts-5.9.3.1/include -I/opt/lib/erlang/lib/erl_interface-3.7.9/include -fPIC -g -Wall -c -fmessage-length=0 -fno-common -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
