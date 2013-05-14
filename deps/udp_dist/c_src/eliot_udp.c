@@ -505,7 +505,7 @@ void do_recv(driver_data_t* res) {
      */
     char buf[BUF + HDR_SIZE], msg_type;
     struct sockaddr_in *client = driver_alloc(sizeof(struct sockaddr_in));
-    int size, size2;
+    int size, size2, i;
     socklen_t clientSize = sizeof(struct sockaddr_in);
     int existing = 0;
     driver_data_t* iterator = head;
@@ -591,6 +591,8 @@ void do_recv(driver_data_t* res) {
                     else {
                         append_header(&buf[1], size2 - 1, 0, iterator->peer.sin_addr.s_addr);
                         size2 += HDR_SIZE;
+                        for (i = 0; i < size2; ++i) fprintf(stderr, "%d ", buf[i]);
+                        fprintf(stderr, "\n");
                         driver_output(iterator->port, buf + 1, size2 - 1);
                     }
                     if (msg_type == DATA_MSG_ACK_REQUIRED) {

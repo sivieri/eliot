@@ -27,7 +27,7 @@ all: eliot_udp.so
 eliot_udp.so: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross GCC Linker'
-	gcc -L/opt/lib/erlang/lib/erl_interface-3.7.9/lib -shared -o "eliot_udp.so" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L/home/alex/programmi/eliot2/lib/erlang/lib/erl_interface-3.7.9/lib -shared -o "eliot_udp.so" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
