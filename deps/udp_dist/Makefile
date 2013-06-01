@@ -4,7 +4,7 @@ lib:
 	(mkdir -p priv;cd c_src;$(MAKE))
 	cp c_src/eliot_udp.so priv/
 
-deploy: lib
+deploy:
 	(mkdir -p ebin;cd src;$(MAKE) deploy)
 
 simulation: lib
