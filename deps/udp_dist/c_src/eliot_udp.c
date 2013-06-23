@@ -384,6 +384,7 @@ static void drv_output(ErlDrvData handle, char* buf, ErlDrvSizeT len) {
             res->peer.sin_port = htons(PORT);
             res->peer.sin_addr.s_addr = inet_addr(bufname);
             driver_output(res->port, "Bok", 3);
+            break;
         default:
             if (res->curstate == CONNECT || res->curstate == INTERMEDIATE) {
                 // someone is writing here too early: enqueue the data
