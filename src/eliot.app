@@ -5,7 +5,7 @@
               {applications,[kernel,stdlib]},
               {mod,{eliot_app,[]}},
               {env,[]},
-              {modules,[ctp_fwd,ctp_link,ctp_routing,eliot,eliot_api,
+              {modules,[ctp_fwd,ctp_link,ctp_routing,demo_recv,eliot,eliot_api,
                         eliot_app,eliot_ctp,eliot_dispatcher,eliot_forwarder,
                         eliot_gpio,eliot_oppflooder,eliot_oppflooder_event,
                         eliot_parser,eliot_rssi,eliot_simulator,eliot_sup,
