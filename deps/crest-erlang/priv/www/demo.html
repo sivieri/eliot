@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<!--
+	Copyright (c) 2010,2011 Alessandro Sivieri <sivieri@elet.polimi.it>
+	This file is part of CREST-Erlang.
+	CREST-Erlang is licensed under the "GNU General Public License",
+	more details at http://www.gnu.org/licenses/.
+-->
+<!--[if IE]><script language="javascript" type="text/javascript" src="excanvas.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script language="javascript" type="text/javascript" src="jqplot/jquery.jqplot.min.js"></script>
+<script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.barRenderer.min.js"></script>
+<script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.cursor.min.js"></script>
+<script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+<script language="javascript" type="text/javascript" src="demo.js"></script>
+<link rel="stylesheet" type="text/css" href="jqplot/jquery.jqplot.min.css" />
+<link rel="stylesheet" type="text/css" href="jqueryui/jquery-ui-1.8.5-custom.css" />
+<link rel="stylesheet" type="text/css" href="demo.css" />
+<title>Computational REST - Erlang - Demo</title>
+</head>
+<body>
+<div id="main">
+<h1 id="title">Computational REST - Erlang - Demo</h1>
+<div id="form1div">
+	<p>Choose the type of text analysis to be performed:
+		<form id="form1">
+			<input id="radio1" type="radio" name="demo" value="word"/><label for="radio1">Word frequency</label><br/>
+			<input id="radio2" type="radio" name="demo" value="tfidf"/><label for="radio2">Term frequency - inverse document frequency</label><br/>
+			<input id="radio3" type="radio" name="demo" value="cosine"/><label for="radio3">Cosine similarity</label><br/>
+			<input id="radio4" type="radio" name="demo" value="wordstatus"/><label for="radio3">Word frequency, with status</label>
+	</p>
+</div>
+<div id="form2div">
+	<p>Select demo details:
+	   <form id="form2" action="" onsubmit="return false;" method="POST" enctype="application/x-www-form-urlencoded">
+	        <label for="addresses">IP addresses of the local network computers (separated by newlines): </label><br/>
+		<textarea name="addresses" rows="5" cols="60"></textarea><br/>
+		<label for="filename">Document filename: </label><input type="text" size="50" name="filename" value="/home/alex/demo.txt" maxlength="255" />
+		<div id="limitfield"><label for="limit">Lower limit for word frequency: </label><input id="limit" type="text" size="5" maxlength="5" name="limit" value="10" onKeyPress="return numbersonly(this, event)" /><br/></div>
+           	<input type="submit" name="Submit" value="Launch" />
+	   </form>
+	</p>
+</div>
+<div id="results"></div>
+</div>
+</body>
+</html>
