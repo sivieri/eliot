@@ -99,24 +99,24 @@ pmap(F, L) ->
 get_lambda([{"module", ModuleName}, {"binary", ModuleBinary}, {"hash", ModuleHash}, {"filename", Filename}, {"code", FunBinary}]) ->
 	ModuleAtom = list_to_atom(ModuleName),
 	ModuleRealBinary = list_to_binary(ModuleBinary),
-	case code:is_loaded(ModuleAtom) of
-		{file, _} ->
-			{_, OldModuleBinary, _} = code:get_object_code(ModuleAtom),
-			OldHash = code_hash(OldModuleBinary),
-			case string:equal(OldHash, ModuleHash) of
-				true ->
-					log4erl:info("Module already loaded: ~p~n", [ModuleName]),
-					binary_to_term(list_to_binary(FunBinary));
-				false ->
-					log4erl:info("Updating module: ~p~n", [ModuleName]),
-					code:load_binary(ModuleAtom, Filename, ModuleRealBinary),
-    				binary_to_term(list_to_binary(FunBinary))
-			end;
-		false ->
-			log4erl:info("Installing new module: ~p~n", [ModuleName]),
+%	case code:is_loaded(ModuleAtom) of
+%		{file, _} ->
+%			{_, OldModuleBinary, _} = code:get_object_code(ModuleAtom),
+%			OldHash = code_hash(OldModuleBinary),
+%			case string:equal(OldHash, ModuleHash) of
+%				true ->
+%					io:format(standard_error, "Module already loaded: ~p~n", [ModuleName]),
+%					binary_to_term(list_to_binary(FunBinary));
+%				false ->
+%					io:format(standard_error, "Updating module: ~p~n", [ModuleName]),
+%					code:load_binary(ModuleAtom, Filename, ModuleRealBinary),
+%   				binary_to_term(list_to_binary(FunBinary))
+%			end;
+%		false ->
+%			io:format(standard_error, "Installing new module: ~p~n", [ModuleName]),
     		code:load_binary(ModuleAtom, Filename, ModuleRealBinary),
-    		binary_to_term(list_to_binary(FunBinary))
-	end.
+    		binary_to_term(list_to_binary(FunBinary)).
+%end.
 
 %% @doc Calculate the hash of a binary blob; it hides the hash
 %% function used, which may change over time, while at the same
