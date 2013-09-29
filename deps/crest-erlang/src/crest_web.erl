@@ -95,7 +95,7 @@ loop(Req, DocRoot) ->
 		    [Mod,F] = string:tokens(Fun, ":"),
 		    crest_operations:invoke_spawn("localhost", list_to_atom(Mod), fun() -> erlang:apply(list_to_atom(Mod), list_to_atom(F), []) end),
             Host = Req:get_header_value("host"),
-		    Req:respond({302, [{"Location", "http://" ++ Host ++ ":8080/manager.html" }], ""});
+		    Req:respond({302, [{"Location", "/uploaded.html" }], ""});
                 ["crest", "url"|T] ->
 		    case crest_peer:spawn_exec(T, lists:delete({"launchsubmit","Launch Computation"},mochiweb_multipart:parse_form(Req))) of
                         {ok, {CT, Message}} ->

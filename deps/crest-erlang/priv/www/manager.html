@@ -24,8 +24,8 @@
 		<div id="updatediv">
 			<p>Insert module compiled file (<strong>*.beam</strong>):
 	   		<form id="updateform" method="POST" action="/crest/manager/spawn/" enctype="multipart/form-data">
-				<label for="path">Fun Path: </label><input type="file" size="50" name="path" value="" maxlength="255" />
-				<label for="funname">Fun Name: </label><input type="text" size="20" name="funname" value="module:function" maxlength="255" /><br />
+				<label for="path">Fun Path: </label><input type="file" size="50" name="path" value="" maxlength="255" onchange="updateModuleFunction(this.value)" />
+				<label for="funname">Fun Name: </label><input type="text" size="20" name="funname" id="funname" value="module:function" maxlength="255" /><br />
 		   		<input type="submit" name="upsubmit" value="Upload" />
 		   	</form>
 			</p>

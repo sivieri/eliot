@@ -71,3 +71,18 @@ function createTableLocal()
 		}
 	});
 }
+
+function updateModuleFunction(val)
+{
+    var elem = document.getElementById("funname");
+    var fname = basename(val);
+    elem.value = fname + ":" + fname;
+}
+
+function basename(str)
+{
+   var base = new String(str).substring(str.lastIndexOf('\\') + 1); 
+   if(base.lastIndexOf(".") != -1)       
+       base = base.substring(0, base.lastIndexOf("."));
+   return base;
+}
