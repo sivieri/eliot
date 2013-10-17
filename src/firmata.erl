@@ -25,14 +25,6 @@ digital_write(Pin, Value) ->
 analog_write(Pin, Value) ->
     gen_server:cast(?MODULE, {analog, write, Pin, Value}).
 
--spec init(Args :: term()) -> Result when
-	Result :: {ok, State}
-			| {ok, State, Timeout}
-			| {ok, State, hibernate}
-			| {stop, Reason :: term()}
-			| ignore,
-	State :: term(),
-	Timeout :: non_neg_integer() | infinity.
 init([Device]) ->
     SerialPort = serial:start([{speed, ?SPEED}, {open, Device}]),
     Analog = lists:foldl(fun(I, AccIn) -> dict:store(I, 0, AccIn) end, dict:new(), lists:seq(0, 15)),
@@ -40,19 +32,6 @@ init([Device]) ->
     Output = lists:foldl(fun(I, AccIn) -> dict:store(I, 0, AccIn) end, dict:new(), lists:seq(0, 15)),
     {ok, #state{device = SerialPort, analog = Analog, digital = Digital, output = Output}}.
 
--spec handle_call(Request :: term(), From :: {pid(), Tag :: term()}, State :: term()) -> Result when
-	Result :: {reply, Reply, NewState}
-			| {reply, Reply, NewState, Timeout}
-			| {reply, Reply, NewState, hibernate}
-			| {noreply, NewState}
-			| {noreply, NewState, Timeout}
-			| {noreply, NewState, hibernate}
-			| {stop, Reason, Reply, NewState}
-			| {stop, Reason, NewState},
-	Reply :: term(),
-	NewState :: term(),
-	Timeout :: non_neg_integer() | infinity,
-	Reason :: term().
 handle_call({digital, read, Pin}, _From, State = #state{digital = Digital}) ->
     Reply = dict:fetch(Pin, Digital),
     {reply, Reply, State};
@@ -64,13 +43,6 @@ handle_call(Request, _From, State) ->
     io:format(standard_error, "Unknown CALL message ~p~n", [Request]),
     {reply, Reply, State}.
 
--spec handle_cast(Request :: term(), State :: term()) -> Result when
-	Result :: {noreply, NewState}
-			| {noreply, NewState, Timeout}
-			| {noreply, NewState, hibernate}
-			| {stop, Reason :: term(), NewState},
-	NewState :: term(),
-	Timeout :: non_neg_integer() | infinity.
 handle_cast({pin, Pin, Mode}, State = #state{device = Device}) ->
     Device ! {send, <<244:8/integer, Pin:8/integer, Mode:8/integer>>},
     {noreply, State};
@@ -99,13 +71,6 @@ handle_cast(Msg, State) ->
     io:format(standard_error, "Unknown CAST message ~p~n", [Msg]),
     {noreply, State}.
 
--spec handle_info(Info :: timeout | term(), State :: term()) -> Result when
-	Result :: {noreply, NewState}
-			| {noreply, NewState, Timeout}
-			| {noreply, NewState, hibernate}
-			| {stop, Reason :: term(), NewState},
-	NewState :: term(),
-	Timeout :: non_neg_integer() | infinity.
 handle_info({data, NewBytes}, State = #state{analog = Analog, digital = Digital, bytes = Bytes}) when byte_size(NewBytes) + byte_size(Bytes)  >= 3 ->
     {NewAnalog, NewDigital} = parse_msg(<<Bytes/binary, NewBytes/binary>>, Analog, Digital),
     {noreply, State#state{analog = NewAnalog, digital = NewDigital, bytes = <<>>}};
@@ -115,18 +80,9 @@ handle_info(Info, State) ->
     io:format(standard_error, "Unknown INFO message ~p~n", [Info]),
     {noreply, State}.
 
--spec terminate(Reason, State :: term()) -> Any :: term() when
-	Reason :: normal
-			| shutdown
-			| {shutdown, term()}
-			| term().
 terminate(_Reason, _State) ->
     ok.
 
--spec code_change(OldVsn, State :: term(), Extra :: term()) -> Result when
-	Result :: {ok, NewState :: term()} | {error, Reason :: term()},
-	OldVsn :: Vsn | {down, Vsn},
-	Vsn :: term().
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
