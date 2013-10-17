@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=erlang
-PKG_VERSION:=R15B
-PKG_RELEASE:=5
+PKG_VERSION:=R15B03
+PKG_RELEASE:=2
 
-PKG_SOURCE:=otp_src_$(PKG_VERSION).tar.gz
+PKG_SOURCE:=otp_src_$(PKG_VERSION)-1.tar.gz
 PKG_SOURCE_URL:= http://www.erlang.org/download/ \
 	http://erlang.mirror.su.se/	
-PKG_MD5SUM:=dd6c2a4807551b4a8a536067bde31d73
+PKG_MD5SUM:=eccd1e6dda6132993555e088005019f2
 
 PKG_BUILD_DEPENDS:=erlang/host openssl
 
@@ -42,7 +42,7 @@ endef
 define Package/erlang
 $(call Package/erlang/Default)
   DEPENDS+= +libncurses +librt +zlib
-  PROVIDES:= erlang-erts=5.9 erlang-kernel=2.15 erlang-sasl=2.2 erlang-stdlib=1.18
+  PROVIDES:= erlang-erts=5.9.3.1 erlang-kernel=2.15.3 erlang-sasl=2.2.1 erlang-stdlib=1.18.3 erlang-crypto=2.2
 endef
 
 define Package/erlang/description
@@ -80,15 +80,27 @@ $(call Package/erlang/Default/description)
  Runtime tools, tools to include in a production system.
 endef
 
+define Package/erlang-xmerl
+$(call Package/erlang/Default)
+  TITLE:=XML parser
+  VERSION:=1.3.2
+  DEPENDS+= +erlang
+endef
+
+define Package/erlang-xmerl/description
+$(call Package/erlang/Default/description)
+ .
+ XML parser for 1.0 XML documents.
+endef
+
 
 # Host
 
 HOST_CONFIGURE_ARGS += \
 	--disable-hipe \
 	--disable-smp-support \
-	--without-java \
-	--without-ssl \
-	--enable-darwin-64bit
+	--without-javac \
+	--without-ssl
 
 HOST_CONFIGURE_VARS += \
 	ac_cv_prog_JAVAC="" \
@@ -108,9 +120,10 @@ endef
 CONFIGURE_ARGS += \
 	--disable-hipe \
 	--disable-smp-support \
-	--without-java \
-	--with-ssl="$(STAGING_DIR)/usr" \
-	--enable-dynamic-ssl-lib
+	--without-javac
+#	--without-java \
+#	--with-ssl="$(STAGING_DIR)/usr" \
+#	--enable-dynamic-ssl-lib
 
 CONFIGURE_VARS += \
 	SHLIB_LD="$(TARGET_CC)" \
@@ -142,7 +155,7 @@ define Package/erlang/install
 		$(CP) $(PKG_INSTALL_DIR)/usr/lib/erlang/bin/$$$$f $(1)/usr/lib/erlang/bin/ ; \
 	done
 	$(INSTALL_DIR) $(1)/usr/lib/erlang/lib
-	for m in erts kernel sasl stdlib; do \
+	for m in erts kernel sasl stdlib crypto; do \
 		$(CP) $(PKG_INSTALL_DIR)/usr/lib/erlang/lib/$$$$m-* $(1)/usr/lib/erlang/lib/ ; \
 		rm -rf $(1)/usr/lib/erlang/lib/$$$$m-*/examples ; \
 		rm -rf $(1)/usr/lib/erlang/lib/$$$$m-*/src ; \
@@ -182,3 +195,4 @@ $(eval $(call HostBuild))
 $(eval $(call BuildPackage,erlang))
 $(eval $(call BuildModule,observer,observer))
 $(eval $(call BuildModule,runtime_tools,runtime_tools))
+$(eval $(call BuildModule,xmerl,xmerl))
