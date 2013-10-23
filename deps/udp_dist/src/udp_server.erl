@@ -40,8 +40,8 @@ code_change(_OldVsn, State, _Extra) ->
 % Private API
 
 load_driver() ->
-    %Dir = find_priv_lib(),
-    erl_ddll:load_driver("/home/pi/eliot/deps/udp_dist/priv",?DRIVER_NAME).
+    Dir = find_priv_lib(),
+    erl_ddll:load_driver(Dir,?DRIVER_NAME).
 
 find_priv_lib() ->
     case (catch code:priv_dir(udp_dist)) of

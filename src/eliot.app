@@ -9,4 +9,4 @@
                         eliot_app,eliot_ctp,eliot_dispatcher,eliot_forwarder,
                         eliot_gpio,eliot_oppflooder,eliot_oppflooder_event,
                         eliot_parser,eliot_rssi,eliot_simulator,eliot_sup,
-                        eliot_trickle,firmata,firmata_test,openhouse,utils]}]}.
+                        eliot_trickle,openhouse,utils]}]}.
