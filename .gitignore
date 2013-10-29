@@ -1,6 +1,5 @@
-doc/*.html
-doc/*.png
-doc/*.css
+doc
+deps
 ebin
 priv/eliot-*
 simbin
