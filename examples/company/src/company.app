@@ -1,9 +1,0 @@
-{application,company,
-             [{description,[]},
-              {vsn,"1"},
-              {registered,[]},
-              {applications,[kernel,stdlib]},
-              {mod,{company_app,[]}},
-              {env,[]},
-              {modules,[company,company_app,company_handler,company_sup,
-                        company_task]}]}.

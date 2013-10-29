@@ -1,9 +1,0 @@
-{application,ctp,
-             [{description,[]},
-              {vsn,"1"},
-              {registered,[]},
-              {applications,[kernel,stdlib]},
-              {mod,{ctp_app,[]}},
-              {env,[]},
-              {modules,[ctp,ctp_app,ctp_fwd,ctp_link,ctp_routing,ctp_sup,
-                        ctp_task]}]}.

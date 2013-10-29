@@ -1,9 +1,0 @@
-{application,oppflooder,
-             [{description,[]},
-              {vsn,"1"},
-              {registered,[]},
-              {applications,[kernel,stdlib]},
-              {mod,{oppflooder_app,[]}},
-              {env,[]},
-              {modules,[oppflooder,oppflooder_app,oppflooder_handler,
-                        oppflooder_sup,oppflooder_task]}]}.
