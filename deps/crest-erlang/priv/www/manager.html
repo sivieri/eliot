@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<!--
+	Copyright (c) 2010,2011 Alessandro Sivieri <sivieri@elet.polimi.it>
+	This file is part of CREST-Erlang.
+	CREST-Erlang is licensed under the "GNU Lesser General Public License",
+	more details at http://www.gnu.org/licenses/.
+-->
+<!-- method="POST" enctype="application/x-www-form-urlencoded"-->
+<script language="javascript" type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script language="javascript" type="text/javascript" src="jquery.dataTables.min.js"></script>
+<script language="javascript" type="text/javascript" src="manager.js"></script>
+<link rel="stylesheet" type="text/css" href="jquery_table.css" />
+<link rel="stylesheet" type="text/css" href="jquery_table_jui.css" />
+<title>CREST - Manager</title>
+</head>
+<body>
+<div id="main">
+	<h1>CREST - Manager</h1>
+	<div id="manager">
+		<div id="updatediv">
+			<p>Insert module compiled file (<strong>*.beam</strong>):
+	   		<form id="updateform" method="POST" action="/crest/manager/spawn/" enctype="multipart/form-data">
+				<label for="path">Fun Path: </label><input type="file" size="50" name="path" value="" maxlength="255" onchange="updateModuleFunction(this.value)" />
+				<label for="funname">Fun Name: </label><input type="text" size="20" name="funname" id="funname" value="module:function" maxlength="255" /><br />
+		   		<input type="submit" name="upsubmit" value="Upload" />
+		   	</form>
+			</p>
+		</div>
+		<div id="refreshdiv">
+			<form id="refreshform" action="" onsubmit="return false;">
+				<p><input type="submit" name="Submit" value="Refresh"/></p>
+			</form>
+		</div>
+		<div id="processes">
+			<div id="local">
+				<h2>Local processes</h2>
+				<h3>(click to install)</h3>
+				<div id="newlocal"></div>
+				<table id="localtable" cellpadding="20" cellspacing="0" border="0" class="display">
+					<thead>
+						<tr>
+							<th width="20%">Name</th>
+							<th width="40%">Module</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+					<tfoot>
+						<tr>
+							<th>Name</th>
+							<th>Module</th>
+						</tr>
+					</tfoot>
+				</table>
+			</div>
+			<div id="installed">
+				<h2>Installed processes</h2>
+				<h3>(click to invoke)</h3>
+				<div id="newprocess"></div>
+				<table id="processestable" cellpadding="20" cellspacing="0" border="0" class="display">
+					<thead>
+						<tr>
+							<th width="30%">Key</th>
+							<th width="25%">Name</th>
+							<th width="10%">Operation</th>
+							<th width="35%">Parameters</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+					<tfoot>
+						<tr>
+							<th>Key</th>
+							<th>Name</th>
+							<th>Operation</th>
+							<th>Parameters</th>
+						</tr>
+					</tfoot>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

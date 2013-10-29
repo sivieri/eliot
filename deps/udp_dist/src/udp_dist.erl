@@ -2,7 +2,7 @@
 -export([childspecs/0, listen/1, accept/1, accept_connection/5,
          setup/5, close/1, select/1, is_node_name/1]).
 -export([accept_loop/2, do_accept/6, do_setup/6, getstat/1,tick/1]).
--export([split_node/3, splitnode/2]).
+-export([split_node/3, splitnode/2, get_host_ip/0]).
 -import(error_logger,[error_msg/2]).
 -include("net_address.hrl").
 -include("dist.hrl").
