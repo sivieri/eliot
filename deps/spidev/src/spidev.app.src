@@ -1,6 +1,0 @@
-{application, spidev,
- [{description, "SPI dev (using NIFs)"},
-  {vsn, "0.1.0"},
-  {modules, [spidev, spi3002, spi595]},
-  {applications, [kernel, stdlib]}
- ]}.

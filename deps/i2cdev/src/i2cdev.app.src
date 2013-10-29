@@ -1,6 +1,0 @@
-{application, i2cdev,
- [{description, "I2C dev (using NIFs)"},
-  {vsn, "0.1.0"},
-  {modules, [i2cdev, i2cglow]},
-  {applications, [kernel, stdlib]}
- ]}.

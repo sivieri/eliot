@@ -1,9 +1,0 @@
-{variables, [{appid, "myapp"}]}.
-{template, "eliotapp.sh", "start.sh"}.
-{template, "Makefile", "Makefile"}.
-{template, "Makefile.sub", "src/Makefile"}.
-{template, "eliotapp.app", "src/{{appid}}.app"}.
-{template, "eliotapp.erl", "src/{{appid}}.erl"}.
-{template, "eliotapp_app.erl", "src/{{appid}}_app.erl"}.
-{template, "eliotapp_sup.erl", "src/{{appid}}_sup.erl"}.
-{template, "eliotapp_task.erl", "src/{{appid}}_task.erl"}.

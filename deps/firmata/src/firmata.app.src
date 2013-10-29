@@ -1,3 +1,0 @@
-{application, firmata,
-    [{description, "Firmata port"},
-    {vsn, "0.1.0"}]}.

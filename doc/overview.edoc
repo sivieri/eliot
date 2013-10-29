@@ -1,6 +1,0 @@
-** this is the overview.doc file for the application 'ELIoT' **
-@author Alessandro Sivieri <sivieri@elet.polimi.it>
-@copyright 2012 Alessandro Sivieri
-@version 1.0.0
-@title Welcome to the `ELIoT' application framework
-@doc 'ELIoT' is an application framework for developing programs to be deployed on devices for the Internet of Things.
