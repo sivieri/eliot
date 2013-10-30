@@ -4,6 +4,8 @@
 -include("eliot.hrl").
 -export([nodeid/1, nodeaddr/1, set_node_name/1, get_node_name/0, put_data/2, get_data/1, rpc/2, rpc_noacks/2, lpc/2, id/0, ip_to_node/1, node_to_ip/1]).
 -export([send_test/3]).
+-define(NODENAME, configuration:get_env(nodename, "eliot")).
+-define(INTERFACE, configuration:get_env(interface, "wlan0")).
 
 % Public API
 
@@ -167,7 +169,8 @@ ip_to_node({_A, _B, _C, _D} = IP) ->
     erlang:list_to_atom(?NODENAME ++ "@" ++ inet_parse:ntoa(IP)).
 
 node_to_ip(Name) ->
-    {?NODENAME, IP} = string:tokens(erlang:atom_to_list(Name), "@"),
+    NodeName = ?NODENAME,
+    {NodeName, IP} = string:tokens(erlang:atom_to_list(Name), "@"),
     inet_parse:address(IP).
 
 % Private API

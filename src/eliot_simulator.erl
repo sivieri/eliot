@@ -3,6 +3,8 @@
 -module(eliot_simulator).
 -include("eliot.hrl").
 -export([start/2, send/2, send_after/3, register/2, spawn/1, spawn/3, spawn_link/1, spawn_link/3, read_net/1, get_simname/1, get_simname/2, get_name/1, export/1, unexport/1]).
+-define(NODENAME, configuration:get_env(nodename, "eliot")).
+-define(INTERFACE, configuration:get_env(interface, "wlan0")).
 
 % Public API
 

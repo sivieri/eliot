@@ -3,6 +3,8 @@
 -module(utils).
 -export([code_hash/1, format/2, get_host_ip/0, consistency/3, echo/0, get_bcast_addr/0, to_int/1, get_host_mac/0, split_name/1, join_name/2, print_dict/1]).
 -include("eliot.hrl").
+-define(NODENAME, configuration:get_env(nodename, "eliot")).
+-define(INTERFACE, configuration:get_env(interface, "wlan0")).
 
 % Public API
 
@@ -34,6 +36,7 @@ echo() ->
     end.
 
 get_bcast_addr() ->
+    Interface = ?INTERFACE,
     case inet:getifaddrs() of
         {ok, IfList} when length(IfList) == 2 ->
             [{_Real, IfOpts}] = lists:filter(fun({Name, _IfOpts}) when Name == "lo" -> false;
@@ -41,12 +44,13 @@ get_bcast_addr() ->
             {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
             Address;
         {ok, IfList} ->
-            {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
+            {Interface, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
             {broadaddr, Address} = lists:keyfind(broadaddr, 1, IfOpts),
             Address
     end.
 
 get_host_ip() ->
+    Interface = ?INTERFACE,
     case inet:getifaddrs() of
         {ok, IfList} when length(IfList) == 2 ->
             [{_Real, IfOpts}] = lists:filter(fun({Name, _IfOpts}) when Name == "lo" -> false;
@@ -54,7 +58,7 @@ get_host_ip() ->
             {addr, Address} = lists:keyfind(addr, 1, IfOpts),
             inet_parse:ntoa(Address);
         {ok, IfList} ->
-            {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
+            {Interface, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
             Addresses = proplists:lookup_all(addr, IfOpts),
             Ip4Addresses = lists:filter(fun({addr, Addr}) when tuple_size(Addr) == 4 -> true;
                                                            ({addr, _Addr}) -> false end, Addresses),
@@ -63,6 +67,7 @@ get_host_ip() ->
     end.
 
 get_host_mac() ->
+    Interface = ?INTERFACE,
     case inet:getifaddrs() of
         {ok, IfList} when length(IfList) == 2 ->
             [{_Real, IfOpts}] = lists:filter(fun({Name, _IfOpts}) when Name == "lo" -> false;
@@ -71,7 +76,7 @@ get_host_mac() ->
             StringAddress = lists:map(fun(X) -> format("~2.16.0b", [X]) end, Address),
             string:join(StringAddress, ":");
         {ok, IfList} ->
-            {?INTERFACE, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
+            {Interface, IfOpts} = lists:keyfind(?INTERFACE, 1, IfList),
             {hwaddr, Address} = lists:keyfind(hwaddr, 1, IfOpts),
             StringAddress = lists:map(fun(X) -> format("~2.16.0b", [X]) end, Address),
             string:join(StringAddress, ":")
